@@ -356,6 +356,34 @@ function requirePortalHost(req, res, next) {
 }
 
 /**
+ * Host policy for GET /auth (canonical admin login).
+ * - ADMIN_HOST: serve Express EJS login.
+ * - Any other host + browser: redirect to ADMIN_HOST/auth.
+ * - Non-browser on wrong host: 404.
+ * - Development: allow.
+ *
+ * @param {string} incomingHost
+ * @param {boolean} [isBrowserHtml]
+ * @returns {{ action: "allow" } | { action: "redirect", location: string } | { action: "json404" }}
+ */
+function adminAuthGetHostPolicy(incomingHost, isBrowserHtml) {
+  const isProd = process.env.NODE_ENV === "production";
+  const hosts = getHosts();
+  const incoming = bareHost(incomingHost);
+  const onAdminHost = incoming === bareHost(hosts.admin);
+
+  if (!isProd) return { action: "allow" };
+  if (onAdminHost) return { action: "allow" };
+
+  if (isBrowserHtml) {
+    const scheme = isLocalDevHost(hosts.admin) ? "http" : "https";
+    return { action: "redirect", location: `${scheme}://${hosts.admin}/auth` };
+  }
+
+  return { action: "json404" };
+}
+
+/**
  * Host policy for GET /dashboard/login.
  * - ADMIN_HOST: serve Express EJS login (allow).
  * - PORTAL / PUBLIC browser: redirect to portal Next /login.
@@ -416,6 +444,21 @@ function loginPreGate(incomingHost) {
 }
 
 /**
+ * Pre-gate for POST /auth — admin host only (never portal).
+ *
+ * @param {string} incomingHost
+ * @returns {{ action: "allow" } | { action: "json404" }}
+ */
+function adminAuthPreGate(incomingHost) {
+  const isProd = process.env.NODE_ENV === "production";
+  if (!isProd) return { action: "allow" };
+
+  const hosts = getHosts();
+  const onAdminHost = bareHost(incomingHost) === bareHost(hosts.admin);
+  return onAdminHost ? { action: "allow" } : { action: "json404" };
+}
+
+/**
  * Determine whether a login POST should be allowed or blocked.
  * Returns { action: "allow" } or { action: "json404" }.
  *
@@ -450,7 +493,7 @@ function loginPostHostPolicy(role, incomingHost) {
 
 /**
  * Build the redirect URL for requireAuth when the user is not logged in.
- * Admin host → same-host /dashboard/login.
+ * Admin host → same-host /auth.
  * Portal (and fallback) → portal Next /login.
  * Never redirects to PUBLIC_SITE_HOST as the login page itself.
  *
@@ -464,7 +507,7 @@ function requireAuthRedirectTarget(incomingHost) {
   const scheme = isLocalDevHost(targetHost) ? "http" : (process.env.NODE_ENV === "production" ? "https" : "http");
 
   if (onAdminHost) {
-    return `${scheme}://${targetHost}/dashboard/login`;
+    return `${scheme}://${targetHost}/auth`;
   }
 
   if (process.env.NODE_ENV !== "production") {
@@ -491,7 +534,7 @@ function loginRedirectTarget(incomingHost, params = {}) {
 
 /**
  * Determine the action for requireAuth when the user is not authenticated.
- * - Admin host: redirect to admin /dashboard/login
+ * - Admin host: redirect to admin /auth
  * - Portal host: redirect to portal Next /login
  * - Public site or unknown/evil host: fail closed with 404
  *
@@ -508,14 +551,14 @@ function requireAuthAction(incomingHost) {
   if (!isProd) {
     if (onAdminHost || !incomingHost) {
       const h = incomingHost || hosts.admin || "localhost:3005";
-      return { action: "redirect", location: `http://${h}/dashboard/login` };
+      return { action: "redirect", location: `http://${h}/auth` };
     }
     return { action: "redirect", location: "/login" };
   }
 
   if (onAdminHost) {
     const scheme = isLocalDevHost(hosts.admin) ? "http" : "https";
-    return { action: "redirect", location: `${scheme}://${hosts.admin}/dashboard/login` };
+    return { action: "redirect", location: `${scheme}://${hosts.admin}/auth` };
   }
   if (onPortalHost) {
     const scheme = isLocalDevHost(hosts.portal) ? "http" : "https";
@@ -588,7 +631,9 @@ module.exports = {
   authCookieClearOptions,
   // Login host/role policy
   loginGetHostPolicy,
+  adminAuthGetHostPolicy,
   loginPreGate,
+  adminAuthPreGate,
   loginPostHostPolicy,
   requireAuthRedirectTarget,
   loginRedirectTarget,

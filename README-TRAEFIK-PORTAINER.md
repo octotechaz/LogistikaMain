@@ -31,9 +31,11 @@ Kontroller:
 Admin hesabi Portainer env-de degil, PostgreSQL `User` tablosunda tutulur.
 Container start sirasinda `scripts/ensure-postgres-admin.mjs` ADMIN yoksa otomatik olusturur.
 
-- URL: `https://admin.tranzit.az/dashboard/login` (veya `/admin/login`)
+- URL: `https://admin.tranzit.az/auth` (alias: `/dashboard/login`, `/admin/login`)
 - Email: `admin@tranzit.az`
 - Sifre: `Password123!`
+
+Adminler portal/normal login (`portal.tranzit.az/login`) uzerinden giremez.
 
 Ilk giristen sonra sifreyi paneldan degistirmen onerilir.
 

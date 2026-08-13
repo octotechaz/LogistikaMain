@@ -229,10 +229,14 @@ app.get('/dashboard/session-user', requireAuth, async (req, res) => {
 app.get('/dashboard/login', makeLoginGetHandler());
 app.post('/dashboard/login', makeLoginPostHandler(userRepository));
 
+// Canonical admin login: https://admin.tranzit.az/auth
+app.get('/auth', makeLoginGetHandler({ adminOnly: true }));
+app.post('/auth', makeLoginPostHandler(userRepository, { adminOnly: true }));
+
 // Dedicated admin login aliases (ADMIN_HOST only via host policy in handlers)
-app.get('/admin/login', (req, res) => res.redirect(302, '/dashboard/login'));
-app.get('/login', makeLoginGetHandler());
-app.post('/login', makeLoginPostHandler(userRepository));
+app.get('/admin/login', (req, res) => res.redirect(302, '/auth'));
+app.get('/login', makeLoginGetHandler({ adminOnly: true }));
+app.post('/login', makeLoginPostHandler(userRepository, { adminOnly: true }));
 
 app.get('/dashboard/qeydiyyat', (req, res) => {
     if (req.session.userId) {

@@ -271,7 +271,7 @@
                 </div>
             <% } %>
 
-            <form action="/dashboard/login" method="POST">
+            <form action="<%= typeof formAction !== 'undefined' && formAction ? formAction : '/auth' %>" method="POST">
                 
                 <div class="mb-5">
                     <span class="block text-sm font-medium text-slate-700 mb-1.5" id="identityModeLabel">Giriş üsulu</span>

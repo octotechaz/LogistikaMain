@@ -136,6 +136,20 @@ test("wiring: index.js registers app.post('/dashboard/login', makeLoginPostHandl
   );
 });
 
+test("wiring: index.js registers canonical /auth admin login routes", () => {
+  const src = readIndexSrc();
+  assert.match(
+    src,
+    /app\.get\(['"]\/auth['"],\s*makeLoginGetHandler\(\{\s*adminOnly:\s*true\s*\}\)\)/,
+    "must register GET /auth with adminOnly"
+  );
+  assert.match(
+    src,
+    /app\.post\(['"]\/auth['"],\s*makeLoginPostHandler\(userRepository,\s*\{\s*adminOnly:\s*true\s*\}\)\)/,
+    "must register POST /auth with adminOnly"
+  );
+});
+
 // ── POST /dashboard/login pre-gate: production handler wiring ────────────────
 
 test("makeLoginPostHandler: public host → 404 before repository lookup, zero calls", (t, done) => {
@@ -365,7 +379,7 @@ test("makeLoginGetHandler: admin host → serve login page (allow)", (t, done) =
 
 // ── requireAuth: production middleware wiring ────────────────────────────────
 
-test("makeRequireAuth: admin host unauthenticated → redirect to https://ADMIN_HOST/dashboard/login", () => {
+test("makeRequireAuth: admin host unauthenticated → redirect to https://ADMIN_HOST/auth", () => {
   const { makeRequireAuth } = freshAuthHandlers(PROD_ENV);
   const requireAuth = makeRequireAuth();
 
@@ -385,7 +399,7 @@ test("makeRequireAuth: admin host unauthenticated → redirect to https://ADMIN_
   requireAuth(req, res, () => { throw new Error("must not call next for unauthenticated"); });
 
   assert.ok(redirectedTo, "must redirect unauthenticated admin-host request");
-  assert.match(redirectedTo, /admin-logistika\.octotech\.az\/dashboard\/login/);
+  assert.match(redirectedTo, /admin-logistika\.octotech\.az\/auth$/);
   assert.match(redirectedTo, /^https:\/\//);
   assert.equal(statusCode, null);
 });

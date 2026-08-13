@@ -22,6 +22,11 @@ export async function POST(request: Request) {
       return fail(INVALID_LOGIN, 401);
     }
 
+    // Admins must use Express login on ADMIN_HOST (/auth), never portal JWT login.
+    if (user.role === "ADMIN") {
+      return fail(INVALID_LOGIN, 401);
+    }
+
     const validPassword = await verifyPassword(payload.password, user.passwordHash);
     if (!validPassword) {
       return fail(INVALID_LOGIN, 401);

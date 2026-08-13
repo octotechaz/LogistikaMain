@@ -43,7 +43,7 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
           <EmptyAccessState
             title="Admin girişi tələb olunur"
             description="Bu bölmə yalnız admin sessiyası üçün açıqdır."
-            actionHref="/login?mode=admin"
+            actionHref="https://admin.tranzit.az/auth"
             actionLabel="Admin kimi daxil ol"
           />
         </div>

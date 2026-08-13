@@ -23,7 +23,7 @@ const PROD_HOSTS = {
 
 // ── makeRequireAuth ──────────────────────────────────────────────────────────
 
-test("makeRequireAuth: unauthenticated request with req.hostname=ADMIN_HOST redirects to admin /dashboard/login", () => {
+test("makeRequireAuth: unauthenticated request with req.hostname=ADMIN_HOST redirects to admin /auth", () => {
   const { makeRequireAuth } = freshRequireHandlers({ ...PROD_HOSTS });
   const requireAuth = makeRequireAuth();
 
@@ -51,7 +51,7 @@ test("makeRequireAuth: unauthenticated request with req.hostname=ADMIN_HOST redi
 
   assert.ok(redirectTarget, "should redirect, not 404. Got status404=" + status404Called);
   assert.match(redirectTarget, /admin-logistika\.octotech\.az/, "redirect must target ADMIN_HOST");
-  assert.match(redirectTarget, /\/dashboard\/login$/, "redirect must go to /dashboard/login");
+  assert.match(redirectTarget, /\/auth$/, "redirect must go to /auth");
   assert.match(redirectTarget, /^https:\/\//, "redirect must use https in production");
 });
 

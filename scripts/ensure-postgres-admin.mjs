@@ -86,7 +86,7 @@ async function main() {
   const result = await ensurePostgresAdmin();
   if (result.action === "created") {
     console.log(`PostgreSQL admin created: ${result.email}`);
-    console.log("Admin login URL: https://admin.tranzit.az/dashboard/login");
+    console.log("Admin login URL: https://admin.tranzit.az/auth");
     console.log(`Email: ${BOOTSTRAP_ADMIN.email}`);
     console.log(`Password: ${BOOTSTRAP_ADMIN.password}`);
   } else {

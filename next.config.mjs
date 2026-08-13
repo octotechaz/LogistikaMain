@@ -57,6 +57,12 @@ const nextConfig = {
   },
   async rewrites() {
     return [
+      // Canonical admin login on ADMIN_HOST (exact /auth only — do not
+      // rewrite /auth/login|/auth/register|/auth/forgot-password).
+      {
+        source: "/auth",
+        destination: `${internalAdminUrl}/auth`,
+      },
       {
         source: "/dashboard",
         destination: `${internalAdminUrl}/dashboard`,
@@ -81,11 +87,6 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      {
-        source: "/dashboard/login",
-        destination: "/login",
-        permanent: false,
-      },
       {
         source: "/cargo-owner/l",
         destination: "/cargo-owner/loads",

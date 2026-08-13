@@ -433,6 +433,14 @@ describe("isDelegatedToExpress", () => {
     assert.equal(isDelegatedToExpress("/dashboard/login"), true);
   });
 
+  it("returns true for exact /auth (admin login)", () => {
+    assert.equal(isDelegatedToExpress("/auth"), true);
+  });
+
+  it("returns false for /auth/login (Next portal page, not Express)", () => {
+    assert.equal(isDelegatedToExpress("/auth/login"), false);
+  });
+
   it("returns true for /dashboard/butun-elanlar", () => {
     assert.equal(isDelegatedToExpress("/dashboard/butun-elanlar"), true);
   });
@@ -490,6 +498,16 @@ describe("hostPolicyResult: Express-delegated paths pass on any host", () => {
 
   it("pass: /dashboard/login on ADMIN_HOST (admin login must work)", () => {
     const r = hostPolicyResult("/dashboard/login", "admin-logistika.octotech.az", PROD_ENV, HTML_GET);
+    assert.equal(r.action, "pass");
+  });
+
+  it("pass: /auth on ADMIN_HOST (canonical admin login)", () => {
+    const r = hostPolicyResult("/auth", "admin-logistika.octotech.az", PROD_ENV, HTML_GET);
+    assert.equal(r.action, "pass");
+  });
+
+  it("pass: /auth on PORTAL_HOST (Express redirects to ADMIN_HOST/auth)", () => {
+    const r = hostPolicyResult("/auth", "portal-logistika.octotech.az", PROD_ENV, HTML_GET);
     assert.equal(r.action, "pass");
   });
 

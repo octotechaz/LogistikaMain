@@ -2,8 +2,10 @@
 
 const {
   loginPreGate,
+  adminAuthPreGate,
   loginPostHostPolicy,
   loginGetHostPolicy,
+  adminAuthGetHostPolicy,
   loginLandingPath,
   loginLandingTarget,
   requireAuthAction,
@@ -13,23 +15,27 @@ const { composeSelectedCountryPhone } = require("./phoneUtils");
 
 const AUTH_COOKIE = "azlog_token";
 
+const ADMIN_LOGIN_VIEW = {
+  adminPanel: true,
+  pageTitle: "Admin Giriş — Tranzit",
+  panelHeading: "Admin Panel",
+  panelSubheading: "Yalnız idarəçi hesabı ilə daxil olun",
+};
+
 /**
- * Factory for the POST /dashboard/login handler.
+ * Factory for login POST handlers.
  *
- * Injects a user repository so tests can supply a fake.  The returned handler
- * encapsulates the full production flow:
- *   1. loginPreGate  — block public/unknown host before any DB work
- *   2. repository.findLoginUser — find user by email or phone
- *   3. repository.verifyPassword — verify password hash
- *   4. loginPostHostPolicy — enforce role/host alignment
- *   5. Session setup and redirect on success
- *
- * @param {object} repository — object with findLoginUser(identifier) and verifyPassword(password, hash)
- * @returns {function} async Express route handler (req, res)
+ * @param {object} repository — findLoginUser + verifyPassword
+ * @param {{ adminOnly?: boolean }} [options]
+ *   adminOnly: use /auth gates (ADMIN_HOST only); form posts to /auth
  */
-function makeLoginPostHandler(repository) {
+function makeLoginPostHandler(repository, options = {}) {
+  const adminOnly = options.adminOnly === true;
+  const preGateFn = adminOnly ? adminAuthPreGate : loginPreGate;
+  const formAction = adminOnly ? "/auth" : "/dashboard/login";
+
   return async function loginPostHandler(req, res) {
-    const preGate = loginPreGate(req.hostname || req.get("host") || "");
+    const preGate = preGateFn(req.hostname || req.get("host") || "");
     if (preGate.action !== "allow") {
       return res.status(404).json({ error: "Not found" });
     }
@@ -45,6 +51,10 @@ function makeLoginPostHandler(repository) {
       const user = await repository.findLoginUser(loginIdentifier);
 
       if (user && await repository.verifyPassword(password, user.password)) {
+        if (adminOnly && user.role !== "ADMIN") {
+          return res.status(404).json({ error: "Not found" });
+        }
+
         const hostCheck = loginPostHostPolicy(user.role, req.hostname || req.get("host") || "");
         if (hostCheck.action !== "allow") {
           return res.status(404).json({ error: "Not found" });
@@ -63,38 +73,36 @@ function makeLoginPostHandler(repository) {
       } else {
         res.render("login", {
           error: "E-poçt (nömrə) və ya şifrə yanlışdır.",
-          adminPanel: true,
-          pageTitle: "Admin Giriş — Tranzit",
-          panelHeading: "Admin Panel",
-          panelSubheading: "Yalnız idarəçi hesabı ilə daxil olun",
+          formAction,
+          ...ADMIN_LOGIN_VIEW,
         });
       }
     } catch (error) {
       console.error(error);
       res.render("login", {
         error: "Giriş zamanı xəta baş verdi.",
-        adminPanel: true,
-        pageTitle: "Admin Giriş — Tranzit",
-        panelHeading: "Admin Panel",
-        panelSubheading: "Yalnız idarəçi hesabı ilə daxil olun",
+        formAction,
+        ...ADMIN_LOGIN_VIEW,
       });
     }
   };
 }
 
 /**
- * Factory for the GET /dashboard/login handler.
+ * Factory for login GET handlers.
  *
- * Admin host serves the Express EJS login. Portal/public redirect to Next /login.
- *
- * @returns {function} Express route handler (req, res)
+ * @param {{ adminOnly?: boolean }} [options]
  */
-function makeLoginGetHandler() {
+function makeLoginGetHandler(options = {}) {
+  const adminOnly = options.adminOnly === true;
+  const formAction = adminOnly ? "/auth" : "/dashboard/login";
+
   return function loginGetHandler(req, res) {
-    const loginPolicy = loginGetHostPolicy(
-      req.hostname || req.get("host") || "",
-      isBrowserHtmlRequest(req)
-    );
+    const host = req.hostname || req.get("host") || "";
+    const loginPolicy = adminOnly
+      ? adminAuthGetHostPolicy(host, isBrowserHtmlRequest(req))
+      : loginGetHostPolicy(host, isBrowserHtmlRequest(req));
+
     if (loginPolicy.action === "redirect") {
       return res.redirect(loginPolicy.location);
     }
@@ -102,14 +110,12 @@ function makeLoginGetHandler() {
       return res.status(404).json({ error: "Not found" });
     }
     if (req.session.userId) {
-      return res.redirect(loginLandingTarget(req.session.user && req.session.user.role, req.hostname || req.get("host") || ""));
+      return res.redirect(loginLandingTarget(req.session.user && req.session.user.role, host));
     }
     res.render("login", {
       error: null,
-      adminPanel: true,
-      pageTitle: "Admin Giriş — Tranzit",
-      panelHeading: "Admin Panel",
-      panelSubheading: "Yalnız idarəçi hesabı ilə daxil olun",
+      formAction,
+      ...ADMIN_LOGIN_VIEW,
     });
   };
 }

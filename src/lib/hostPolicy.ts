@@ -3,7 +3,7 @@
  * No Next.js imports — fully testable with node:test.
  *
  * Architectural principle:
- *   - /dashboard/*, /octo-admin/*, /uploads/* are proxied to Express by
+ *   - /auth, /dashboard/*, /octo-admin/*, /uploads/* are proxied to Express by
  *     Next.js rewrites (next.config.mjs). Express is the sole host/role
  *     authority for that surface. Next middleware MUST pass these through
  *     unconditionally — never redirect or block them.
@@ -65,6 +65,9 @@ const EXPRESS_DELEGATED_PREFIXES = [
   "/octo-admin",
   "/uploads",
 ];
+
+/** Exact admin login path rewritten to Express (not /auth/login etc.). */
+const EXPRESS_DELEGATED_EXACT = ["/auth"];
 
 /** Portal user surfaces — must be on PORTAL_HOST. */
 const PORTAL_USER_PREFIXES = [
@@ -197,6 +200,8 @@ export function matchNextHost(
  * Middleware must pass these through — Express owns host/role enforcement.
  */
 export function isDelegatedToExpress(pathname: string): boolean {
+  const p = pathname.split("?")[0];
+  if (EXPRESS_DELEGATED_EXACT.includes(p)) return true;
   return EXPRESS_DELEGATED_PREFIXES.some((prefix) => segmentMatch(pathname, prefix));
 }
 
@@ -236,7 +241,7 @@ export type PolicyAction =
  *
  * Rules (checked in order):
  *
- * 0. Express-delegated paths (/dashboard/*, /octo-admin/*, /uploads/*):
+ * 0. Express-delegated paths (/auth exact, /dashboard/*, /octo-admin/*, /uploads/*):
  *    Always pass. Express is the sole authority.
  *
  * 1. Admin paths (/api/admin/*, /admin/*):

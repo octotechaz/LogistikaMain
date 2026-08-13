@@ -642,10 +642,10 @@ test("loginPostHostPolicy: dev localhost any role → allow", () => {
 // requireAuthRedirectTarget: takes the Host header, returns same-host login URL.
 // Never redirects to the public site.
 
-test("requireAuthRedirectTarget: admin host → https://admin/dashboard/login", () => {
+test("requireAuthRedirectTarget: admin host → https://admin/auth", () => {
   const { requireAuthRedirectTarget } = freshRequire({ ...PROD_HOSTS });
   const target = requireAuthRedirectTarget("admin-logistika.octotech.az");
-  assert.equal(target, "https://admin-logistika.octotech.az/dashboard/login");
+  assert.equal(target, "https://admin-logistika.octotech.az/auth");
 });
 
 test("requireAuthRedirectTarget: portal host → https://portal/login", () => {
@@ -666,7 +666,7 @@ test("requireAuthRedirectTarget: dev → /login (relative)", () => {
   assert.equal(target, "/login");
 });
 
-test("loginRedirectTarget: admin host in dev → /dashboard/login on same host", () => {
+test("loginRedirectTarget: admin host in dev → /auth on same host", () => {
   const { loginRedirectTarget } = freshRequire({
     NODE_ENV: "development",
     PUBLIC_SITE_HOST: "lvh.me:3001",
@@ -674,7 +674,7 @@ test("loginRedirectTarget: admin host in dev → /dashboard/login on same host",
     ADMIN_HOST: "admin.lvh.me:3005",
   });
   const target = loginRedirectTarget("admin.lvh.me:3005");
-  assert.equal(target, "http://admin.lvh.me:3005/dashboard/login");
+  assert.equal(target, "http://admin.lvh.me:3005/auth");
 });
 
 test("loginRedirectTarget: appends query params for logout flash messages", () => {
@@ -685,7 +685,7 @@ test("loginRedirectTarget: appends query params for logout flash messages", () =
     ADMIN_HOST: "admin.lvh.me:3005",
   });
   const target = loginRedirectTarget("admin.lvh.me:3005", { error: "test" });
-  assert.equal(target, "http://admin.lvh.me:3005/dashboard/login?error=test");
+  assert.equal(target, "http://admin.lvh.me:3005/auth?error=test");
 });
 
 // ── Finding 4: /octo-admin + authenticated /dashboard/login landing ───────────
@@ -803,6 +803,32 @@ test("loginGetHostPolicy: development → allow", () => {
   assert.deepEqual(loginGetHostPolicy("localhost:3001", true), { action: "allow" });
 });
 
+// ── adminAuthGetHostPolicy: GET /auth ─────────────────────────────────────────
+
+test("adminAuthGetHostPolicy: ADMIN_HOST → allow", () => {
+  const { adminAuthGetHostPolicy } = freshRequire({ ...PROD_HOSTS });
+  assert.deepEqual(adminAuthGetHostPolicy("admin-logistika.octotech.az", true), { action: "allow" });
+});
+
+test("adminAuthGetHostPolicy: portal browser → redirect to ADMIN_HOST/auth", () => {
+  const { adminAuthGetHostPolicy } = freshRequire({ ...PROD_HOSTS });
+  assert.deepEqual(adminAuthGetHostPolicy("portal-logistika.octotech.az", true), {
+    action: "redirect",
+    location: "https://admin-logistika.octotech.az/auth",
+  });
+});
+
+test("adminAuthGetHostPolicy: public non-browser → json404", () => {
+  const { adminAuthGetHostPolicy } = freshRequire({ ...PROD_HOSTS });
+  assert.deepEqual(adminAuthGetHostPolicy("logistika.octotech.az", false), { action: "json404" });
+});
+
+test("adminAuthPreGate: ADMIN_HOST → allow, PORTAL → json404", () => {
+  const { adminAuthPreGate } = freshRequire({ ...PROD_HOSTS });
+  assert.equal(adminAuthPreGate("admin-logistika.octotech.az").action, "allow");
+  assert.equal(adminAuthPreGate("portal-logistika.octotech.az").action, "json404");
+});
+
 // ── loginGetHostPolicy: route wiring seam ────────────────────────────────────
 
 
@@ -811,11 +837,11 @@ test("loginGetHostPolicy: development → allow", () => {
 
 // ── requireAuthAction: unauthenticated request host decision ─────────────────
 
-test("requireAuthAction: admin host → redirect to https://ADMIN_HOST/dashboard/login", () => {
+test("requireAuthAction: admin host → redirect to https://ADMIN_HOST/auth", () => {
   const { requireAuthAction } = freshRequire({ ...PROD_HOSTS });
   const result = requireAuthAction("admin-logistika.octotech.az");
   assert.equal(result.action, "redirect");
-  assert.equal(result.location, "https://admin-logistika.octotech.az/dashboard/login");
+  assert.equal(result.location, "https://admin-logistika.octotech.az/auth");
 });
 
 test("requireAuthAction: portal host → redirect to https://PORTAL_HOST/login", () => {
