@@ -7,8 +7,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
       POSTGRES_DB: ${POSTGRES_DB:?required}
     volumes:
-      # Fresh path so Postgres initializes with current POSTGRES_USER/PASSWORD.
-      # Old path postgres-new had no role "logistika" (skipped init).
+      # Dedicated volume for this stack user (logistika). Do not reuse old
+      # /datastore/logistika/postgres* paths that were init'd with another role.
       - /datastore/logistika/postgres-16-logistika:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
@@ -71,7 +71,11 @@ services:
       - octobot-net
       - logistika-internal
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3001/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3001/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\"",
+        ]
       interval: 20s
       timeout: 10s
       retries: 6
@@ -80,43 +84,27 @@ services:
       - traefik.enable=true
       - traefik.docker.network=octobot-net
 
-      # Cloudflare Flexible/Full often hits :80 (web). Serve on BOTH entrypoints.
+      # Match existing octobot Traefik: entrypoint websecure + letsencrypt
+      # Main site (Next.js - port 3001)
       - traefik.http.routers.logistika-main.rule=Host(`tranzit.az`)
-      - traefik.http.routers.logistika-main.entrypoints=web,websecure
+      - traefik.http.routers.logistika-main.entrypoints=websecure
       - traefik.http.routers.logistika-main.tls=true
       - traefik.http.routers.logistika-main.tls.certresolver=letsencrypt
-      - traefik.http.routers.logistika-main.tls.domains[0].main=tranzit.az
-      - traefik.http.routers.logistika-main.tls.domains[0].sans=www.tranzit.az,portal.tranzit.az,admin.tranzit.az
-      - traefik.http.routers.logistika-main.priority=10
       - traefik.http.routers.logistika-main.service=logistika-main-svc
       - traefik.http.services.logistika-main-svc.loadbalancer.server.port=3001
 
-      # www -> apex
-      - traefik.http.middlewares.logistika-www.redirectregex.regex=^https?://www\\.tranzit\\.az/(.*)
-      - traefik.http.middlewares.logistika-www.redirectregex.replacement=https://tranzit.az/$${1}
-      - traefik.http.middlewares.logistika-www.redirectregex.permanent=true
-      - traefik.http.routers.logistika-www.rule=Host(`www.tranzit.az`)
-      - traefik.http.routers.logistika-www.entrypoints=web,websecure
-      - traefik.http.routers.logistika-www.tls=true
-      - traefik.http.routers.logistika-www.tls.certresolver=letsencrypt
-      - traefik.http.routers.logistika-www.middlewares=logistika-www
-      - traefik.http.routers.logistika-www.priority=100
-      - traefik.http.routers.logistika-www.service=logistika-main-svc
-
-      # Portal (Next.js :3001)
+      # Portal site (Next.js - port 3001)
       - traefik.http.routers.logistika-portal.rule=Host(`portal.tranzit.az`)
-      - traefik.http.routers.logistika-portal.entrypoints=web,websecure
+      - traefik.http.routers.logistika-portal.entrypoints=websecure
       - traefik.http.routers.logistika-portal.tls=true
       - traefik.http.routers.logistika-portal.tls.certresolver=letsencrypt
-      - traefik.http.routers.logistika-portal.priority=10
       - traefik.http.routers.logistika-portal.service=logistika-main-svc
 
-      # Admin (octo-admin :3005)
+      # Admin site (octo-admin - port 3005)
       - traefik.http.routers.logistika-admin.rule=Host(`admin.tranzit.az`)
-      - traefik.http.routers.logistika-admin.entrypoints=web,websecure
+      - traefik.http.routers.logistika-admin.entrypoints=websecure
       - traefik.http.routers.logistika-admin.tls=true
       - traefik.http.routers.logistika-admin.tls.certresolver=letsencrypt
-      - traefik.http.routers.logistika-admin.priority=10
       - traefik.http.routers.logistika-admin.service=logistika-admin-svc
       - traefik.http.services.logistika-admin-svc.loadbalancer.server.port=3005
 
@@ -127,4 +115,3 @@ networks:
   logistika-internal:
     name: logistika-internal
     internal: true
-
