@@ -1,7 +1,12 @@
 node_modules/
 .env
 .env.*
+!.env.example
+env
+portainer-env.txt
+.env_portainer
 stack.env
+*.command
 logs.log
 server_all.log
 backend.log

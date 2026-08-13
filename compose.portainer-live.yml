@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
       POSTGRES_DB: ${POSTGRES_DB:?required}
     volumes:
-      - /datastore/logistika/postgres-new:/var/lib/postgresql/data
+      - /datastore/logistika/postgres-16-logistika:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -26,20 +26,7 @@ services:
     restart: unless-stopped
     init: true
     stop_grace_period: 30s
-    command:
-      - /bin/sh
-      - -ec
-      - |
-        mkdir -p /app/public/uploads /app/octo-admin/uploads /app/octo-admin/data /app/data
-        chmod -R 777 /app/public/uploads /app/octo-admin/uploads /app/octo-admin/data /app/data 2>/dev/null || true
-        export DATABASE_URL="$$(node /app/scripts/build-database-url.mjs)"
-        echo "Using database $$POSTGRES_USER@postgres:5432/$$POSTGRES_DB"
-        if ! npx prisma migrate deploy; then
-          echo "Prisma P1000/auth failed: POSTGRES_PASSWORD must match the password used when /datastore/logistika/postgres-new was first created."
-          echo "Fix: set the original password in Portainer, OR stop stack and wipe that folder to re-init (DELETES DB DATA)."
-          exit 1
-        fi
-        npm run start
+    command: ["node", "scripts/production-boot.mjs"]
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
