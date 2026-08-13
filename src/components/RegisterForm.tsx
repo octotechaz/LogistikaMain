@@ -386,6 +386,8 @@ export function RegisterForm({ role }: { role: PublicRegisterRole }) {
             </div>
             <CarrierLocationPicker
               selectedLabel={selectedLocation?.label ?? ""}
+              selectedLatitude={selectedLocation?.latitude}
+              selectedLongitude={selectedLocation?.longitude}
               onSelect={setSelectedLocation}
               error={fieldErrors.locationLabel || fieldErrors.locationLat || fieldErrors.locationLng}
             />
