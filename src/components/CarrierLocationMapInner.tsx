@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import {
   CircleMarker,
   MapContainer,
-  Popup,
   TileLayer,
+  Tooltip,
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -137,7 +137,16 @@ export function CarrierLocationMapInner({
                 },
               }}
             >
-              <Popup>{city.label}</Popup>
+              <Tooltip
+                permanent
+                direction="bottom"
+                offset={[0, 8]}
+                opacity={1}
+                interactive={false}
+                className={`carrier-map-label${active ? " is-active" : ""}`}
+              >
+                {city.label}
+              </Tooltip>
             </CircleMarker>
           );
         })}
