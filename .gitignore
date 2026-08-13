@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.*
+stack.env
+logs.log
+server_all.log
+backend.log
+*.log
+.next/**/*.map
+octo-admin/data/
+octo-admin/uploads/
+public/uploads/
+.DS_Store
+node_modules/
+.next/
+*.tsbuildinfo

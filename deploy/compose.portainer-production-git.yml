@@ -1,0 +1,76 @@
+services:
+  app:
+    build: ..
+    image: logistika-production-git:20260804
+    pull_policy: build
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    command: >
+      sh -c "chmod -R 777 /app/public/uploads /app/octo-admin/uploads /app/octo-admin/data 2>/dev/null || true; npx prisma migrate deploy && npm run start"
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      DATABASE_URL: ${DATABASE_URL:?required}
+      JWT_SECRET: ${JWT_SECRET:?required}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?required}
+      SESSION_SECRET: ${SESSION_SECRET:?required}
+      PUBLIC_SITE_HOST: ${PUBLIC_SITE_HOST:?required}
+      PORTAL_HOST: ${PORTAL_HOST:?required}
+      ADMIN_HOST: ${ADMIN_HOST:?required}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:?required}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:?required}
+      CORS_ORIGIN: ${CORS_ORIGIN:?required}
+      INTERNAL_ADMIN_URL: http://127.0.0.1:3005
+      INTERNAL_BACKEND_URL: http://127.0.0.1:4001
+      OCTO_ADMIN_HOST: 127.0.0.1
+      OCTO_ADMIN_PORT: "3005"
+      BACKEND_HOST: 127.0.0.1
+      BACKEND_PORT: "4001"
+      UPLOAD_DIR: /app/public/uploads
+    volumes:
+      - /datastore/logistika/uploads:/app/octo-admin/uploads
+      - /datastore/logistika/uploads:/app/public/uploads
+      - /datastore/logistika/data:/app/octo-admin/data
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+      - /home/node
+    networks:
+      - octobot-net
+      - logistika-internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=octobot-net
+
+      # Main site (Next.js - port 3001)
+      - traefik.http.routers.logistika-main.rule=Host(`tranzit.az`)
+      - traefik.http.routers.logistika-main.entrypoints=websecure
+      - traefik.http.routers.logistika-main.tls=true
+      - traefik.http.routers.logistika-main.tls.certresolver=letsencrypt
+      - traefik.http.routers.logistika-main.service=logistika-main-svc
+      - traefik.http.services.logistika-main-svc.loadbalancer.server.port=3001
+
+      # Portal site (Next.js - port 3001)
+      - traefik.http.routers.logistika-portal.rule=Host(`portal.tranzit.az`)
+      - traefik.http.routers.logistika-portal.entrypoints=websecure
+      - traefik.http.routers.logistika-portal.tls=true
+      - traefik.http.routers.logistika-portal.tls.certresolver=letsencrypt
+      - traefik.http.routers.logistika-portal.service=logistika-main-svc
+
+      # Admin site (octo-admin - port 3005)
+      - traefik.http.routers.logistika-admin.rule=Host(`admin.tranzit.az`)
+      - traefik.http.routers.logistika-admin.entrypoints=websecure
+      - traefik.http.routers.logistika-admin.tls=true
+      - traefik.http.routers.logistika-admin.tls.certresolver=letsencrypt
+      - traefik.http.routers.logistika-admin.service=logistika-admin-svc
+      - traefik.http.services.logistika-admin-svc.loadbalancer.server.port=3001
+
+networks:
+  octobot-net:
+    external: true
+    name: octobot-net
+  logistika-internal:
+    external: true
+    name: logistika-internal
+

@@ -1,0 +1,121 @@
+services:
+  postgres:
+    image: postgres:16.6
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_DB: ${POSTGRES_DB:?required}
+    volumes:
+      - /datastore/logistika/postgres-new:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - logistika-internal
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: logistika-app:latest
+    pull_policy: build
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    command: >
+      sh -c "mkdir -p /app/public/uploads /app/octo-admin/uploads /app/octo-admin/data /app/data &&
+      chmod -R 777 /app/public/uploads /app/octo-admin/uploads /app/octo-admin/data /app/data 2>/dev/null || true;
+      npx prisma migrate deploy &&
+      npm run start"
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      PORT: "3001"
+      DATABASE_URL: ${DATABASE_URL:?required}
+      JWT_SECRET: ${JWT_SECRET:?required}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?required}
+      SESSION_SECRET: ${SESSION_SECRET:?required}
+      PUBLIC_SITE_HOST: ${PUBLIC_SITE_HOST:?required}
+      PORTAL_HOST: ${PORTAL_HOST:?required}
+      ADMIN_HOST: ${ADMIN_HOST:?required}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:?required}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:?required}
+      CORS_ORIGIN: ${CORS_ORIGIN:?required}
+      INTERNAL_ADMIN_URL: http://127.0.0.1:3005
+      INTERNAL_BACKEND_URL: http://127.0.0.1:4001
+      OCTO_ADMIN_HOST: 127.0.0.1
+      OCTO_ADMIN_PORT: "3005"
+      BACKEND_HOST: 127.0.0.1
+      BACKEND_PORT: "4001"
+      UPLOAD_DIR: /app/public/uploads
+      PUBLIC_LISTINGS_SQLITE_PATH: /app/data/public-listings.sqlite
+      OCTO_ADMIN_SQLITE_PATH: /app/octo-admin/data/cargo.db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - /datastore/logistika/uploads:/app/octo-admin/uploads
+      - /datastore/logistika/uploads:/app/public/uploads
+      - /datastore/logistika/data:/app/octo-admin/data
+      - /datastore/logistika/data:/app/data
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+      - /home/node
+    networks:
+      - octobot-net
+      - logistika-internal
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3001/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 20s
+      timeout: 10s
+      retries: 6
+      start_period: 60s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=octobot-net
+
+      # Main site (Next.js - port 3001)
+      - traefik.http.routers.logistika-main.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
+      - traefik.http.routers.logistika-main.entrypoints=websecure
+      - traefik.http.routers.logistika-main.tls=true
+      - traefik.http.routers.logistika-main.tls.certresolver=letsencrypt
+      - traefik.http.routers.logistika-main.service=logistika-main-svc
+      - traefik.http.services.logistika-main-svc.loadbalancer.server.port=3001
+      - traefik.http.middlewares.logistika-www.redirectregex.regex=^https://www\\.tranzit\\.az/(.*)
+      - traefik.http.middlewares.logistika-www.redirectregex.replacement=https://tranzit.az/$${1}
+      - traefik.http.middlewares.logistika-www.redirectregex.permanent=true
+      - traefik.http.routers.logistika-www.rule=Host(`www.tranzit.az`)
+      - traefik.http.routers.logistika-www.entrypoints=websecure
+      - traefik.http.routers.logistika-www.tls=true
+      - traefik.http.routers.logistika-www.tls.certresolver=letsencrypt
+      - traefik.http.routers.logistika-www.middlewares=logistika-www
+      - traefik.http.routers.logistika-www.service=logistika-main-svc
+
+      # Portal site (Next.js - port 3001)
+      - traefik.http.routers.logistika-portal.rule=Host(`portal.tranzit.az`)
+      - traefik.http.routers.logistika-portal.entrypoints=websecure
+      - traefik.http.routers.logistika-portal.tls=true
+      - traefik.http.routers.logistika-portal.tls.certresolver=letsencrypt
+      - traefik.http.routers.logistika-portal.service=logistika-main-svc
+
+      # Admin site (octo-admin - port 3005)
+      - traefik.http.routers.logistika-admin.rule=Host(`admin.tranzit.az`)
+      - traefik.http.routers.logistika-admin.entrypoints=websecure
+      - traefik.http.routers.logistika-admin.tls=true
+      - traefik.http.routers.logistika-admin.tls.certresolver=letsencrypt
+      - traefik.http.routers.logistika-admin.service=logistika-admin-svc
+      - traefik.http.services.logistika-admin-svc.loadbalancer.server.port=3005
+
+networks:
+  octobot-net:
+    external: true
+    name: octobot-net
+  logistika-internal:
+    name: logistika-internal
+    internal: true
+

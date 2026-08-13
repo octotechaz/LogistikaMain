@@ -1,0 +1,279 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-bold" style="color: #1e293b;">İstifadəçilər Sistemi</h4>
+    <button type="button" class="btn btn-primary px-4 py-2" data-bs-toggle="modal" data-bs-target="#newUserModal" style="border-radius: 8px; font-weight: 500;">
+        <i class="bi bi-person-plus me-1"></i> Yeni İstifadəçi
+    </button>
+</div>
+
+<% if(typeof req !== 'undefined' && req.query) { %>
+    <% if(req.query.created) { %>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius: 10px;">
+            <i class="bi bi-check-circle-fill me-2"></i> İstifadəçi uğurla yaradıldı!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    <% if(req.query.updated) { %>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius: 10px;">
+            <i class="bi bi-check-circle-fill me-2"></i> İstifadəçi rolu uğurla yeniləndi!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    <% if(req.query.deleted) { %>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius: 10px;">
+            <i class="bi bi-check-circle-fill me-2"></i> İstifadəçi uğurla silindi!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    <% if(req.query.error === 'email_exists') { %>
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius: 10px;">
+            <i class="bi bi-exclamation-circle-fill me-2"></i> Bu e-poçt ünvanı artıq istifadə olunur!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    <% if(req.query.error === 'self_delete' || req.query.error === 'self_role') { %>
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius: 10px;">
+            <i class="bi bi-exclamation-circle-fill me-2"></i> Öz hesabınız üzərində bu əməliyyatı apara bilməzsiniz!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+<% } %>
+
+<div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+    <div class="card-body p-4">
+        <div class="table-responsive">
+            <table id="myTable" class="table table-hover w-100">
+                <thead>
+                    <tr>
+                        <th class="border-0">ID</th>
+                        <th class="border-0">Ad</th>
+                        <th class="border-0">E-poçt</th>
+                        <th class="border-0">Rol</th>
+                        <th class="border-0">Qeydiyyat Tarixi</th>
+                        <th class="border-0 text-end">Əməliyyat</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(users && users.length > 0) { %>
+                        <% users.forEach(u => { %>
+                            <tr>
+                                <td><span class="text-muted fw-semibold">#<%= u.id %></span></td>
+                                <td><strong class="text-dark"><%= u.name || 'Naməlum' %></strong></td>
+                                <td><%= u.email %></td>
+                                <td>
+                                    <% if(u.role === 'ADMIN') { %>
+                                        <span class="badge" style="background-color: #ef4444; color: #fff; padding: 6px 10px; border-radius: 6px;">ADMIN</span>
+                                    <% } else { %>
+                                        <span class="badge" style="background-color: #f1f5f9; color: #475569; padding: 6px 10px; border-radius: 6px;">İSTİFADƏÇİ</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <small class="text-muted"><%= new Date(u.created_at).toLocaleDateString('az-AZ', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></small>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2 align-items-center">
+                                        <form action="/dashboard/istifadeci/rol/<%= u.id %>" method="POST" class="d-inline-flex gap-1" onsubmit="return confirm('İstifadəçi rolunu dəyişmək istədiyinizə əminsiniz?');">
+                                            <select name="role" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                                                <option value="USER" <%= u.role === 'USER' ? 'selected' : '' %>>İstifadəçi</option>
+                                                <option value="ADMIN" <%= u.role === 'ADMIN' ? 'selected' : '' %>>Admin</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-primary">Yenilə</button>
+                                        </form>
+                                        <form action="/dashboard/istifadeci/sil/<%= u.id %>" method="POST" onsubmit="return confirm('Bu istifadəçini silmək istədiyinizə əminsiniz?');" style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Sil">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Yeni İstifadəçi -->
+<div class="modal fade" id="newUserModal" tabindex="-1" aria-labelledby="newUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius: 12px; border: none;">
+            <div class="modal-header border-bottom border-light">
+                <h5 class="modal-title fw-bold" id="newUserModalLabel" style="color: #1e293b;">Yeni İstifadəçi Yaradın</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createUserForm">
+                <div class="modal-body p-4" id="step1">
+                    <div class="alert alert-danger d-none" id="errorMsg"></div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-medium small mb-1">Ad <span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="name" class="form-control focus-ring-orange" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-medium small mb-1">E-poçt ünvanı <span class="text-danger">*</span></label>
+                        <input type="email" name="email" id="email" class="form-control focus-ring-orange" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-medium small mb-1">Telefon Nömrəsi <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">+994</span>
+                            <input type="text" name="phone" id="phone" class="form-control focus-ring-orange" placeholder="Məs: 501234567" required pattern="[0-9]{9}" title="Nömrə 9 rəqəmli olmalıdır (Məs: 501234567)">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-medium small mb-1">Şifrə <span class="text-danger">*</span></label>
+                        <input type="password" name="password" id="password" class="form-control focus-ring-orange" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-medium small mb-1">Rol</label>
+                        <select name="role" id="role" class="form-select focus-ring-orange">
+                            <option value="USER">İstifadəçi</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="modal-body p-4 d-none" id="step2">
+                    <div class="alert alert-danger d-none" id="otpErrorMsg"></div>
+                    <div class="alert alert-success d-none" id="otpSuccessMsg">WhatsApp nömrəsinə kod göndərildi.</div>
+                    <p class="text-muted small mb-3">Daxil etdiyiniz nömrənin (<span id="displayPhone" class="fw-bold text-dark"></span>) WhatsApp hesabına təsdiq kodu göndərildi.</p>
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-medium small mb-1">Təsdiq Kodu <span class="text-danger">*</span></label>
+                        <input type="text" id="otp" inputmode="numeric" pattern="\d{6}" maxlength="6" class="form-control focus-ring-orange text-center" style="letter-spacing: 5px; font-size: 1.2rem; font-weight: bold;" placeholder="• • • • • •">
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top border-light">
+                    <button type="button" class="btn btn-light border px-4" data-bs-dismiss="modal" style="font-weight: 500; border-radius: 8px;">Ləğv et</button>
+                    <button type="button" id="btnSendCode" class="btn btn-primary px-4" style="font-weight: 500; border-radius: 8px;">Kod Göndər</button>
+                    <button type="button" id="btnVerifyAndCreate" class="btn btn-success px-4 d-none" style="font-weight: 500; border-radius: 8px;">Təsdiqlə və Yarat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .focus-ring-orange:focus {
+        border-color: var(--brand-orange) !important;
+        box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1) !important;
+        outline: none;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnSendCode = document.getElementById('btnSendCode');
+    const btnVerifyAndCreate = document.getElementById('btnVerifyAndCreate');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const errorMsg = document.getElementById('errorMsg');
+    const otpErrorMsg = document.getElementById('otpErrorMsg');
+    const otpSuccessMsg = document.getElementById('otpSuccessMsg');
+
+    btnSendCode.addEventListener('click', async function() {
+        // Validation
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if(!name || !email || !phone || !password) {
+            errorMsg.textContent = "Zəhmət olmasa bütün sahələri doldurun.";
+            errorMsg.classList.remove('d-none');
+            return;
+        }
+
+        if(!/^[0-9]{9}$/.test(phone)) {
+            errorMsg.textContent = "Telefon nömrəsi yalnız 9 rəqəmdən ibarət olmalıdır (Məs: 501234567).";
+            errorMsg.classList.remove('d-none');
+            return;
+        }
+
+        errorMsg.classList.add('d-none');
+        btnSendCode.disabled = true;
+        btnSendCode.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Göndərilir...';
+
+        try {
+            const res = await fetch('/dashboard/api/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: '994' + phone })
+            });
+            const data = await res.json();
+
+            if(data.success) {
+                // Switch to step 2
+                document.getElementById('displayPhone').textContent = '+994 ' + phone;
+                step1.classList.add('d-none');
+                step2.classList.remove('d-none');
+                btnSendCode.classList.add('d-none');
+                btnVerifyAndCreate.classList.remove('d-none');
+                otpSuccessMsg.classList.remove('d-none');
+            } else {
+                errorMsg.textContent = data.message || "Xəta baş verdi.";
+                errorMsg.classList.remove('d-none');
+            }
+        } catch(e) {
+            errorMsg.textContent = "Server xətası: " + e.message;
+            errorMsg.classList.remove('d-none');
+        } finally {
+            btnSendCode.disabled = false;
+            btnSendCode.textContent = 'Kod Göndər';
+        }
+    });
+
+    btnVerifyAndCreate.addEventListener('click', async function() {
+        const otp = document.getElementById('otp').value.trim();
+        if (!/^\d{6}$/.test(otp)) {
+            otpErrorMsg.textContent = "Təsdiq kodu 6 rəqəmdən ibarət olmalıdır.";
+            otpErrorMsg.classList.remove('d-none');
+            return;
+        }
+
+        otpErrorMsg.classList.add('d-none');
+        btnVerifyAndCreate.disabled = true;
+        btnVerifyAndCreate.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Yoxlanılır...';
+
+        const payload = {
+            name: document.getElementById('name').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            phone: '994' + document.getElementById('phone').value.trim(),
+            password: document.getElementById('password').value.trim(),
+            role: document.getElementById('role').value,
+            otp: otp
+        };
+
+        try {
+            const res = await fetch('/dashboard/istifadeci/yarat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            // It could redirect (since the backend might send a redirect status or HTML)
+            if (res.redirected) {
+                window.location.href = res.url;
+            } else {
+                const data = await res.json();
+                if(data.success) {
+                    window.location.href = '/dashboard/istifadeciler?created=true';
+                } else {
+                    otpErrorMsg.textContent = data.message || "Xəta baş verdi.";
+                    otpErrorMsg.classList.remove('d-none');
+                }
+            }
+        } catch(e) {
+            otpErrorMsg.textContent = "Server xətası: " + e.message;
+            otpErrorMsg.classList.remove('d-none');
+        } finally {
+            btnVerifyAndCreate.disabled = false;
+            btnVerifyAndCreate.textContent = 'Təsdiqlə və Yarat';
+        }
+    });
+});
+</script>
+
+<%- include('partials/footer') %>

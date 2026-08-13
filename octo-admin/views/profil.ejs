@@ -1,0 +1,193 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-bold" style="color: #1e293b;">Profil Ayarları</h4>
+</div>
+
+<% if (typeof success !== 'undefined' && success) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> <%= success %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+
+<div class="row">
+    <!-- Profil Məlumatları -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 pt-4 pb-0">
+                <h5 class="fw-bold mb-0">Məlumatları Yenilə</h5>
+            </div>
+            <div class="card-body p-4">
+                <form action="/dashboard/profil/update" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-medium small mb-1">Ad və Soyad</label>
+                        <input type="text" name="name" class="form-control" value="<%= user.name %>" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-medium small mb-1">Profil Şəkli</label>
+                        <div class="d-flex align-items-center mb-3">
+                            <% if (user.profile_picture) { %>
+                                <img src="<%= user.profile_picture %>" alt="Profil Şəkli" class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover; border: 2px solid #e2e8f0;">
+                            <% } else { %>
+                                <div class="rounded-circle me-3 d-flex justify-content-center align-items-center bg-light text-secondary" style="width: 80px; height: 80px; border: 2px solid #e2e8f0; font-size: 2rem;">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                            <% } %>
+                            <div>
+                                <input type="file" name="profile_picture" class="form-control" accept="image/*">
+                                <div class="form-text text-muted mt-1" style="font-size: 0.8rem;">İcazə verilən formatlar: JPG, PNG, GIF. Maksimum 5MB.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-medium small mb-1">E-poçt (Email)</label>
+                        <div class="input-group">
+                            <input type="email" name="email" class="form-control" value="<%= user.email %>" required>
+                        </div>
+                        <div class="form-text text-muted mt-1" style="font-size: 0.8rem;">
+                            Məlumatları (xüsusən də nömrəni) dəyişmək üçün təhlükəsizlik məqsədilə cari və ya yeni yazdığınız WhatsApp nömrəsinə təsdiq kodu göndərməyiniz mütləqdir.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted fw-medium small mb-1">Mobil Nömrə</label>
+                        <div class="input-group">
+                            <input type="text" name="phone" id="phoneUpdateInput" class="form-control" value="<%= user.phone %>" required>
+                            <button type="button" class="btn btn-outline-secondary" onclick="requestProfileOTP()">Kodu Göndər</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-4" id="otpSection" style="display: none;">
+                        <label class="form-label text-muted fw-medium small mb-1 text-orange-600">Təsdiq Kodu (OTP)</label>
+                        <input type="text" name="otp" id="otpUpdateInput" inputmode="numeric" pattern="\d{6}" maxlength="6" class="form-control text-center font-bold tracking-[0.5em]" placeholder="• • • • • •">
+                        <div class="form-text text-muted mt-1" style="font-size: 0.8rem;">Məlumatlarınızı yeniləmək üçün yuxarıdakı nömrəyə göndərilən kodu bura daxil edin.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius: 8px;">
+                        <i class="bi bi-save me-1"></i> Yadda saxla
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hesabı Sil -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-0 border-danger border-top border-3 h-100">
+            <div class="card-header bg-white border-0 pt-4 pb-0">
+                <h5 class="fw-bold mb-0 text-danger">Təhlükəli Zona</h5>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted small mb-4">
+                    Hesabınızı sildiyiniz təqdirdə platformadakı bütün aktiv elanlarınız, məlumatlarınız və daşıma tarixçəniz qalıcı olaraq silinəcək və bu əməliyyat geri qaytarıla bilməz.
+                </p>
+                <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                    <i class="bi bi-trash3 me-1"></i> Hesabı Sil
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hesabı Sil Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-danger text-white border-0" style="border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold">Hesabın Silinməsi</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/dashboard/profil/sil" method="POST">
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-exclamation-octagon-fill text-danger" style="font-size: 4rem;"></i>
+                    </div>
+                    <p class="mb-3 fw-medium text-center">Bu əməliyyatı geri qaytarmaq mümkün deyil.</p>
+                    <p class="text-muted small mb-4">
+                        Hörmətli istifadəçi, hesabınızı sildiyiniz andan etibarən:
+                    </p>
+                    <ul class="text-muted small mb-4 text-start bg-light p-3 rounded-3">
+                        <li>Dərc etdiyiniz bütün aktiv və gözləmədə olan elanlar silinəcək.</li>
+                        <li>Platformadakı fəaliyyət tarixçəniz (baxışlar, seçilmişlər və s.) sıfırlanacaq.</li>
+                        <li>Sistemə giriş etmək üçün yenidən qeydiyyatdan keçməyiniz tələb olunacaq.</li>
+                    </ul>
+
+                    <div class="form-check text-start mt-4 bg-danger bg-opacity-10 p-3 rounded-3 border border-danger border-opacity-25">
+                        <input class="form-check-input ms-1 border-danger" type="checkbox" id="confirmDelete" required>
+                        <label class="form-check-label ms-2 small fw-medium text-danger" for="confirmDelete">
+                            Bəli, hesabımın və ona aid bütün məlumatların (elanlar daxil olmaqla) daimi olaraq silinməsini qəbul edirəm.
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 justify-content-between">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">İmtina et</button>
+                    <button type="submit" class="btn btn-danger px-4 fw-bold">Hesabı Qalıcı Sil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script>
+    // Client-side OTP validation on profile form submit
+    document.querySelector('form[action="/dashboard/profil/update"]').addEventListener('submit', function(e) {
+        const otpSection = document.getElementById('otpSection');
+        if (otpSection && otpSection.style.display !== 'none') {
+            const otpVal = document.getElementById('otpUpdateInput').value.trim();
+            if (!/^\d{6}$/.test(otpVal)) {
+                e.preventDefault();
+                Toastify({ text: "Təsdiq kodu 6 rəqəmdən ibarət olmalıdır.", backgroundColor: "#ef4444" }).showToast();
+                document.getElementById('otpUpdateInput').focus();
+            }
+        }
+    });
+
+    async function requestProfileOTP() {
+        const phoneInput = document.getElementById('phoneUpdateInput');
+        let phone = phoneInput.value.replace(/[^0-9]/g, '');
+
+        if(phone.length < 8) {
+            Toastify({ text: "Düzgün nömrə daxil edin.", backgroundColor: "#ef4444" }).showToast();
+            return;
+        }
+
+        if (!phone.startsWith('994') && phone.length === 9) {
+            phone = '994' + phone;
+        }
+
+        Toastify({ text: "OTP göndərilir...", backgroundColor: "#f97316" }).showToast();
+
+        try {
+            const response = await fetch('/dashboard/api/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone })
+            });
+            const data = await response.json();
+            
+            if(data.success) {
+                Toastify({ text: "OTP kodu göndərildi. Zəhmət olmasa daxil edin.", backgroundColor: "#10b981" }).showToast();
+                document.getElementById('otpSection').style.display = 'block';
+                document.getElementById('otpUpdateInput').required = true;
+            } else {
+                Toastify({ text: "Xəta: " + data.message, backgroundColor: "#ef4444" }).showToast();
+            }
+        } catch (error) {
+            Toastify({ text: "Şəbəkə xətası baş verdi.", backgroundColor: "#ef4444" }).showToast();
+        }
+    }
+</script>
+
+<%- include('partials/footer') %>

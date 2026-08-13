@@ -1,0 +1,13 @@
+.git
+.env
+.env.*
+stack.env
+node_modules
+*.map
+*.log
+admin_test_results.txt
+test_report.txt
+octo-admin/data
+octo-admin/uploads
+public/uploads
+.DS_Store

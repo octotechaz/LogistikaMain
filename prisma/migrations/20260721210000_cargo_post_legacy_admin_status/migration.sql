@@ -1,0 +1,3 @@
+-- `legacyAdminStatus` is created by the preceding legacy-parity migration.
+-- Keep this migration as a no-op so Prisma records the originally planned step
+-- without attempting to add the same PostgreSQL column twice.

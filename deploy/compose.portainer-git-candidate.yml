@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:16.6
+    # pull_policy: never
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_DB: ${POSTGRES_DB:?required}
+    volumes:
+      - /datastore/logistika/postgres-git-candidate:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - logistika-internal
+
+  app:
+    build: ..
+    image: logistika-git-candidate:20260804
+    pull_policy: build
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    command: >
+      sh -c "chmod -R 777 /app/public/uploads /app/octo-admin/uploads /app/octo-admin/data 2>/dev/null || true; npx prisma migrate deploy && npm run start"
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      DATABASE_URL: ${DATABASE_URL:?required}
+      JWT_SECRET: ${JWT_SECRET:?required}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?required}
+      SESSION_SECRET: ${SESSION_SECRET:?required}
+      PUBLIC_SITE_HOST: ${PUBLIC_SITE_HOST:?required}
+      PORTAL_HOST: ${PORTAL_HOST:?required}
+      ADMIN_HOST: ${ADMIN_HOST:?required}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:?required}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:?required}
+      CORS_ORIGIN: ${CORS_ORIGIN:?required}
+      INTERNAL_ADMIN_URL: http://127.0.0.1:3005
+      INTERNAL_BACKEND_URL: http://127.0.0.1:4001
+      OCTO_ADMIN_HOST: 127.0.0.1
+      OCTO_ADMIN_PORT: "3005"
+      BACKEND_HOST: 127.0.0.1
+      BACKEND_PORT: "4001"
+      UPLOAD_DIR: /app/public/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - /datastore/logistika/git-candidate/uploads:/app/octo-admin/uploads
+      - /datastore/logistika/git-candidate/uploads:/app/public/uploads
+      - /datastore/logistika/git-candidate/data:/app/octo-admin/data
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+      - /home/node
+    networks:
+      - octobot-net
+      - logistika-internal
+networks:
+  octobot-net:
+    external: true
+    name: octobot-net
+  logistika-internal:
+    name: logistika-git-candidate-internal
+    internal: true

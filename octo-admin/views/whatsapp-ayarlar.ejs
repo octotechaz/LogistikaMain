@@ -1,0 +1,185 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-bold" style="color: #1e293b;">WhatsApp Ayarları</h4>
+</div>
+
+<% if (flash) { %>
+    <div id="flashBanner" class="alert <%= flash.type === 'error' ? 'alert-danger' : 'alert-success' %> mb-4" role="alert">
+        <i class="bi <%= flash.type === 'error' ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill' %> me-2"></i>
+        <%= flash.message %>
+    </div>
+<% } %>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+            <div class="card-body p-4 text-center">
+                <% if (whatsapp.status === 'error') { %>
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <%= whatsapp.error %>
+                    </div>
+                    <p class="text-muted">Lütfən backend serverin (port: 4001) işlədiyindən əmin olun.</p>
+                    <button type="button" onclick="window.location.reload()" class="btn btn-primary mt-3 px-4" style="border-radius: 8px;">
+                        Yenidən yoxla
+                    </button>
+                <% } else if (whatsapp.status === 'connected') { %>
+                    <div class="my-2">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-whatsapp" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <h4 class="fw-bold text-success mb-2">Bağlantı Uğurludur</h4>
+                        <% if (connectedPhone) { %>
+                            <p class="text-dark fw-semibold mb-2">
+                                <i class="bi bi-phone me-1"></i> Bağlı nömrə: <code><%= connectedPhone %></code>
+                            </p>
+                            <p class="text-muted mb-4">Yeni elan bildirişləri bu QR ilə bağlanmış nömrəyə göndərilir.</p>
+                        <% } else { %>
+                            <p class="text-muted mb-4">Sistem WhatsApp-a qoşulub və bildiriş göndərməyə hazırdır.</p>
+                        <% } %>
+
+                        <form action="/dashboard/whatsapp/logout" method="POST" onsubmit="return confirm('WhatsApp hesabından çıxış etmək istədiyinizə əminsiniz?');">
+                            <button type="submit" class="btn btn-outline-danger px-4 py-2" style="font-weight: 500; border-radius: 8px;">
+                                <i class="bi bi-box-arrow-right me-2"></i> Çıxış et
+                            </button>
+                        </form>
+                    </div>
+                <% } else if (whatsapp.status === 'qr_ready' && qrDataUrl) { %>
+                    <div class="my-2">
+                        <h5 class="fw-bold mb-2 text-dark">WhatsApp Web vasitəsilə daxil olun</h5>
+                        <p class="text-muted mb-4">Aşağıdakı QR kodu telefonunuzdakı WhatsApp tətbiqindən oxudun.</p>
+
+                        <div class="p-3 bg-white border rounded-3 d-inline-block shadow-sm">
+                            <img id="waQrImage" src="<%= qrDataUrl %>" alt="WhatsApp QR Code" class="img-fluid" style="width: 250px; height: 250px;">
+                        </div>
+
+                        <p id="waStatusText" class="text-muted small mt-3 mb-0">QR kod avtomatik yenilənir...</p>
+                    </div>
+                <% } else { %>
+                    <div class="my-4">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Yüklənir...</span>
+                        </div>
+                        <h5 class="mt-4 fw-bold">Sistem Hazırlanır...</h5>
+                        <p id="waStatusText" class="text-muted mb-0">WhatsApp servisi başladılır, lütfən gözləyin.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0 h-100" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-2 text-dark">Bildiriş Ayarları</h5>
+                <p class="text-muted mb-4" style="font-size: 0.92rem;">
+                    Yeni elan yaradıldıqda onay gözləyən bildiriş əvvəlcə QR ilə bağlanmış WhatsApp nömrəsinə gedir.
+                    İstəsəniz əlavə admin nömrələri də yaza bilərsiniz.
+                </p>
+
+                <form action="/dashboard/whatsapp/phone" method="POST">
+                    <div class="mb-3">
+                        <label for="adminPhones" class="form-label fw-semibold">Əlavə bildiriş nömrələri</label>
+                        <textarea
+                            class="form-control"
+                            id="adminPhones"
+                            name="phones"
+                            rows="6"
+                            placeholder="994501234567&#10;994509876543&#10;0501112233"
+                        ><%= typeof adminPhone !== 'undefined' ? adminPhone : '' %></textarea>
+                        <div class="form-text mt-2">
+                            Boş buraxsanız, yalnız QR ilə bağlanmış nömrə istifadə olunur.
+                        </div>
+                    </div>
+
+                    <% if (Array.isArray(adminPhones) && adminPhones.length > 0) { %>
+                        <div class="mb-3">
+                            <div class="small fw-semibold text-secondary mb-2">Aktiv bildiriş nömrələri</div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <% adminPhones.forEach(function(phone) { %>
+                                    <span class="badge rounded-pill text-bg-light border px-3 py-2">
+                                        <i class="bi bi-whatsapp text-success me-1"></i><%= phone %>
+                                        <% if (connectedPhone && phone === connectedPhone) { %>
+                                            <span class="text-muted">(QR)</span>
+                                        <% } %>
+                                    </span>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-save me-1"></i> Nömrələri yadda saxla
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="small text-muted">
+                    <div class="fw-semibold text-dark mb-2">Necə işləyir?</div>
+                    <ol class="ps-3 mb-0">
+                        <li class="mb-2">Soldakı QR kodu oxudaraq WhatsApp hesabını qoşun.</li>
+                        <li class="mb-2">Bildirişlər avtomatik olaraq bu QR nömrəsinə gedir.</li>
+                        <li>İstəsəniz sağda əlavə admin nömrələri yaza bilərsiniz.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const qrImage = document.getElementById('waQrImage');
+        const statusText = document.getElementById('waStatusText');
+        const initialStatus = '<%= whatsapp.status %>';
+
+        if (initialStatus === 'connected' || initialStatus === 'error') {
+            return;
+        }
+
+        async function pollWhatsAppStatus() {
+            try {
+                const response = await fetch('/dashboard/whatsapp/status.json', {
+                    headers: { 'Accept': 'application/json' },
+                    cache: 'no-store'
+                });
+
+                if (!response.ok) {
+                    throw new Error('status fetch failed');
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'connected') {
+                    window.location.reload();
+                    return;
+                }
+
+                if (data.status === 'qr_ready' && data.qrDataUrl) {
+                    if (qrImage) {
+                        qrImage.src = data.qrDataUrl;
+                    }
+                    if (statusText) {
+                        statusText.textContent = 'QR kod yeniləndi. Telefonunuzdan oxudun.';
+                    }
+                    return;
+                }
+
+                if (statusText) {
+                    statusText.textContent = 'WhatsApp servisi hazırlanır...';
+                }
+            } catch (error) {
+                if (statusText) {
+                    statusText.textContent = 'Status yenilənmədi. Səhifə bir azdan yenilənəcək.';
+                }
+            }
+        }
+
+        pollWhatsAppStatus();
+        window.setInterval(pollWhatsAppStatus, 3000);
+    })();
+</script>
+
+<%- include('partials/footer') %>

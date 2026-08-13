@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş - Kargo Panel</title>
+    <!-- Tailwind CSS (CDN for quick styling) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafafa;
+        }
+        
+        .brand-text {
+            color: #0f172a;
+        }
+        .brand-highlight {
+            color: #f97316;
+        }
+        
+        .input-group-flat {
+            display: flex;
+            align-items: stretch;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background-color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .input-group-flat:focus-within {
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        .input-group-flat .prefix {
+            display: flex;
+            align-items: center;
+            padding: 0;
+            background-color: transparent;
+            border-right: 1px solid #e5e7eb;
+            position: relative;
+        }
+
+        .custom-select-wrapper {
+            position: relative;
+            width: 110px; /* Biraz daraltdık */
+        }
+
+        .custom-select-button {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0.85rem 10px;
+            background-color: transparent;
+            border: none;
+            border-right: 1px solid #e5e7eb;
+            color: #4b5563;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            outline: none;
+            height: 100%;
+        }
+
+        .custom-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: max-content; /* İçeriğe göre genişlesin, taşırmasın */
+            min-width: 160px;
+            margin-top: 4px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            max-height: 250px;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .custom-select-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .custom-select-option {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.1s;
+            font-size: 0.95rem;
+            color: #374151;
+            white-space: nowrap; /* Tek satırda kalmasını sağlar */
+        }
+
+        .custom-select-option:hover {
+            background-color: #f9fafb;
+        }
+
+        .custom-select-option.selected {
+            background-color: #fff7ed;
+            color: #ea580c;
+            font-weight: 600;
+        }
+
+        .country-flag-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .country-code-hint {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .input-group-flat input {
+            flex: 1;
+            padding: 0.85rem 1rem;
+            border: none;
+            outline: none;
+            font-size: 0.95rem;
+            background: transparent;
+            width: 100%;
+        }
+
+        .input-flat {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background-color: #fff;
+            color: #1f2937;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .input-flat:focus {
+            outline: none;
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        .identity-mode-tab {
+            padding: 0.5rem 0;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #64748b;
+            border-radius: 7px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .identity-mode-tab.is-active {
+            background-color: #fff;
+            color: #1f2937;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .identity-mode-tab:hover:not(.is-active) {
+            color: #374151;
+        }
+
+        .btn-primary-flat {
+            width: 100%;
+            padding: 0.85rem;
+            background-color: #f97316;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 10px;
+            border: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary-flat:hover {
+            background-color: #ea580c;
+        }
+
+
+        .features-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .feature-item {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background-color: rgba(249, 115, 22, 0.1);
+            color: #f97316;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Info Section (Left) -->
+    <div class="hidden lg:flex w-1/2 bg-orange-50/50 p-12 flex-col justify-center border-r border-slate-200">
+        <div class="max-w-md mx-auto">
+            <h1 class="text-4xl font-bold text-slate-900 mb-4 tracking-tight">İdarəetmə paneli</h1>
+            <p class="text-lg text-slate-600 mb-12">Yalnız səlahiyyətli əməkdaşlar üçün təhlükəsiz əməliyyat girişi.</p>
+
+            <h2 class="text-xl font-semibold text-orange-600 mb-6">Təhlükəsiz idarəetmə</h2>
+
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-900 text-lg">Əməliyyat nəzarəti</h3>
+                        <p class="text-slate-500 mt-1 text-sm leading-relaxed">Elanlar, istifadəçilər və əməliyyat vəziyyətləri üçün vahid idarəetmə mərkəzi.</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-900 text-lg">Səlahiyyətli giriş</h3>
+                        <p class="text-slate-500 mt-1 text-sm leading-relaxed">Giriş məlumatlarınızı paylaşmayın; fəaliyyətlər qorunan idarəetmə mühitində aparılır.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Section (Right) -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-6 bg-white">
+        <div class="w-full max-w-sm">
+            
+            <div class="mb-10 text-center lg:text-left">
+                <a href="<%= typeof publicAppUrl !== 'undefined' ? publicAppUrl : 'https://tranzit.az' %>" class="text-3xl font-bold tracking-tight brand-text inline-block mb-2">
+                    Tranzit.<span class="brand-highlight">az</span>
+                </a>
+                <p class="text-slate-500">Səlahiyyətli idarəetmə girişi</p>
+            </div>
+
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3">
+                    <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    <p class="text-sm text-red-800 font-medium"><%= error %></p>
+                </div>
+            <% } %>
+
+            <form action="/dashboard/login" method="POST">
+                
+                <div class="mb-5">
+                    <span class="block text-sm font-medium text-slate-700 mb-1.5" id="identityModeLabel">Giriş üsulu</span>
+                    <div class="grid grid-cols-2 rounded-lg bg-slate-100 p-1 mb-3" role="tablist" aria-labelledby="identityModeLabel">
+                        <button type="button" class="identity-mode-tab is-active" data-login-mode="phone" role="tab" aria-selected="true">Telefon nömrəsi</button>
+                        <button type="button" class="identity-mode-tab" data-login-mode="email" role="tab" aria-selected="false">E-poçt</button>
+                    </div>
+                    <div id="phoneIdentityPanel">
+                        <div class="input-group-flat">
+                            <div class="prefix p-0">
+                                <!-- Custom Modern Dropdown -->
+                                <div class="custom-select-wrapper" id="countrySelectWrapper">
+                                    <input type="hidden" id="countryCode" name="countryCode" value="994">
+                                    <button type="button" class="custom-select-button" id="countrySelectBtn">
+                                        <span id="countrySelectLabel">🇦🇿 +994</span>
+                                        <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" id="countrySelectArrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </button>
+                                    <div class="custom-select-dropdown" id="countrySelectDropdown">
+                                        <div class="custom-select-option selected" data-value="994"><div class="country-flag-name">🇦🇿 <span>Azərbaycan</span></div><span class="country-code-hint">+994</span></div>
+                                        <div class="custom-select-option" data-value="90"><div class="country-flag-name">🇹🇷 <span>Türkiyə</span></div><span class="country-code-hint">+90</span></div>
+                                        <div class="custom-select-option" data-value="995"><div class="country-flag-name">🇬🇪 <span>Gürcüstan</span></div><span class="country-code-hint">+995</span></div>
+                                        <div class="custom-select-option" data-value="7"><div class="country-flag-name">🇷🇺 <span>Rusiya</span></div><span class="country-code-hint">+7</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="text" id="phoneIdentityInput" name="identifier" class="input-flat" style="border: none; border-radius: 0;" placeholder="Yalnız yerli nömrə: 50 123 45 67" autocomplete="tel" autofocus>
+                        </div>
+                    </div>
+                    <div id="emailIdentityPanel" hidden>
+                        <input type="email" id="emailIdentityInput" name="identifier" disabled class="input-flat" placeholder="E-poçt ünvanınız" autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-sm font-medium text-slate-700">Şifrə</label>
+                    </div>
+                    <input type="password" name="password" class="input-flat" placeholder="••••••••" required>
+                </div>
+
+                <div class="flex items-center justify-between mb-6">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="remember" class="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                        <span class="text-sm text-slate-600 font-medium">Məni xatırla</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-primary-flat mb-4">Daxil ol</button>
+
+                <div class="text-center">
+                    <a href="<%= typeof publicAppUrl !== 'undefined' ? publicAppUrl : 'https://tranzit.az' %>" class="text-sm font-medium text-slate-500 hover:text-slate-800 transition inline-flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Ana səhifəyə qayıt
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+<script>
+    // Identity mode switching
+    const phoneIdentityPanel = document.getElementById('phoneIdentityPanel');
+    const emailIdentityPanel = document.getElementById('emailIdentityPanel');
+    const phoneIdentityInput = document.getElementById('phoneIdentityInput');
+    const emailIdentityInput = document.getElementById('emailIdentityInput');
+    const identityModeTabs = document.querySelectorAll('.identity-mode-tab');
+
+    function selectIdentityMode(mode) {
+        phoneIdentityPanel.hidden = mode !== 'phone';
+        emailIdentityPanel.hidden = mode !== 'email';
+        phoneIdentityInput.disabled = mode !== 'phone';
+        emailIdentityInput.disabled = mode !== 'email';
+        const inactiveInput = mode === 'phone' ? emailIdentityInput : phoneIdentityInput;
+        const activeInput = mode === 'phone' ? phoneIdentityInput : emailIdentityInput;
+        inactiveInput.value = '';
+        identityModeTabs.forEach((tab) => {
+            const selected = tab.dataset.loginMode === mode;
+            tab.classList.toggle('is-active', selected);
+            tab.setAttribute('aria-selected', String(selected));
+        });
+        activeInput.focus();
+    }
+
+    identityModeTabs.forEach((tab) => {
+        tab.addEventListener('click', () => selectIdentityMode(tab.dataset.loginMode));
+    });
+
+    // Custom Dropdown Logic
+    const countrySelectBtn = document.getElementById('countrySelectBtn');
+    const countrySelectDropdown = document.getElementById('countrySelectDropdown');
+    const countrySelectArrow = document.getElementById('countrySelectArrow');
+    const countrySelectLabel = document.getElementById('countrySelectLabel');
+    const countryCodeInput = document.getElementById('countryCode');
+    const countryOptions = document.querySelectorAll('.custom-select-option');
+
+    // Toggle dropdown
+    countrySelectBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        countrySelectDropdown.classList.toggle('open');
+        countrySelectArrow.style.transform = countrySelectDropdown.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0)';
+    });
+
+    // Select option
+    countryOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            const val = option.getAttribute('data-value');
+            const flag = option.querySelector('.country-flag-name').innerText.split(' ')[0];
+            const text = flag + ' +' + val;
+
+            countrySelectLabel.innerText = text;
+            countryCodeInput.value = val;
+            phoneIdentityInput.placeholder = 'Yalnız yerli nömrə: ' + (val === '90' ? '532 123 45 67' : val === '995' ? '555 123 456' : val === '7' ? '912 123 45 67' : '50 123 45 67');
+
+            countryOptions.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+
+            countrySelectDropdown.classList.remove('open');
+            countrySelectArrow.style.transform = 'rotate(0)';
+        });
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('countrySelectWrapper').contains(e.target)) {
+            countrySelectDropdown.classList.remove('open');
+            countrySelectArrow.style.transform = 'rotate(0)';
+        }
+    });
+</script>
+
+</body>
+</html>
