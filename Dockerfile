@@ -16,6 +16,17 @@ RUN npx prisma generate
 FROM deps AS build
 
 COPY . .
+
+# next.config.mjs loads in production mode during `next build` and requires
+# INTERNAL_ADMIN_URL. Runtime compose still overrides these.
+ENV INTERNAL_ADMIN_URL=http://127.0.0.1:3005
+ENV INTERNAL_BACKEND_URL=http://127.0.0.1:4001
+ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_APP_URL=https://tranzit.az
+ARG NEXTAUTH_URL=https://tranzit.az
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+
 RUN npm run build
 
 FROM base AS runtime

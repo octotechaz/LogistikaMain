@@ -8,15 +8,24 @@ import {
 
 const isProd = process.env.NODE_ENV === "production";
 
+function isNextBuild() {
+  return (
+    process.env.NEXT_PHASE === "phase-production-build" ||
+    process.env.npm_lifecycle_event === "build"
+  );
+}
+
 function resolveInternalAdminUrl() {
+  const fallback = `http://${LOOPBACK}:${OCTO_ADMIN_PORT}`;
   const value = process.env.INTERNAL_ADMIN_URL;
   if (!value) {
-    if (isProd) {
+    // `next build` sets NODE_ENV=production before runtime env exists (Docker/Portainer).
+    if (isProd && !isNextBuild()) {
       throw new Error(
         "INTERNAL_ADMIN_URL is required in production — refusing to start with a hardcoded default"
       );
     }
-    return `http://${LOOPBACK}:${OCTO_ADMIN_PORT}`;
+    return fallback;
   }
   if (isProd) {
     const result = validateInternalLoopbackUrl("INTERNAL_ADMIN_URL", value, OCTO_ADMIN_PORT);

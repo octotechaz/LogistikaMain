@@ -1,8 +1,11 @@
 .git
 .env
 .env.*
+!.env.example
+env
 stack.env
 node_modules
+.next
 *.map
 *.log
 admin_test_results.txt
@@ -11,3 +14,5 @@ octo-admin/data
 octo-admin/uploads
 public/uploads
 .DS_Store
+*.command
+tsconfig.tsbuildinfo
