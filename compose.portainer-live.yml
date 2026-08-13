@@ -18,8 +18,11 @@ services:
       - logistika-internal
 
   app:
-    build: .
-    image: logistika-app:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Do NOT set a public image name like logistika-app:latest — Portainer
+    # "Pull and redeploy" would try Docker Hub and fail with pull access denied.
     restart: unless-stopped
     init: true
     stop_grace_period: 30s
