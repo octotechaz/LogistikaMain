@@ -111,5 +111,19 @@ if (!migrated) {
   fail(lastHint || "prisma migrate deploy failed after retries");
 }
 
+console.log("Ensuring PostgreSQL admin user (not from Portainer env)...");
+{
+  const adminResult = spawnSync("node", ["scripts/ensure-postgres-admin.mjs"], {
+    env,
+    encoding: "utf8",
+    shell: false,
+  });
+  if (adminResult.stdout) process.stdout.write(adminResult.stdout);
+  if (adminResult.stderr) process.stderr.write(adminResult.stderr);
+  if (adminResult.status !== 0) {
+    fail("Failed to ensure PostgreSQL admin user");
+  }
+}
+
 const start = run("npm", ["run", "start"], env);
 process.exit(start);

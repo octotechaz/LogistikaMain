@@ -26,12 +26,16 @@ Kontroller:
 3. Traefik entrypoint adlari gercekten `web` ve `websecure` olmali; farkliysa Traefik compose'unu kontrol et.
 4. Portainer'da stack'i **Pull and redeploy** (recreate) et — label degisikligi rebuild gerektirmez ama container recreate gerekir.
 
-## Traefik yonlendirme mantigi
+## Admin giris (PostgreSQL)
 
-- `tranzit.az` ve `www.tranzit.az` -> Next.js public site (`3001`)
-- `portal.tranzit.az` -> Next.js portal (`3001`)
-- `admin.tranzit.az` -> octo-admin (`3005`)
-- `www.tranzit.az` istekleri `tranzit.az` adresine redirect edilir
+Admin hesabi Portainer env-de degil, PostgreSQL `User` tablosunda tutulur.
+Container start sirasinda `scripts/ensure-postgres-admin.mjs` ADMIN yoksa otomatik olusturur.
+
+- URL: `https://admin.tranzit.az/dashboard/login` (veya `/admin/login`)
+- Email: `admin@tranzit.az`
+- Sifre: `Password123!`
+
+Ilk giristen sonra sifreyi paneldan degistirmen onerilir.
 
 ## Gereksinimler
 

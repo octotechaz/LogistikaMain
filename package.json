@@ -21,6 +21,7 @@
     "typecheck": "tsc --noEmit",
     "prod:validate-env": "node scripts/validate-production-env.mjs",
     "prod:bootstrap-admin": "node scripts/bootstrap-production-admin.mjs",
+    "prod:ensure-admin": "node scripts/ensure-postgres-admin.mjs",
     "db:import-legacy-sqlite": "node scripts/legacy-sqlite-import.mjs",
     "hosts:local": "bash scripts/setup-local-hosts.sh",
     "traefik:local": "bash scripts/traefik-local.sh",

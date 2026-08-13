@@ -61,11 +61,23 @@ function makeLoginPostHandler(repository) {
 
         res.redirect(loginLandingPath(user.role));
       } else {
-        res.render("login", { error: "E-poçt (nömrə) və ya şifrə yanlışdır." });
+        res.render("login", {
+          error: "E-poçt (nömrə) və ya şifrə yanlışdır.",
+          adminPanel: true,
+          pageTitle: "Admin Giriş — Tranzit",
+          panelHeading: "Admin Panel",
+          panelSubheading: "Yalnız idarəçi hesabı ilə daxil olun",
+        });
       }
     } catch (error) {
       console.error(error);
-      res.render("login", { error: "Giriş zamanı xəta baş verdi." });
+      res.render("login", {
+        error: "Giriş zamanı xəta baş verdi.",
+        adminPanel: true,
+        pageTitle: "Admin Giriş — Tranzit",
+        panelHeading: "Admin Panel",
+        panelSubheading: "Yalnız idarəçi hesabı ilə daxil olun",
+      });
     }
   };
 }
@@ -92,7 +104,13 @@ function makeLoginGetHandler() {
     if (req.session.userId) {
       return res.redirect(loginLandingTarget(req.session.user && req.session.user.role, req.hostname || req.get("host") || ""));
     }
-    res.render("login", { error: null });
+    res.render("login", {
+      error: null,
+      adminPanel: true,
+      pageTitle: "Admin Giriş — Tranzit",
+      panelHeading: "Admin Panel",
+      panelSubheading: "Yalnız idarəçi hesabı ilə daxil olun",
+    });
   };
 }
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giriş - Kargo Panel</title>
+    <title><%= typeof pageTitle !== 'undefined' && pageTitle ? pageTitle : 'Admin Giriş — Tranzit' %></title>
     <!-- Tailwind CSS (CDN for quick styling) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -224,8 +224,8 @@
     <!-- Info Section (Left) -->
     <div class="hidden lg:flex w-1/2 bg-orange-50/50 p-12 flex-col justify-center border-r border-slate-200">
         <div class="max-w-md mx-auto">
-            <h1 class="text-4xl font-bold text-slate-900 mb-4 tracking-tight">İdarəetmə paneli</h1>
-            <p class="text-lg text-slate-600 mb-12">Yalnız səlahiyyətli əməkdaşlar üçün təhlükəsiz əməliyyat girişi.</p>
+            <h1 class="text-4xl font-bold text-slate-900 mb-4 tracking-tight"><%= typeof panelHeading !== 'undefined' && panelHeading ? panelHeading : 'Admin Panel' %></h1>
+            <p class="text-lg text-slate-600 mb-12"><%= typeof panelSubheading !== 'undefined' && panelSubheading ? panelSubheading : 'Yalnız idarəçi hesabı ilə daxil olun' %></p>
 
             <h2 class="text-xl font-semibold text-orange-600 mb-6">Təhlükəsiz idarəetmə</h2>
 
@@ -261,7 +261,7 @@
                 <a href="<%= typeof publicAppUrl !== 'undefined' ? publicAppUrl : 'https://tranzit.az' %>" class="text-3xl font-bold tracking-tight brand-text inline-block mb-2">
                     Tranzit.<span class="brand-highlight">az</span>
                 </a>
-                <p class="text-slate-500">Səlahiyyətli idarəetmə girişi</p>
+                <p class="text-slate-500"><%= typeof panelSubheading !== 'undefined' && panelSubheading ? panelSubheading : 'Admin hesabı ilə daxil olun' %></p>
             </div>
 
             <% if (typeof error !== 'undefined' && error) { %>
