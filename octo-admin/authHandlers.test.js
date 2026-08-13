@@ -278,3 +278,45 @@ test("makeLoginPostHandler: wrong password → render login error", async () => 
   assert.equal(rendered?.view, "login");
   assert.match(String(rendered?.locals?.error || ""), /yanlış/i);
 });
+
+test("makeLoginPostHandler: adminOnly rejects phone identifier without DB lookup", async () => {
+  let lookups = 0;
+  const { makeLoginPostHandler } = freshRequireHandlers({ ...PROD_HOSTS });
+  const handler = makeLoginPostHandler(
+    {
+      async findLoginUser() {
+        lookups += 1;
+        throw new Error("must not look up phone on admin login");
+      },
+      async verifyPassword() {
+        return false;
+      },
+    },
+    { adminOnly: true }
+  );
+
+  let rendered = null;
+  await handler(
+    {
+      body: { identifier: "501234567", countryCode: "994", password: "Password123!" },
+      hostname: "admin-logistika.octotech.az",
+      get: () => undefined,
+      session: { cookie: {} },
+    },
+    {
+      redirect() {
+        throw new Error("should not redirect");
+      },
+      render(view, locals) {
+        rendered = { view, locals };
+      },
+      status() {
+        return { json() {} };
+      },
+    }
+  );
+
+  assert.equal(lookups, 0);
+  assert.equal(rendered?.view, "login");
+  assert.match(String(rendered?.locals?.error || ""), /E-poçt/);
+});

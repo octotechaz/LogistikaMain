@@ -17,10 +17,25 @@ const AUTH_COOKIE = "azlog_token";
 
 const ADMIN_LOGIN_VIEW = {
   adminPanel: true,
+  emailOnly: true,
   pageTitle: "Admin Giriş — Tranzit",
-  panelHeading: "Admin Panel",
-  panelSubheading: "Yalnız idarəçi hesabı ilə daxil olun",
+  panelHeading: "Admin giriş",
+  panelSubheading: "İdarəetmə panelinə e-poçt ünvanınızla daxil olun.",
 };
+
+const EMAIL_IDENTIFIER = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const INVALID_ADMIN_LOGIN = "E-poçt və ya şifrə yanlışdır.";
+
+function resolveLoginIdentifier(body, adminOnly) {
+  const raw = String(body?.email || body?.identifier || body?.phone || "").trim();
+  if (adminOnly) {
+    return EMAIL_IDENTIFIER.test(raw) ? raw.toLowerCase() : "";
+  }
+  if (/^\+?[\d\s().-]+$/.test(raw)) {
+    return composeSelectedCountryPhone(body?.countryCode || "994", raw);
+  }
+  return raw;
+}
 
 /**
  * Factory for login POST handlers.
@@ -40,15 +55,20 @@ function makeLoginPostHandler(repository, options = {}) {
       return res.status(404).json({ error: "Not found" });
     }
 
-    const { identifier, email, phone, password, remember, countryCode } = req.body;
+    const { password, remember } = req.body;
 
     try {
-      let loginIdentifier = (identifier || phone || email || "").trim();
-      if (/^\+?[\d\s().-]+$/.test(loginIdentifier)) {
-        loginIdentifier = composeSelectedCountryPhone(countryCode || "994", loginIdentifier);
+      const loginIdentifier = resolveLoginIdentifier(req.body || {}, adminOnly);
+
+      if (adminOnly && !loginIdentifier) {
+        return res.render("login", {
+          error: INVALID_ADMIN_LOGIN,
+          formAction,
+          ...ADMIN_LOGIN_VIEW,
+        });
       }
 
-      const user = await repository.findLoginUser(loginIdentifier);
+      const user = loginIdentifier ? await repository.findLoginUser(loginIdentifier) : null;
 
       if (user && await repository.verifyPassword(password, user.password)) {
         if (adminOnly && user.role !== "ADMIN") {
@@ -72,7 +92,7 @@ function makeLoginPostHandler(repository, options = {}) {
         res.redirect(loginLandingPath(user.role));
       } else {
         res.render("login", {
-          error: "E-poçt (nömrə) və ya şifrə yanlışdır.",
+          error: adminOnly ? INVALID_ADMIN_LOGIN : "E-poçt (nömrə) və ya şifrə yanlışdır.",
           formAction,
           ...ADMIN_LOGIN_VIEW,
         });
