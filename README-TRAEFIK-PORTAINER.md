@@ -63,11 +63,27 @@ Deploy oncesi sunucuda bunlar hazir olmali:
 - `POSTGRES_DB`
 - `DATABASE_URL`
 
-`DATABASE_URL` container icinde `postgres` service adina bakmali. Ornek:
+`DATABASE_URL` container icinde `postgres` service adina bakmali ve sifresi `POSTGRES_PASSWORD` ile **ayni** olmali. Ornek:
 
 ```env
+POSTGRES_PASSWORD=super-secret-password
 DATABASE_URL=postgresql://logistika:super-secret-password@postgres:5432/logistika_prod?schema=public
 ```
+
+### Prisma P1000 (Authentication failed)
+
+Postgres volume (`/datastore/logistika/postgres-new`) ilk olusturulurken verilen sifreyi kalici tutar. Portainer'da sifreyi sonradan degistirmek DB'yi guncellemez.
+
+1. Portainer env'de `POSTGRES_PASSWORD` = volume ilk acildigindaki sifre
+2. Veya stack'i durdurup volume'u sifirla (VERI SILINIR):
+
+```bash
+docker compose down
+rm -rf /datastore/logistika/postgres-new
+mkdir -p /datastore/logistika/postgres-new
+```
+
+Sonra Portainer'da gercek (placeholder olmayan) sifrelerle yeniden Deploy et.
 
 ### Uygulama secret'lari
 
