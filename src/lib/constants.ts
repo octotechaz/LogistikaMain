@@ -1,4 +1,11 @@
 import type { ApplicationStatus, CargoStatus, Role, UserStatus, VehicleStatus } from "@prisma/client";
+import {
+  azerbaijanLocations as mapLocationLabels,
+  azerbaijanMapLocations,
+  carrierLocationOptions as mapCarrierLocationOptions,
+} from "@/lib/azerbaijan-map-locations";
+
+export { azerbaijanMapLocations, mapCarrierLocationOptions as carrierLocationOptions };
 
 export const appName = "Tranzit.AZ";
 
@@ -88,24 +95,7 @@ export const cargoTypes = [
   "Soyudulmuş məhsul"
 ];
 
-export const azerbaijanLocations = [
-  "Bakı",
-  "Sumqayıt",
-  "Gəncə",
-  "Mingəçevir",
-  "Şəki",
-  "Şamaxı",
-  "Quba",
-  "Xaçmaz",
-  "Lənkəran",
-  "Masallı",
-  "Şirvan",
-  "Naxçıvan",
-  "Qəbələ",
-  "Bərdə",
-  "Ağcabədi",
-  "Salyan"
-];
+export const azerbaijanLocations = mapLocationLabels;
 
 export const workDays = [
   "Bazar ertəsi",
@@ -116,18 +106,3 @@ export const workDays = [
   "Şənbə",
   "Bazar"
 ];
-
-export const carrierLocationOptions = [
-  { label: "Bakı", latitude: 40.409264, longitude: 49.867092 },
-  { label: "Sumqayıt", latitude: 40.589722, longitude: 49.66861 },
-  { label: "Xırdalan", latitude: 40.44808, longitude: 49.75502 },
-  { label: "Şamaxı", latitude: 40.63141, longitude: 48.64137 },
-  { label: "Qəbələ", latitude: 40.98139, longitude: 47.84582 },
-  { label: "Şəki", latitude: 41.19194, longitude: 47.17056 },
-  { label: "Gəncə", latitude: 40.68278, longitude: 46.36056 },
-  { label: "Mingəçevir", latitude: 40.77026, longitude: 47.0496 },
-  { label: "Bərdə", latitude: 40.37577, longitude: 47.12619 },
-  { label: "Lənkəran", latitude: 38.75428, longitude: 48.85062 },
-  { label: "Masallı", latitude: 39.03432, longitude: 48.6654 },
-  { label: "Quba", latitude: 41.36108, longitude: 48.51341 },
-] as const;

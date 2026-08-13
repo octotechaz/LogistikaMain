@@ -1,5 +1,5 @@
 import { fail, ok } from "@/lib/api";
-import { carrierLocationOptions } from "@/lib/constants";
+import { carrierLocationOptions } from "@/lib/azerbaijan-map-locations";
 
 function nearestCityLabel(lat: number, lng: number): string {
   let bestLabel: string = carrierLocationOptions[0].label;

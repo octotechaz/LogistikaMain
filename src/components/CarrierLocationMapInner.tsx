@@ -9,7 +9,7 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { carrierLocationOptions } from "@/lib/constants";
+import { carrierLocationOptions } from "@/lib/azerbaijan-map-locations";
 
 type LocationSelection = {
   label: string;
@@ -119,7 +119,7 @@ export function CarrierLocationMapInner({
             <CircleMarker
               key={city.label}
               center={[city.latitude, city.longitude]}
-              radius={active ? 10 : 7}
+              radius={active ? 8 : 6}
               pathOptions={{
                 color: active ? "#f97316" : "#102033",
                 fillColor: active ? "#f97316" : "#102033",
