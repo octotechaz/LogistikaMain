@@ -50,7 +50,7 @@ Deploy oncesi sunucuda bunlar hazir olmali:
    - `portal.tranzit.az`
    - `admin.tranzit.az`
 5. Sunucuda su volume path'leri yazilabilir olmali:
-   - `/datastore/logistika/postgres-16-logistika`
+   - `/datastore/logistika/postgres-16-v2`
    - `/datastore/logistika/uploads`
    - `/datastore/logistika/data`
 
@@ -82,13 +82,13 @@ DATABASE_URL=postgresql://logistika:super-secret-password@postgres:5432/logistik
 
 ### Prisma P1000 (Authentication failed)
 
-Postgres volume (`/datastore/logistika/postgres-16-logistika`) ilk olusturulurken verilen sifreyi kalici tutar. Portainer'da sifreyi sonradan degistirmek DB'yi guncellemez.
+Postgres volume (`/datastore/logistika/postgres-16-v2`) ilk olusturulurken verilen sifreyi kalici tutar. Portainer'da sifreyi sonradan degistirmek DB'yi guncellemez.
 
 1. Portainer **Environment variables** icine gercek degerleri yapistir (`replace-with-...` BIRAKMA).
 2. Sunucuda klasoru olustur:
 
 ```bash
-mkdir -p /datastore/logistika/postgres-16-logistika /datastore/logistika/uploads /datastore/logistika/data
+mkdir -p /datastore/logistika/postgres-16-v2 /datastore/logistika/uploads /datastore/logistika/data
 ```
 
 3. Eski bozuk volume icin (role logistika does not exist):
@@ -123,7 +123,7 @@ CORS_ORIGIN=https://tranzit.az,https://portal.tranzit.az,https://admin.tranzit.a
 
 Compose dosyasi su mount'lari kullanir:
 
-- `/datastore/logistika/postgres-16-logistika` -> PostgreSQL data
+- `/datastore/logistika/postgres-16-v2` -> PostgreSQL data
 - `/datastore/logistika/uploads` -> hem `public/uploads` hem `octo-admin/uploads`
 - `/datastore/logistika/data` -> `octo-admin/data` ve `data`
 

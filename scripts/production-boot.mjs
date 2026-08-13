@@ -91,12 +91,16 @@ for (let attempt = 1; attempt <= 20; attempt++) {
   if (/role ".*" does not exist/i.test(out)) {
     lastHint =
       "Postgres volume was initialized with a different user. " +
-      "Use the new volume path in compose (/datastore/logistika/postgres-16-logistika) or wipe the old volume.";
+      "Use the new volume path in compose (/datastore/logistika/postgres-16-v2) or wipe the old volume.";
     fail(lastHint);
   }
   if (/P1000|Authentication failed/i.test(out)) {
     lastHint =
-      "Wrong DB password for the existing volume, or volume not wiped after password change.";
+      "Wrong DB password for the existing Postgres volume.\n" +
+      "Portainer POSTGRES_PASSWORD must match the password used at first volume init.\n" +
+      "OR wipe old data and redeploy (DESTROYS DB):\n" +
+      "  rm -rf /datastore/logistika/postgres-16-logistika /datastore/logistika/postgres-16-v2 /datastore/logistika/postgres-new /datastore/logistika/postgres\n" +
+      "  mkdir -p /datastore/logistika/postgres-16-v2";
     fail(lastHint);
   }
   if (/P1012|nonempty URL|empty string/i.test(out)) {
