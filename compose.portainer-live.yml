@@ -78,35 +78,39 @@ services:
       - traefik.enable=true
       - traefik.docker.network=octobot-net
 
-      # Main site (Next.js - port 3001)
-      - traefik.http.routers.logistika-main.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
-      - traefik.http.routers.logistika-main.entrypoints=websecure
+      - traefik.http.routers.logistika-main.rule=Host(`tranzit.az`)
+      - traefik.http.routers.logistika-main.entrypoints=web,websecure
       - traefik.http.routers.logistika-main.tls=true
       - traefik.http.routers.logistika-main.tls.certresolver=letsencrypt
+      - traefik.http.routers.logistika-main.tls.domains[0].main=tranzit.az
+      - traefik.http.routers.logistika-main.tls.domains[0].sans=www.tranzit.az,portal.tranzit.az,admin.tranzit.az
+      - traefik.http.routers.logistika-main.priority=10
       - traefik.http.routers.logistika-main.service=logistika-main-svc
       - traefik.http.services.logistika-main-svc.loadbalancer.server.port=3001
-      - traefik.http.middlewares.logistika-www.redirectregex.regex=^https://www\\.tranzit\\.az/(.*)
+
+      - traefik.http.middlewares.logistika-www.redirectregex.regex=^https?://www\\.tranzit\\.az/(.*)
       - traefik.http.middlewares.logistika-www.redirectregex.replacement=https://tranzit.az/$${1}
       - traefik.http.middlewares.logistika-www.redirectregex.permanent=true
       - traefik.http.routers.logistika-www.rule=Host(`www.tranzit.az`)
-      - traefik.http.routers.logistika-www.entrypoints=websecure
+      - traefik.http.routers.logistika-www.entrypoints=web,websecure
       - traefik.http.routers.logistika-www.tls=true
       - traefik.http.routers.logistika-www.tls.certresolver=letsencrypt
       - traefik.http.routers.logistika-www.middlewares=logistika-www
+      - traefik.http.routers.logistika-www.priority=100
       - traefik.http.routers.logistika-www.service=logistika-main-svc
 
-      # Portal site (Next.js - port 3001)
       - traefik.http.routers.logistika-portal.rule=Host(`portal.tranzit.az`)
-      - traefik.http.routers.logistika-portal.entrypoints=websecure
+      - traefik.http.routers.logistika-portal.entrypoints=web,websecure
       - traefik.http.routers.logistika-portal.tls=true
       - traefik.http.routers.logistika-portal.tls.certresolver=letsencrypt
+      - traefik.http.routers.logistika-portal.priority=10
       - traefik.http.routers.logistika-portal.service=logistika-main-svc
 
-      # Admin site (octo-admin - port 3005)
       - traefik.http.routers.logistika-admin.rule=Host(`admin.tranzit.az`)
-      - traefik.http.routers.logistika-admin.entrypoints=websecure
+      - traefik.http.routers.logistika-admin.entrypoints=web,websecure
       - traefik.http.routers.logistika-admin.tls=true
       - traefik.http.routers.logistika-admin.tls.certresolver=letsencrypt
+      - traefik.http.routers.logistika-admin.priority=10
       - traefik.http.routers.logistika-admin.service=logistika-admin-svc
       - traefik.http.services.logistika-admin-svc.loadbalancer.server.port=3005
 

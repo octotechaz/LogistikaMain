@@ -13,12 +13,18 @@ Bu klasor, projenin Portainer + Traefik ile production deploy edilmesi icin ayri
 - `.env.example`
   Doldurulmasi gereken environment degiskenlerinin ornek dosyasi.
 
-## Desteklenen domainler
+## Traefik + Cloudflare
 
-- `tranzit.az`
-- `www.tranzit.az`
-- `portal.tranzit.az`
-- `admin.tranzit.az`
+`404 page not found` (duz text) Traefik'ten gelir: router eslesmedi.
+
+Bu stack router'lari hem `web` (:80) hem `websecure` (:443) uzerinde dinler.
+Cloudflare SSL/TLS modu icin onerilen: **Full** veya **Full (strict)**.
+
+Kontroller:
+1. App container `octobot-net` aginda olmali (Traefik ile ayni).
+2. Cloudflare DNS: `tranzit.az` / `www` / `portal` / `admin` -> sunucu IP (proxied OK).
+3. Traefik entrypoint adlari gercekten `web` ve `websecure` olmali; farkliysa Traefik compose'unu kontrol et.
+4. Portainer'da stack'i **Pull and redeploy** (recreate) et — label degisikligi rebuild gerektirmez ama container recreate gerekir.
 
 ## Traefik yonlendirme mantigi
 
