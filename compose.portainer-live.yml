@@ -18,11 +18,8 @@ services:
       - logistika-internal
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     image: logistika-app:latest
-    pull_policy: build
     restart: unless-stopped
     init: true
     stop_grace_period: 30s
@@ -68,101 +65,39 @@ services:
     networks:
       - octobot-net
       - logistika-internal
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "node -e \"fetch('http://127.0.0.1:3001/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\"",
-        ]
-      interval: 20s
-      timeout: 10s
-      retries: 6
-      start_period: 60s
     labels:
       - traefik.enable=true
       - traefik.docker.network=octobot-net
-
-      # Single service backends
       - traefik.http.services.tranzit-next.loadbalancer.server.port=3001
       - traefik.http.services.tranzit-admin.loadbalancer.server.port=3005
 
-      # IMPORTANT:
-      # Cloudflare terminates TLS (cert is Cloudflare/Google Trust).
-      # Origin often receives plain HTTP on :80 (Flexible) OR HTTPS on :443 (Full).
-      # Do NOT pin a single entrypoint — attach routers to ALL entrypoints.
-      # Unique router names avoid clash with other logistika stacks.
-
-      # --- HTTP :80 (Cloudflare Flexible / direct) ---
+      # HTTP :80 — Cloudflare Flexible / origin http
       - traefik.http.routers.tranzit-main-http.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
       - traefik.http.routers.tranzit-main-http.entrypoints=web
       - traefik.http.routers.tranzit-main-http.service=tranzit-next
-      - traefik.http.routers.tranzit-main-http.priority=20
-
       - traefik.http.routers.tranzit-portal-http.rule=Host(`portal.tranzit.az`)
       - traefik.http.routers.tranzit-portal-http.entrypoints=web
       - traefik.http.routers.tranzit-portal-http.service=tranzit-next
-      - traefik.http.routers.tranzit-portal-http.priority=20
-
       - traefik.http.routers.tranzit-admin-http.rule=Host(`admin.tranzit.az`)
       - traefik.http.routers.tranzit-admin-http.entrypoints=web
       - traefik.http.routers.tranzit-admin-http.service=tranzit-admin
-      - traefik.http.routers.tranzit-admin-http.priority=20
 
-      # --- HTTPS :443 (Cloudflare Full / direct TLS) ---
+      # HTTPS :443 — Cloudflare Full / direct TLS
       - traefik.http.routers.tranzit-main-https.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
       - traefik.http.routers.tranzit-main-https.entrypoints=websecure
       - traefik.http.routers.tranzit-main-https.tls=true
       - traefik.http.routers.tranzit-main-https.tls.certresolver=letsencrypt
       - traefik.http.routers.tranzit-main-https.service=tranzit-next
-      - traefik.http.routers.tranzit-main-https.priority=20
-
       - traefik.http.routers.tranzit-portal-https.rule=Host(`portal.tranzit.az`)
       - traefik.http.routers.tranzit-portal-https.entrypoints=websecure
       - traefik.http.routers.tranzit-portal-https.tls=true
       - traefik.http.routers.tranzit-portal-https.tls.certresolver=letsencrypt
       - traefik.http.routers.tranzit-portal-https.service=tranzit-next
-      - traefik.http.routers.tranzit-portal-https.priority=20
-
       - traefik.http.routers.tranzit-admin-https.rule=Host(`admin.tranzit.az`)
       - traefik.http.routers.tranzit-admin-https.entrypoints=websecure
       - traefik.http.routers.tranzit-admin-https.tls=true
       - traefik.http.routers.tranzit-admin-https.tls.certresolver=letsencrypt
       - traefik.http.routers.tranzit-admin-https.service=tranzit-admin
-      - traefik.http.routers.tranzit-admin-https.priority=20
-
-      # Alternate entrypoint names used by some Traefik installs
-      - traefik.http.routers.tranzit-main-http-alt.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
-      - traefik.http.routers.tranzit-main-http-alt.entrypoints=http
-      - traefik.http.routers.tranzit-main-http-alt.service=tranzit-next
-      - traefik.http.routers.tranzit-main-http-alt.priority=15
-
-      - traefik.http.routers.tranzit-main-https-alt.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
-      - traefik.http.routers.tranzit-main-https-alt.entrypoints=https
-      - traefik.http.routers.tranzit-main-https-alt.tls=true
-      - traefik.http.routers.tranzit-main-https-alt.service=tranzit-next
-      - traefik.http.routers.tranzit-main-https-alt.priority=15
-
-      - traefik.http.routers.tranzit-portal-http-alt.rule=Host(`portal.tranzit.az`)
-      - traefik.http.routers.tranzit-portal-http-alt.entrypoints=http
-      - traefik.http.routers.tranzit-portal-http-alt.service=tranzit-next
-      - traefik.http.routers.tranzit-portal-http-alt.priority=15
-
-      - traefik.http.routers.tranzit-portal-https-alt.rule=Host(`portal.tranzit.az`)
-      - traefik.http.routers.tranzit-portal-https-alt.entrypoints=https
-      - traefik.http.routers.tranzit-portal-https-alt.tls=true
-      - traefik.http.routers.tranzit-portal-https-alt.service=tranzit-next
-      - traefik.http.routers.tranzit-portal-https-alt.priority=15
-
-      - traefik.http.routers.tranzit-admin-http-alt.rule=Host(`admin.tranzit.az`)
-      - traefik.http.routers.tranzit-admin-http-alt.entrypoints=http
-      - traefik.http.routers.tranzit-admin-http-alt.service=tranzit-admin
-      - traefik.http.routers.tranzit-admin-http-alt.priority=15
-
-      - traefik.http.routers.tranzit-admin-https-alt.rule=Host(`admin.tranzit.az`)
-      - traefik.http.routers.tranzit-admin-https-alt.entrypoints=https
-      - traefik.http.routers.tranzit-admin-https-alt.tls=true
-      - traefik.http.routers.tranzit-admin-https-alt.service=tranzit-admin
-      - traefik.http.routers.tranzit-admin-https-alt.priority=15
 
 networks:
   octobot-net:
