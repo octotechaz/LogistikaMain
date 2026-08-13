@@ -71,8 +71,11 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=octobot-net
+      # All public hosts hit Next (:3001). Admin UI is proxied to octo-admin
+      # on 127.0.0.1:3005 via next.config rewrites (/dashboard, /octo-admin).
+      # Routing admin Host directly to :3005 caused Cloudflare 502 when
+      # octo-admin was still starting or briefly unavailable.
       - traefik.http.services.tranzit-next.loadbalancer.server.port=3001
-      - traefik.http.services.tranzit-admin.loadbalancer.server.port=3005
 
       # HTTP :80 — Cloudflare Flexible / origin http
       - traefik.http.routers.tranzit-main-http.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
@@ -83,7 +86,7 @@ services:
       - traefik.http.routers.tranzit-portal-http.service=tranzit-next
       - traefik.http.routers.tranzit-admin-http.rule=Host(`admin.tranzit.az`)
       - traefik.http.routers.tranzit-admin-http.entrypoints=web
-      - traefik.http.routers.tranzit-admin-http.service=tranzit-admin
+      - traefik.http.routers.tranzit-admin-http.service=tranzit-next
 
       # HTTPS :443 — Cloudflare Full / direct TLS
       - traefik.http.routers.tranzit-main-https.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
@@ -100,7 +103,7 @@ services:
       - traefik.http.routers.tranzit-admin-https.entrypoints=websecure
       - traefik.http.routers.tranzit-admin-https.tls=true
       - traefik.http.routers.tranzit-admin-https.tls.certresolver=letsencrypt
-      - traefik.http.routers.tranzit-admin-https.service=tranzit-admin
+      - traefik.http.routers.tranzit-admin-https.service=tranzit-next
 
 networks:
   octobot-net:
