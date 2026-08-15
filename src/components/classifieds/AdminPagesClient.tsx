@@ -438,6 +438,12 @@ export function AdminLoadsPageClient() {
     }
   }
 
+  const statusOptions = [
+    { value: "PENDING", label: "Gözləyir" },
+    { value: "APPROVED", label: "Təsdiqlənib" },
+    { value: "REJECTED", label: "Rədd edilib" }
+  ];
+
   return (
     <RequireAdmin>
       <DashboardShell
@@ -465,7 +471,7 @@ export function AdminLoadsPageClient() {
               .sort((left, right) => +new Date(right.createdAt) - +new Date(left.createdAt))
               .map((listing) => (
                 <div key={listing.id} className="surface-panel p-5">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-3">
                         <h2 className="text-lg font-semibold text-navy-900">{listing.title}</h2>
@@ -474,53 +480,45 @@ export function AdminLoadsPageClient() {
                       <p className="mt-2 text-sm text-slate-600">
                         {listing.pickupCity} → {listing.deliveryCity} • {listing.ownerName}
                       </p>
-                      <p className="mt-1 text-sm text-slate-500">{listing.description}</p>
+                      <p className="mt-1 text-sm text-slate-500 line-clamp-2">{listing.description}</p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-col gap-3 sm:items-end">
                       {effectiveStatus(listing) === "PENDING" ? (
-                        <>
-                          <Button
+                        <div className="flex flex-col gap-2">
+                          <select
                             disabled={busyId === listing.id}
-                            onClick={() => setAdminStatus(listing.id, "APPROVED")}
+                            onChange={(event) => {
+                              const newStatus = event.target.value as "APPROVED" | "REJECTED";
+                              if (newStatus === "REJECTED") {
+                                setReasons((current) => ({ ...current, [listing.id]: "" }));
+                              }
+                              setAdminStatus(listing.id, newStatus, newStatus === "REJECTED" ? reasons[listing.id] : undefined);
+                            }}
+                            className="form-select form-select-sm w-full sm:w-auto"
+                            defaultValue=""
                           >
-                            Təsdiq et
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            disabled={busyId === listing.id}
-                            onClick={() =>
-                              setAdminStatus(
-                                listing.id,
-                                "REJECTED",
-                                reasons[listing.id] || "Məlumat natamamdır"
-                              )
-                            }
-                          >
-                            Rədd et
-                          </Button>
-                        </>
-                      ) : null}
-                      {effectiveStatus(listing) === "ACTIVE" ? (
-                        <Button
-                          variant="secondary"
+                            <option value="" disabled>Status seçin</option>
+                            <option value="APPROVED">Təsdiq et</option>
+                            <option value="REJECTED">Rədd et</option>
+                          </select>
+                        </div>
+                      ) : (
+                        <select
                           disabled={busyId === listing.id}
-                          onClick={() => setAdminStatus(listing.id, "PENDING")}
+                          onChange={(event) => setAdminStatus(listing.id, event.target.value as "PENDING" | "APPROVED")}
+                          className="form-select form-select-sm w-full sm:w-auto"
+                          defaultValue={effectiveStatus(listing)}
                         >
-                          Yayımlamanı dayandır
-                        </Button>
-                      ) : null}
-                      {effectiveStatus(listing) === "REJECTED" ? (
-                        <Button
-                          variant="secondary"
-                          disabled={busyId === listing.id}
-                          onClick={() => setAdminStatus(listing.id, "PENDING")}
-                        >
-                          Yenidən gözləməyə al
-                        </Button>
-                      ) : null}
+                          <option value="APPROVED">Aktiv et</option>
+                          <option value="PENDING">Gözləyirə göndər</option>
+                          {effectiveStatus(listing) === "REJECTED" && (
+                            <option value="PENDING">Yenidən gözləməyə al</option>
+                          )}
+                        </select>
+                      )}
                       <Button
                         variant="ghost"
-                        className="text-red-600"
+                        className="text-red-600 self-end sm:self-auto"
                         disabled={busyId === listing.id}
                         onClick={() => removeListing(listing.id)}
                       >
@@ -528,7 +526,7 @@ export function AdminLoadsPageClient() {
                       </Button>
                     </div>
                   </div>
-                  {effectiveStatus(listing) === "PENDING" ? (
+                  {effectiveStatus(listing) === "REJECTED" ? (
                     <div className="mt-4">
                       <label className="form-label">
                         Rədd səbəbi
