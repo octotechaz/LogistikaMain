@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BarChart3,
   Boxes,
   CheckCircle2,
+  ChevronDown,
   Clock3,
   Megaphone,
   ShieldCheck,
@@ -351,6 +352,87 @@ export function AdminUsersPageClient() {
   );
 }
 
+const statusOptions = [
+  { value: "PENDING", label: "Gözləyir", color: "text-amber-600" },
+  { value: "APPROVED", label: "Təsdiqlənib", color: "text-emerald-600" },
+  { value: "REJECTED", label: "Rədd edilib", color: "text-red-600" }
+];
+
+function StatusDropdown({
+  value,
+  onChange,
+  disabled
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const currentLabel = statusOptions.find((option) => option.value === value)?.label || "Seçin";
+
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  return (
+    <div ref={rootRef} className="relative w-full min-w-[180px]">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((current) => !current)}
+        className="flex w-full items-center justify-between gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-left text-sm text-slate-700 shadow-sm outline-none transition hover:border-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-60"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span className="truncate">{currentLabel}</span>
+        <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform" />
+      </button>
+
+      {open ? (
+        <div className="absolute left-0 top-full z-40 mt-1 w-full min-w-[180px] rounded-md border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.14)]">
+          <div className="py-1" role="listbox">
+            {statusOptions.map((option) => (
+                <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50"
+                role="option"
+                aria-selected={value === option.value}
+              >
+                <span>{option.label}</span>
+                <span className={`text-xs font-semibold ${option.color}`}>{option.value}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function AdminLoadsPageClient() {
   const [listings, setListings] = useState<CargoListing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -438,12 +520,6 @@ export function AdminLoadsPageClient() {
     }
   }
 
-  const statusOptions = [
-    { value: "PENDING", label: "Gözləyir" },
-    { value: "APPROVED", label: "Təsdiqlənib" },
-    { value: "REJECTED", label: "Rədd edilib" }
-  ];
-
   return (
     <RequireAdmin>
       <DashboardShell
@@ -469,79 +545,58 @@ export function AdminLoadsPageClient() {
             {listings
               .slice()
               .sort((left, right) => +new Date(right.createdAt) - +new Date(left.createdAt))
-              .map((listing) => (
-                <div key={listing.id} className="surface-panel p-5">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="text-lg font-semibold text-navy-900">{listing.title}</h2>
-                        <StatusBadge status={effectiveStatus(listing)} />
-                      </div>
-                      <p className="mt-2 text-sm text-slate-600">
-                        {listing.pickupCity} → {listing.deliveryCity} • {listing.ownerName}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-500 line-clamp-2">{listing.description}</p>
-                    </div>
-                    <div className="flex flex-col gap-3 sm:items-end">
-                      {effectiveStatus(listing) === "PENDING" ? (
-                        <div className="flex flex-col gap-2">
-                          <select
-                            disabled={busyId === listing.id}
-                            onChange={(event) => {
-                              const newStatus = event.target.value as "APPROVED" | "REJECTED";
-                              if (newStatus === "REJECTED") {
-                                setReasons((current) => ({ ...current, [listing.id]: "" }));
-                              }
-                              setAdminStatus(listing.id, newStatus, newStatus === "REJECTED" ? reasons[listing.id] : undefined);
-                            }}
-                            className="form-select form-select-sm w-full sm:w-auto"
-                            defaultValue=""
-                          >
-                            <option value="" disabled>Status seçin</option>
-                            <option value="APPROVED">Təsdiq et</option>
-                            <option value="REJECTED">Rədd et</option>
-                          </select>
+              .map((listing) => {
+                const currentStatus = effectiveStatus(listing);
+                const isPending = currentStatus === "PENDING";
+                return (
+                  <div key={listing.id} className="surface-panel p-5">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h2 className="text-lg font-semibold text-navy-900">{listing.title}</h2>
+                          <StatusBadge status={currentStatus} />
                         </div>
-                      ) : (
-                        <select
+                        <p className="mt-2 text-sm text-slate-600">
+                          {listing.pickupCity} → {listing.deliveryCity} • {listing.ownerName}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500 line-clamp-2">{listing.description}</p>
+                      </div>
+                      <div className="flex flex-col gap-3 sm:items-end">
+                        <StatusDropdown
+                          value={currentStatus}
+                          onChange={(newStatus) => {
+                            const reason = newStatus === "REJECTED" ? (reasons[listing.id] || "Məlumat natamamdır") : undefined;
+                            setAdminStatus(listing.id, newStatus as "APPROVED" | "REJECTED" | "PENDING", reason);
+                          }}
                           disabled={busyId === listing.id}
-                          onChange={(event) => setAdminStatus(listing.id, event.target.value as "PENDING" | "APPROVED")}
-                          className="form-select form-select-sm w-full sm:w-auto"
-                          defaultValue={effectiveStatus(listing)}
-                        >
-                          <option value="APPROVED">Aktiv et</option>
-                          <option value="PENDING">Gözləyirə göndər</option>
-                          {effectiveStatus(listing) === "REJECTED" && (
-                            <option value="PENDING">Yenidən gözləməyə al</option>
-                          )}
-                        </select>
-                      )}
-                      <Button
-                        variant="ghost"
-                        className="text-red-600 self-end sm:self-auto"
-                        disabled={busyId === listing.id}
-                        onClick={() => removeListing(listing.id)}
-                      >
-                        Sil
-                      </Button>
-                    </div>
-                  </div>
-                  {effectiveStatus(listing) === "REJECTED" ? (
-                    <div className="mt-4">
-                      <label className="form-label">
-                        Rədd səbəbi
-                        <textarea
-                          className="form-field min-h-20"
-                          value={reasons[listing.id] || ""}
-                          onChange={(event) =>
-                            setReasons((current) => ({ ...current, [listing.id]: event.target.value }))
-                          }
                         />
-                      </label>
+                        <Button
+                          variant="ghost"
+                          className="text-red-600 self-end sm:self-auto"
+                          disabled={busyId === listing.id}
+                          onClick={() => removeListing(listing.id)}
+                        >
+                          Sil
+                        </Button>
+                      </div>
                     </div>
-                  ) : null}
-                </div>
-              ))}
+                    {isPending ? (
+                      <div className="mt-4">
+                        <label className="form-label">
+                          Rədd səbəbi
+                          <textarea
+                            className="form-field min-h-20"
+                            value={reasons[listing.id] || ""}
+                            onChange={(event) =>
+                              setReasons((current) => ({ ...current, [listing.id]: event.target.value }))
+                            }
+                          />
+                        </label>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
           </div>
         )}
       </DashboardShell>
