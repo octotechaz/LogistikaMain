@@ -537,38 +537,24 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
               </div>
 
               <div className="mt-5 rounded-[14px] border border-logistics-orange/65 px-5 py-4">
-                {isAuthorized ? (
-                  <div className="flex flex-col gap-3">
-                    <a
-                      href={`tel:${listing.ownerPhone}`}
-                      className="flex w-full items-center justify-center gap-2 rounded-[14px] bg-logistics-orange py-3 text-[1.05rem] font-semibold text-white shadow-[0_6px_20px_rgba(249,115,22,0.25)] transition hover:-translate-y-1 hover:bg-orange-600"
-                    >
-                      <PhoneCall className="h-5 w-5" />
-                      {listing.ownerPhone}
-                    </a>
-                    <a
-                      href={`https://wa.me/${listing.ownerPhone?.replace(/[^0-9]/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-slate-300 bg-white py-3 text-[1.02rem] font-semibold text-navy-900 shadow-sm transition hover:-translate-y-1 hover:bg-slate-50"
-                    >
-                      <MessageCircleMore className="h-5 w-5" />
-                      WhatsApp ilə yaz
-                    </a>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    <div className="rounded-[12px] bg-slate-50 p-4 text-center">
-                      <p className="text-[0.95rem] text-slate-600 font-medium">Əlaqə məlumatlarını görmək üçün sistemə daxil olun.</p>
-                      <Link
-                        href="/login"
-                        className="mt-3 inline-flex w-full items-center justify-center rounded-[12px] bg-logistics-orange py-2.5 font-semibold text-white transition hover:bg-orange-600"
-                      >
-                        Daxil ol
-                      </Link>
-                    </div>
-                  </div>
-                )}
+                <div className="flex flex-col gap-3">
+                  <a
+                    href={`tel:${listing.ownerPhone}`}
+                    className="flex w-full items-center justify-center gap-2 rounded-[14px] bg-logistics-orange py-3 text-[1.05rem] font-semibold text-white shadow-[0_6px_20px_rgba(249,115,22,0.25)] transition hover:-translate-y-1 hover:bg-orange-600"
+                  >
+                    <PhoneCall className="h-5 w-5" />
+                    {listing.ownerPhone}
+                  </a>
+                  <a
+                    href={`https://wa.me/${listing.ownerPhone?.replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-slate-300 bg-white py-3 text-[1.02rem] font-semibold text-navy-900 shadow-sm transition hover:-translate-y-1 hover:bg-slate-50"
+                  >
+                    <MessageCircleMore className="h-5 w-5" />
+                    WhatsApp ilə yaz
+                  </a>
+                </div>
 
                 <div className="mt-3 text-center">
                   <p className="text-[0.85rem] text-slate-500">
