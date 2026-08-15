@@ -1483,13 +1483,13 @@ export function CatalogPageClient({
 
           <div className="mt-4 min-h-[560px] sm:min-h-[520px] xl:min-h-[500px]">
             {categoryLoading ? (
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-5 grid-cols-2 xl:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, index) => (
                   <HomeListingCardSkeleton key={index} index={index} />
                 ))}
               </div>
             ) : hasHomeListings ? (
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-5 grid-cols-2 xl:grid-cols-4">
                 {latestHomeListings.map((listing) => (
                   <HomeListingCard key={listing.id} listing={listing} />
                 ))}
@@ -1544,7 +1544,7 @@ export function CatalogPageClient({
               </div>
 
               {homeView === "grid" ? (
-                <div className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="mt-5 grid gap-5 grid-cols-2 xl:grid-cols-4">
                   {homeInfinite.visibleItems.map((listing) => (
                     <HomeListingCard key={`all-grid-${listing.id}`} listing={listing} />
                   ))}
@@ -1731,14 +1731,20 @@ export function CatalogPageClient({
             </div>
 
             {sortedListings.length ? (
-              <div className="divide-y divide-slate-200">
+              <div className="grid gap-5 grid-cols-1 xl:grid-cols-2">
                 {loadsInfinite.visibleItems.map((listing) => (
-                  <CatalogListingRow key={listing.id} listing={listing} />
+                  <div key={listing.id} className="xl:col-span-1">
+                    <CatalogListingRow listing={listing} />
+                  </div>
                 ))}
                 {loadsInfinite.isLoadingMore
-                  ? Array.from({ length: 3 }).map((_, index) => <CatalogListingRowSkeleton key={`loads-skeleton-${index}`} />)
+                  ? Array.from({ length: 3 }).map((_, index) => (
+                      <CatalogListingRowSkeleton key={`loads-skeleton-${index}`} />
+                    ))
                   : null}
-                {loadsInfinite.hasMore ? <div ref={loadsInfinite.sentinelRef} className="h-6 w-full" aria-hidden="true" /> : null}
+                {loadsInfinite.hasMore ? (
+                  <div ref={loadsInfinite.sentinelRef} className="xl:col-span-2 h-6 w-full" aria-hidden="true" />
+                ) : null}
               </div>
             ) : (
               <div className="px-6 py-14 text-center">
