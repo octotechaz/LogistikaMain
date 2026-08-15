@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAuthToken } from "@/lib/jwt";
-import { hostPolicyResult, isAdminPath, isDelegatedToExpress } from "@/lib/hostPolicy";
+import { getNextHosts, hostPolicyResult, isAdminPath, isDelegatedToExpress } from "@/lib/hostPolicy";
 
 type MiddlewareRole = "CARRIER" | "CARGO_OWNER" | "DRIVER" | "DISPATCHER" | "OPERATOR" | "ADMIN";
 const authCookieName = "azlog_token";
@@ -48,6 +48,20 @@ function isAdminAllowedPath(pathname: string): boolean {
   return false;
 }
 
+function adminPanelAbsoluteUrl(): string {
+  const hosts = getNextHosts(process.env);
+  const host = hosts.admin;
+  const bare = host.split(":")[0].toLowerCase();
+  const isLocal =
+    bare === "localhost" ||
+    bare.endsWith(".localhost") ||
+    bare.endsWith(".lvh.me") ||
+    bare.endsWith(".tranzit.test") ||
+    bare === "127.0.0.1";
+  const scheme = isLocal || process.env.NODE_ENV !== "production" ? "http" : "https";
+  return `${scheme}://${host}/octo-admin`;
+}
+
 /** Segment-boundary-safe prefix match. */
 function segmentStartsWith(pathname: string, prefix: string): boolean {
   return pathname === prefix ||
@@ -82,14 +96,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(policy.location);
   }
 
-  // ADMIN confinement: only octo-admin / dashboard / uploads (+ logout / api/admin).
-  // Homepage, portal, and marketing pages redirect back into octo-admin.
+  // ADMIN confinement: public/portal/marketing pages → ADMIN_HOST octo-admin only.
   const token = request.cookies.get(authCookieName)?.value;
   if (token) {
     try {
       const payload = await verifyAuthToken(token);
       if (payload.role === "ADMIN" && !isAdminAllowedPath(pathname)) {
-        return NextResponse.redirect(new URL("/octo-admin", request.url));
+        return NextResponse.redirect(adminPanelAbsoluteUrl());
       }
     } catch {
       // Invalid token — fall through to normal auth handling.
@@ -121,6 +134,9 @@ export async function middleware(request: NextRequest) {
     const payload = await verifyAuthToken(token);
 
     if (!matchedRoute.roles.includes(payload.role)) {
+      if (payload.role === "ADMIN") {
+        return NextResponse.redirect(adminPanelAbsoluteUrl());
+      }
       return NextResponse.redirect(
         new URL(dashboardPathForRole(payload.role), request.url)
       );

@@ -500,9 +500,12 @@ test("makeRequireAuth: portal host unauthenticated → redirect to portal login"
 
 // ── Auth cleanup: no localStorage writes, no octo_user_data cookie ───────────
 
-test("makeLoginPostHandler: successful login → redirect, no cookie, no send with script", (t, done) => {
+test("makeLoginPostHandler: successful login → redirect, sets azlog_token, no localStorage script", (t, done) => {
   const bcrypt = require("bcryptjs");
-  const { makeLoginPostHandler } = freshAuthHandlers(PROD_ENV);
+  const { makeLoginPostHandler } = freshAuthHandlers({
+    ...PROD_ENV,
+    JWT_SECRET: "test-jwt-secret-at-least-32-characters-long",
+  });
 
   const plainPw = "testpw123";
   const hash = bcrypt.hashSync(plainPw, 10);
@@ -522,13 +525,13 @@ test("makeLoginPostHandler: successful login → redirect, no cookie, no send wi
   };
 
   let redirectedTo = null;
-  let cookieCalled = false;
+  let cookieName = null;
   let sentBody = null;
   const res = {
     status() { return this; },
     json() {},
     redirect(url) { redirectedTo = url; },
-    cookie() { cookieCalled = true; },
+    cookie(name) { cookieName = name; },
     send(body) { sentBody = body; },
     render() { throw new Error("must not render on success"); },
   };
@@ -536,7 +539,7 @@ test("makeLoginPostHandler: successful login → redirect, no cookie, no send wi
   Promise.resolve(handler(req, res))
     .then(() => {
       assert.ok(redirectedTo, "must redirect on successful login");
-      assert.equal(cookieCalled, false, "must NOT set octo_user_data cookie");
+      assert.equal(cookieName, "azlog_token", "must set azlog_token JWT for host confinement");
       assert.equal(sentBody, null, "must NOT send HTML with localStorage script");
       assert.equal(req.session.userId, fakeUser.id, "session.userId must be set");
       assert.deepEqual(req.session.user, { id: fakeUser.id, email: fakeUser.email, name: fakeUser.name, role: fakeUser.role });

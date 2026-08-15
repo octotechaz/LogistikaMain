@@ -225,6 +225,7 @@ test("makeLoginPostHandler: ADMIN credentials on ADMIN_HOST → session + landin
     session: { cookie: {} },
   };
   const res = {
+    cookie() {},
     redirect(url) {
       redirectTarget = url;
     },

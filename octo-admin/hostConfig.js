@@ -173,6 +173,15 @@ function authCookieClearOptions(nodeEnv = process.env.NODE_ENV) {
   };
 }
 
+/** Options for setting the Next.js azlog_token JWT cookie (Express; maxAge in ms). */
+function authCookieSetOptions(maxAgeMs = 7 * 24 * 60 * 60 * 1000, nodeEnv = process.env.NODE_ENV) {
+  const maxAge = Math.max(1000, Number(maxAgeMs) || 7 * 24 * 60 * 60 * 1000);
+  return {
+    ...authCookieClearOptions(nodeEnv),
+    maxAge,
+  };
+}
+
 /**
  * Extract the bare hostname from a Host header (strips optional :port).
  * @param {string} hostHeader
@@ -629,6 +638,7 @@ module.exports = {
   buildSessionOptions,
   resolveAuthCookieDomain,
   authCookieClearOptions,
+  authCookieSetOptions,
   // Login host/role policy
   loginGetHostPolicy,
   adminAuthGetHostPolicy,

@@ -6,10 +6,10 @@ const {
   loginPostHostPolicy,
   loginGetHostPolicy,
   adminAuthGetHostPolicy,
-  loginLandingPath,
   loginLandingTarget,
   requireAuthAction,
   isBrowserHtmlRequest,
+  authCookieSetOptions,
 } = require("./hostConfig");
 const { composeSelectedCountryPhone } = require("./phoneUtils");
 
@@ -37,6 +37,28 @@ function resolveLoginIdentifier(body, adminOnly) {
   return raw;
 }
 
+async function issueAuthCookie(res, user, cookieMaxAgeMs) {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret || !res || typeof res.cookie !== "function") return;
+
+  try {
+    const { SignJWT } = require("jose");
+    const token = await new SignJWT({
+      sub: String(user.id),
+      role: user.role,
+      email: user.email,
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime(Math.floor(cookieMaxAgeMs / 1000) + "s")
+      .sign(new TextEncoder().encode(jwtSecret));
+
+    res.cookie(AUTH_COOKIE, token, authCookieSetOptions(cookieMaxAgeMs));
+  } catch (err) {
+    console.error("[auth] failed to issue azlog_token", err);
+  }
+}
+
 /**
  * Factory for login POST handlers.
  *
@@ -50,7 +72,8 @@ function makeLoginPostHandler(repository, options = {}) {
   const formAction = adminOnly ? "/auth" : "/dashboard/login";
 
   return async function loginPostHandler(req, res) {
-    const preGate = preGateFn(req.hostname || req.get("host") || "");
+    const host = req.hostname || req.get("host") || "";
+    const preGate = preGateFn(host);
     if (preGate.action !== "allow") {
       return res.status(404).json({ error: "Not found" });
     }
@@ -75,7 +98,7 @@ function makeLoginPostHandler(repository, options = {}) {
           return res.status(404).json({ error: "Not found" });
         }
 
-        const hostCheck = loginPostHostPolicy(user.role, req.hostname || req.get("host") || "");
+        const hostCheck = loginPostHostPolicy(user.role, host);
         if (hostCheck.action !== "allow") {
           return res.status(404).json({ error: "Not found" });
         }
@@ -89,7 +112,10 @@ function makeLoginPostHandler(repository, options = {}) {
         }
         req.session.cookie.maxAge = cookieMaxAge;
 
-        res.redirect(loginLandingPath(user.role));
+        // ADMIN JWT confines public/portal browsing back to the admin panel.
+        await issueAuthCookie(res, user, cookieMaxAge);
+
+        return res.redirect(loginLandingTarget(user.role, host));
       } else {
         res.render("login", {
           error: adminOnly ? INVALID_ADMIN_LOGIN : "E-poçt (nömrə) və ya şifrə yanlışdır.",
