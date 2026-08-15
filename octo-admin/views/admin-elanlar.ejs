@@ -939,7 +939,13 @@
   cargos.forEach(function (c) { byId[String(c.id)] = c; });
 
   const modalEl = document.getElementById('elanDetailModal');
-  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  let modal = null;
+  function getModal() {
+    if (!modal) {
+      modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    }
+    return modal;
+  }
   const statusFilter = document.getElementById('elanStatusFilter');
   const searchInput = document.getElementById('elanSearchInput');
 
@@ -1130,7 +1136,7 @@
     const cargo = byId[String(id)];
     if (!cargo) return;
     renderDetail(cargo);
-    modal.show();
+    getModal().show();
 
     document.querySelectorAll('.elan-row.is-highlighted, .elan-card.is-highlighted').forEach(function (el) {
       el.classList.remove('is-highlighted');
@@ -1165,22 +1171,24 @@
   if (statusFilter) statusFilter.addEventListener('change', applyFilters);
   if (searchInput) searchInput.addEventListener('input', applyFilters);
 
-  // Re-apply after DataTables finishes initializing in footer
+  function initDeepLink() {
+    const params = new URLSearchParams(window.location.search);
+    const elanId = params.get('elan');
+    if (elanId && byId[String(elanId)]) {
+      const target = document.getElementById('elan-' + elanId) || document.getElementById('elan-card-' + elanId);
+      if (target) {
+        target.classList.add('is-highlighted');
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      openElan(elanId);
+    }
+  }
+
+  // Wait for footer scripts (Bootstrap / DataTables) before filters & deep-link modal
   window.addEventListener('load', function () {
     applyFilters();
+    initDeepLink();
   });
-
-  // Deep-link ?elan=ID
-  const params = new URLSearchParams(window.location.search);
-  const elanId = params.get('elan');
-  if (elanId && byId[String(elanId)]) {
-    const target = document.getElementById('elan-' + elanId) || document.getElementById('elan-card-' + elanId);
-    if (target) {
-      target.classList.add('is-highlighted');
-      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    setTimeout(function () { openElan(elanId); }, 250);
-  }
 })();
 </script>
 
