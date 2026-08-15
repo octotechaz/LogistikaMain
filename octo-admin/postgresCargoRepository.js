@@ -18,6 +18,14 @@ function resolvePostWhere(id) {
 }
 
 function makeCargoRepository(prisma) {
+  function formatPrice(value) {
+    if (value == null || value === "") return null;
+    if (typeof value === "object" && typeof value.toString === "function") {
+      return value.toString();
+    }
+    return String(value);
+  }
+
   function toDto(row) {
     const owner = row.owner || {};
     const lastName = owner.lastName || "";
@@ -26,26 +34,47 @@ function makeCargoRepository(prisma) {
       : owner.firstName || "";
 
     return {
-      id:                 row.legacySqliteId != null ? String(row.legacySqliteId) : String(row.id),
-      title:              row.cargoName,
-      cargo_type:         row.cargoType,
-      weight:             row.weight,
-      volume:             row.volume,
-      loading_city:       row.pickupCity,
-      unloading_city:     row.deliveryCity,
-      latest_pickup_date: row.pickupDeadlineDate,
-      created_at:         row.createdAt,
-      user_name:          userName,
-      user_email:         owner.email,
-      status:             row.legacyAdminStatus,
+      id:                   row.legacySqliteId != null ? String(row.legacySqliteId) : String(row.id),
+      title:                row.cargoName,
+      cargo_type:           row.cargoType,
+      description:          row.description || "",
+      weight:               row.weight,
+      volume:               row.volume,
+      length:               row.length,
+      width:                row.width,
+      height:               row.height,
+      quantity:             row.quantity,
+      loading_city:         row.pickupCity,
+      loading_address:      row.pickupAddress || "",
+      unloading_city:       row.deliveryCity,
+      unloading_address:    row.deliveryAddress || "",
+      pickup_date:          row.pickupDate || null,
+      latest_pickup_date:   row.pickupDeadlineDate,
+      loading_time:         row.legacyPickupTime || "",
+      transport_type:       row.requiredVehicleType || "",
+      price:                formatPrice(row.proposedPrice),
+      phone:                row.contactPhone || owner.phone || "",
+      notes:                row.legacyNote || "",
+      needs_loading_help:   row.needsLoadingHelp,
+      needs_unloading_help: row.needsUnloadingHelp,
+      requires_invoice:     row.requiresInvoice,
+      round_trip:           row.roundTrip,
+      created_at:           row.createdAt,
+      user_name:            userName,
+      user_email:           owner.email,
+      user_phone:           owner.phone || "",
+      status:               row.legacyAdminStatus,
+      images:               Array.isArray(row.images) ? row.images.map((img) => img.url).filter(Boolean) : [],
     };
   }
+
+  const listInclude = { owner: true, images: true };
 
   return {
     async listForAdmin() {
       const rows = await prisma.cargoPost.findMany({
         orderBy: [{ createdAt: "desc" }],
-        include: { owner: true },
+        include: listInclude,
       });
       return rows.map(toDto);
     },
@@ -54,7 +83,7 @@ function makeCargoRepository(prisma) {
       const rows = await prisma.cargoPost.findMany({
         where:   { owner: { legacySqliteId: Number(legacyUserId) } },
         orderBy: [{ createdAt: "desc" }],
-        include: { owner: true },
+        include: listInclude,
       });
       return rows.map(toDto);
     },
@@ -63,7 +92,7 @@ function makeCargoRepository(prisma) {
       const rows = await prisma.cargoPost.findMany({
         where:   { ownerId },
         orderBy: [{ createdAt: "desc" }],
-        include: { owner: true },
+        include: listInclude,
       });
       return rows.map(toDto);
     },
@@ -118,14 +147,14 @@ function makeCargoRepository(prisma) {
         const rows = await prisma.cargoPost.findMany({
           where:   { owner: { legacySqliteId: Number(sessionUserId) } },
           orderBy: [{ createdAt: "desc" }],
-          include: { owner: true },
+          include: listInclude,
         });
         return rows.map(toDto);
       }
       const rows = await prisma.cargoPost.findMany({
         where:   { ownerId: sessionUserId },
         orderBy: [{ createdAt: "desc" }],
-        include: { owner: true },
+        include: listInclude,
       });
       return rows.map(toDto);
     },

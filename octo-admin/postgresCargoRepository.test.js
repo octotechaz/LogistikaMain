@@ -63,18 +63,37 @@ function makePgRow(overrides = {}) {
     legacySqliteId: 42,
     cargoName: "Cement",
     cargoType: "Bulk",
+    description: "Heavy bags",
     weight: 10.5,
     volume: 3.2,
+    length: 2,
+    width: 1.5,
+    height: 1,
+    quantity: "20",
+    pickupAddress: "Yard 1",
+    deliveryAddress: "Site 9",
     pickupCity: "Baku",
     deliveryCity: "Ganja",
+    pickupDate: new Date("2026-07-28T00:00:00.000Z"),
     pickupDeadlineDate: new Date("2026-08-01T00:00:00.000Z"),
     createdAt: new Date("2026-07-01T12:00:00.000Z"),
+    requiredVehicleType: "Tentli",
+    proposedPrice: { toString: () => "150.00" },
+    contactPhone: "+994501112233",
+    legacyPickupTime: "10:00",
+    legacyNote: "Handle carefully",
+    needsLoadingHelp: "Bəli",
+    needsUnloadingHelp: "Xeyr",
+    requiresInvoice: "Xeyr",
+    roundTrip: "Bəli",
     legacyAdminStatus: "PENDING",
     owner: {
       firstName: "Ali",
       lastName: "Mammadov",
       email: "ali@example.com",
+      phone: "+994501234567",
     },
+    images: [{ url: "https://cdn.example.com/a.jpg" }],
     ...overrides,
   };
 }
@@ -90,26 +109,45 @@ test("listForAdmin: maps Prisma row to EJS DTO correctly", async () => {
   assert.equal(r.id, "42", "id must be String(legacySqliteId)");
   assert.equal(r.title, "Cement", "title must be cargoName");
   assert.equal(r.cargo_type, "Bulk");
+  assert.equal(r.description, "Heavy bags");
   assert.equal(r.weight, 10.5);
   assert.equal(r.volume, 3.2);
+  assert.equal(r.length, 2);
+  assert.equal(r.width, 1.5);
+  assert.equal(r.height, 1);
+  assert.equal(r.quantity, "20");
   assert.equal(r.loading_city, "Baku");
+  assert.equal(r.loading_address, "Yard 1");
   assert.equal(r.unloading_city, "Ganja");
+  assert.equal(r.unloading_address, "Site 9");
+  assert.deepEqual(r.pickup_date, new Date("2026-07-28T00:00:00.000Z"));
   assert.deepEqual(r.latest_pickup_date, new Date("2026-08-01T00:00:00.000Z"));
+  assert.equal(r.loading_time, "10:00");
+  assert.equal(r.transport_type, "Tentli");
+  assert.equal(r.price, "150.00");
+  assert.equal(r.phone, "+994501112233");
+  assert.equal(r.notes, "Handle carefully");
+  assert.equal(r.needs_loading_help, "Bəli");
+  assert.equal(r.needs_unloading_help, "Xeyr");
+  assert.equal(r.requires_invoice, "Xeyr");
+  assert.equal(r.round_trip, "Bəli");
   assert.deepEqual(r.created_at, new Date("2026-07-01T12:00:00.000Z"));
   assert.equal(r.user_name, "Ali Mammadov");
   assert.equal(r.user_email, "ali@example.com");
+  assert.equal(r.user_phone, "+994501234567");
   assert.equal(r.status, "PENDING");
+  assert.deepEqual(r.images, ["https://cdn.example.com/a.jpg"]);
 });
 
 test("listForAdmin: user_name omits trailing space when lastName is empty", async () => {
-  const row = makePgRow({ owner: { firstName: "Ali", lastName: "", email: "ali@example.com" } });
+  const row = makePgRow({ owner: { firstName: "Ali", lastName: "", email: "ali@example.com", phone: "" } });
   const { repo } = makeRepo({ findMany: [row] });
   const [r] = await repo.listForAdmin();
   assert.equal(r.user_name, "Ali");
 });
 
 test("listForAdmin: user_name omits trailing space when lastName is null", async () => {
-  const row = makePgRow({ owner: { firstName: "Ali", lastName: null, email: "ali@example.com" } });
+  const row = makePgRow({ owner: { firstName: "Ali", lastName: null, email: "ali@example.com", phone: "" } });
   const { repo } = makeRepo({ findMany: [row] });
   const [r] = await repo.listForAdmin();
   assert.equal(r.user_name, "Ali");
@@ -127,11 +165,12 @@ test("listForAdmin: calls findMany with orderBy createdAt desc", async () => {
     "must order by createdAt desc");
 });
 
-test("listForAdmin: includes owner relation", async () => {
+test("listForAdmin: includes owner and images relations", async () => {
   const { repo, calls } = makeRepo({ findMany: [] });
   await repo.listForAdmin();
   const { include } = calls[0].args;
   assert.ok(include && include.owner, "must include owner");
+  assert.ok(include && include.images, "must include images");
 });
 
 test("listForAdmin: does NOT filter by ownerId", async () => {
