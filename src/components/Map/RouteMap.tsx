@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { azerbaijanMapLocations, type AzerbaijanMapLocation } from "@/lib/azerbaijan-map-locations";
 
 interface RouteMapProps {
   fromCity?: string;
@@ -9,36 +10,92 @@ interface RouteMapProps {
   toAddress?: string;
 }
 
+function normalizeLabel(value: string) {
+  return value
+    .toLocaleLowerCase("az")
+    .replace(/[ı]/g, "i")
+    .trim();
+}
+
+function findLocation(value?: string): AzerbaijanMapLocation | null {
+  if (!value) {
+    return null;
+  }
+
+  const needle = normalizeLabel(value);
+
+  // Exact match first
+  const exact = azerbaijanMapLocations.find(
+    (location) => normalizeLabel(location.label) === needle
+  );
+
+  if (exact) {
+    return exact;
+  }
+
+  // Partial / city name embedded in a longer string (e.g. "Bakı, Babək prospekti")
+  const partial = azerbaijanMapLocations.find(
+    (location) => needle.includes(normalizeLabel(location.label))
+  );
+
+  return partial || null;
+}
+
 export default function RouteMap({ fromCity, fromAddress, toCity, toAddress }: RouteMapProps) {
   const [loading, setLoading] = useState(true);
-
-  // We build an embed URL for Google Maps directions using the standard iframe API
   const [mapUrl, setMapUrl] = useState("");
 
   useEffect(() => {
-    // If we have both cities, draw a route
-    if (fromCity && toCity) {
-      const origin = encodeURIComponent(`${fromCity}, ${fromAddress ? fromAddress + ', ' : ''}Azerbaijan`);
-      const dest = encodeURIComponent(`${toCity}, ${toAddress ? toAddress + ', ' : ''}Azerbaijan`);
-      
-      // Google Maps embedded directions URL (uses the free non-API-key embed if formatted like this, 
-      // or we can use the regular Maps URL in an iframe)
+    const from = findLocation(fromCity);
+    const to = findLocation(toCity);
+
+    // Both endpoints known by coordinates -> draw route with markers
+    if (from && to) {
+      const origin = `${from.latitude},${from.longitude}`;
+      const dest = `${to.latitude},${to.longitude}`;
       const url = `https://maps.google.com/maps?saddr=${origin}&daddr=${dest}&output=embed`;
       setMapUrl(url);
       setLoading(false);
-    } else if (fromCity || toCity) {
-      // Just show the one location we have
-      const city = fromCity || toCity;
-      const addr = fromAddress || toAddress;
-      const q = encodeURIComponent(`${city}, ${addr ? addr + ', ' : ''}Azerbaijan`);
-      
-      const url = `https://maps.google.com/maps?q=${q}&output=embed`;
+      return;
+    }
+
+    // Try to build a route from address text
+    if (fromCity && toCity) {
+      const origin = encodeURIComponent(`${fromCity}, ${fromAddress ? fromAddress + ', ' : ''}Azerbaijan`);
+      const dest = encodeURIComponent(`${toCity}, ${toAddress ? toAddress + ', ' : ''}Azerbaijan`);
+      const url = `https://maps.google.com/maps?saddr=${origin}&daddr=${dest}&output=embed`;
       setMapUrl(url);
       setLoading(false);
-    } else {
-      // No data provided
-      setLoading(false);
+      return;
     }
+
+    // Single known location by coordinates
+    if (from) {
+      const q = `${from.latitude},${from.longitude}`;
+      setMapUrl(`https://maps.google.com/maps?q=${q}&output=embed`);
+      setLoading(false);
+      return;
+    }
+
+    if (to) {
+      const q = `${to.latitude},${to.longitude}`;
+      setMapUrl(`https://maps.google.com/maps?q=${q}&output=embed`);
+      setLoading(false);
+      return;
+    }
+
+    // Fallback: single location by address text
+    const city = fromCity || toCity;
+    if (city) {
+      const addr = fromAddress || toAddress;
+      const q = encodeURIComponent(`${city}, ${addr ? addr + ', ' : ''}Azerbaijan`);
+      setMapUrl(`https://maps.google.com/maps?q=${q}&output=embed`);
+      setLoading(false);
+      return;
+    }
+
+    // No data provided
+    setLoading(false);
   }, [fromCity, fromAddress, toCity, toAddress]);
 
   if (loading) {
