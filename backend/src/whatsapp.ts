@@ -1,5 +1,6 @@
 import makeWASocket, { useMultiFileAuthState as createMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys';
 import * as path from 'path';
+import * as fs from 'fs/promises';
 import pino from 'pino';
 
 function extractPhoneFromWhatsAppId(id: string | undefined | null): string | null {
@@ -7,6 +8,8 @@ function extractPhoneFromWhatsAppId(id: string | undefined | null): string | nul
     const match = id.match(/^(\d+)/);
     return match ? match[1] : null;
 }
+
+const AUTH_DIR = path.join(process.cwd(), 'octo-admin', 'data', 'auth_info_baileys');
 
 export class WhatsAppService {
     private socket: any = null;
@@ -19,7 +22,7 @@ export class WhatsAppService {
     }
 
     async init() {
-        const { state, saveCreds } = await createMultiFileAuthState(path.join(process.cwd(), 'octo-admin', 'data', 'auth_info_baileys'));
+        const { state, saveCreds } = await createMultiFileAuthState(AUTH_DIR);
 
         this.connectedPhone = extractPhoneFromWhatsAppId(state.creds?.me?.id);
         this.status = 'connecting';
@@ -128,12 +131,20 @@ export class WhatsAppService {
     }
 
     async logout() {
-        if (this.socket) {
-            await this.socket.logout();
+        try {
+            if (this.socket) {
+                await this.socket.logout();
+            }
+        } catch (e) {
+            // socket.logout may fail if already disconnected; ignore
         }
         this.status = 'disconnected';
         this.currentQr = null;
         this.connectedPhone = null;
+
+        // Delete stored session so init() always produces a fresh QR
+        await fs.rm(AUTH_DIR, { recursive: true, force: true }).catch(() => {});
+
         this.init();
     }
 }

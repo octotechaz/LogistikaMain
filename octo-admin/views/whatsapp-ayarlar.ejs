@@ -42,12 +42,12 @@
                 <% } else { %>
                     <% var pinning = whatsapp.status === 'qr_ready' && qrDataUrl; %>
                     <div class="my-2">
-                        <div id="waQrBlock" <%= pinning ? '' : 'style="display:none;"' %>>
+                        <div id="waQrBlock" <%- pinning ? '' : 'style="display:none;"' %>>
                             <h5 id="wrQrTitle" class="fw-bold mb-2 text-dark">WhatsApp Web vasitəsilə daxil olun</h5>
                             <p id="wrQrSub" class="text-muted mb-4">Aşağıdakı QR kodu telefonunuzdakı WhatsApp tətbiqindən oxudun.</p>
                         </div>
 
-                        <div id="waPreparing" <%= pinning ? 'style="display:none;"' : '' %> class="mb-3">
+                        <div id="waPreparing" <%- pinning ? 'style="display:none;"' : '' %> class="mb-3">
                             <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
                                 <span class="visually-hidden">Yüklənir...</span>
                             </div>
@@ -55,8 +55,10 @@
                             <p class="text-muted mb-0">QR kodu hazırlandıqda aşağıda görünəcək.</p>
                         </div>
 
-                        <div class="p-3 bg-white border rounded-3 d-inline-block shadow-sm">
-                            <img id="waQrImage" src="<%= qrDataUrl || '' %>" alt="WhatsApp QR Code" class="img-fluid" style="width: 250px; height: 250px;">
+                        <div id="waImgWrap" <%- pinning ? '' : 'style="display:none;"' %> class="mb-3">
+                            <div class="p-3 bg-white border rounded-3 d-inline-block shadow-sm">
+                                <img id="waQrImage" src="<%= qrDataUrl || '' %>" alt="WhatsApp QR Code" class="img-fluid" style="width: 250px; height: 250px;">
+                            </div>
                         </div>
 
                         <p id="waStatusText" class="text-muted small mt-3 mb-0">QR kod avtomatik yenilənir...</p>
@@ -143,6 +145,7 @@
         const statusText = document.getElementById('waStatusText');
         const preparing = document.getElementById('waPreparing');
         const qrBlock = document.getElementById('waQrBlock');
+        const imgWrap = document.getElementById('waImgWrap');
         const initialStatus = '<%= whatsapp.status %>';
 
         if (initialStatus === 'error') {
@@ -155,6 +158,9 @@
             }
             if (qrBlock) {
                 qrBlock.style.display = '';
+            }
+            if (imgWrap) {
+                imgWrap.style.display = '';
             }
         }
 
