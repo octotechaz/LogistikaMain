@@ -588,3 +588,34 @@ model PublicCategory {
 
   @@index([isActive, sortOrder])
 }
+
+enum MatchNotificationStatus {
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum MatchNotificationChannel {
+  WHATSAPP
+}
+
+/// A single WhatsApp notification sent to a driver for a matching cargo post.
+/// Helps deduplicate (unique cargoPostId+driverId) and log send status/failures.
+model CargoMatchNotification {
+  id          String                  @id @default(cuid())
+  cargoPostId String
+  driverId    String
+  score       Int
+  channel     MatchNotificationChannel @default(WHATSAPP)
+  status      MatchNotificationStatus  @default(SENT)
+  messageText String?
+  error       String?
+  sentAt      DateTime?
+  createdAt   DateTime                @default(now())
+
+  @@unique([cargoPostId, driverId])
+  @@index([cargoPostId])
+  @@index([driverId])
+  @@index([status])
+  @@index([sentAt])
+}

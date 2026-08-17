@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { fail, ok, parseZodError, requireApiUser } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
+import { runSmartMatching } from "@/lib/smart-matching";
 
 const STATUS_MAP = {
   APPROVED: "ACTIVE",
@@ -63,6 +64,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         }
       }
     });
+
+    // When a cargo post is approved (becomes ACTIVE), run smart matching to
+    // notify the best-suited drivers. This is fire-and-forget and must never
+    // break the admin approval action, so it is intentionally not awaited.
+    if (payload.status === "APPROVED") {
+      runSmartMatching(existing.id).catch((error) => {
+        console.error("Smart matching uğursuz oldu:", error);
+      });
+    }
 
     return ok(updated);
   } catch (error) {
