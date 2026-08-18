@@ -49,6 +49,7 @@ import { normalizeInternationalPhone } from "@/lib/phone-validation";
 import type { CargoListing, CargoListingDraft } from "@/types/classifieds";
 import { PhoneField } from "@/components/PhoneField";
 import { ClockTimePicker } from "@/components/classifieds/ClockTimePicker";
+import { AddressAutocomplete } from "@/components/classifieds/AddressAutocomplete";
 
 type SessionUser = {
   id: string;
@@ -792,21 +793,14 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                   </div>
                 </div>
 
-                <div className="form-group mb-0">
-                  <label className="text-[13px] font-semibold text-slate-600 mb-1.5 block">Ünvan <span className="text-red-500">*</span></label>
-                  <input
-                    name="pickupAddress"
-                    className={cn(
-                      "form-control w-full rounded-lg shadow-sm focus:ring focus:ring-opacity-50 text-[14px] py-2.5 h-auto transition-shadow",
-                      fieldErrors.pickupAddress ? "border-red-300 focus:border-red-500 focus:ring-red-200" : "border-slate-300 focus:border-blue-500 focus:ring-blue-200"
-                    )}
-                    placeholder="Tam ünvanı daxil edin"
-                    defaultValue={editing?.pickupAddress}
-                    required
-                    onChange={() => clearFieldError("pickupAddress")}
-                  />
-                  {fieldErrors.pickupAddress && <span className="text-[12px] font-medium text-red-600 mt-1 block flex items-center gap-1"><i className="ri-error-warning-line"></i> {fieldErrors.pickupAddress}</span>}
-                </div>
+                <AddressAutocomplete
+                  name="pickupAddress"
+                  label={<>Ünvan <span className="text-red-500">*</span></>}
+                  defaultValue={editing?.pickupAddress}
+                  required
+                  error={fieldErrors.pickupAddress}
+                  onFieldChange={() => clearFieldError("pickupAddress")}
+                />
               </div>
 
               {/* Delivery Info */}
@@ -835,21 +829,14 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                   </div>
                 </div>
 
-                <div className="form-group mb-0">
-                  <label className="text-[13px] font-semibold text-slate-600 mb-1.5 block">Ünvan <span className="text-red-500">*</span></label>
-                  <input
-                    name="deliveryAddress"
-                    className={cn(
-                      "form-control w-full rounded-lg shadow-sm focus:ring focus:ring-opacity-50 text-[14px] py-2.5 h-auto transition-shadow",
-                      fieldErrors.deliveryAddress ? "border-red-300 focus:border-red-500 focus:ring-red-200" : "border-slate-300 focus:border-blue-500 focus:ring-blue-200"
-                    )}
-                    placeholder="Tam ünvanı daxil edin"
-                    defaultValue={editing?.deliveryAddress}
-                    required
-                    onChange={() => clearFieldError("deliveryAddress")}
-                  />
-                  {fieldErrors.deliveryAddress && <span className="text-[12px] font-medium text-red-600 mt-1 block flex items-center gap-1"><i className="ri-error-warning-line"></i> {fieldErrors.deliveryAddress}</span>}
-                </div>
+                <AddressAutocomplete
+                  name="deliveryAddress"
+                  label={<>Ünvan <span className="text-red-500">*</span></>}
+                  defaultValue={editing?.deliveryAddress}
+                  required
+                  error={fieldErrors.deliveryAddress}
+                  onFieldChange={() => clearFieldError("deliveryAddress")}
+                />
               </div>
             </div>
 
