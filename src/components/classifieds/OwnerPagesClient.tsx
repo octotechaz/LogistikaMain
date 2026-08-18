@@ -48,7 +48,7 @@ import { mapApiCargoPostToListing } from "@/lib/cargo-post-map";
 import { normalizeInternationalPhone } from "@/lib/phone-validation";
 import type { CargoListing, CargoListingDraft } from "@/types/classifieds";
 import { PhoneField } from "@/components/PhoneField";
-import { TimeWindowPicker } from "@/components/classifieds/TimeWindowPicker";
+import { ClockTimePicker } from "@/components/classifieds/ClockTimePicker";
 
 type SessionUser = {
   id: string;
@@ -903,7 +903,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                 )}
               </div>
 
-              <TimeWindowPicker
+              <ClockTimePicker
                 name="pickupTime"
                 label="Yükləmə saatı"
                 defaultValue={editing?.pickupTime || ""}
