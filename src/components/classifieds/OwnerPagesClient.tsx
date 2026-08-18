@@ -48,6 +48,7 @@ import { mapApiCargoPostToListing } from "@/lib/cargo-post-map";
 import { normalizeInternationalPhone } from "@/lib/phone-validation";
 import type { CargoListing, CargoListingDraft } from "@/types/classifieds";
 import { PhoneField } from "@/components/PhoneField";
+import { TimeWindowPicker } from "@/components/classifieds/TimeWindowPicker";
 
 type SessionUser = {
   id: string;
@@ -902,22 +903,11 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                 )}
               </div>
 
-              <div className="form-group mb-0">
-                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
-                  Yükləmə saatı
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i className="ri-time-line text-slate-400"></i>
-                  </div>
-                  <input
-                    name="pickupTime"
-                    className="form-control w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pl-10 text-[15px] py-2.5 h-auto transition-shadow"
-                    placeholder="Məs: 14:00 - 18:00"
-                    defaultValue={editing?.pickupTime || ""}
-                  />
-                </div>
-              </div>
+              <TimeWindowPicker
+                name="pickupTime"
+                label="Yükləmə saatı"
+                defaultValue={editing?.pickupTime || ""}
+              />
             </div>
           </div>
 
