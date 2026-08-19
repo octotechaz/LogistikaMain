@@ -147,17 +147,6 @@ export function Navbar({
 
                     <Link
                       href={
-                        role === "CARRIER" ? "/carrier/dashboard" : "/cargo-owner/dashboard"
-                      }
-                      role="menuitem"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-logistics-orange"
-                    >
-                      Dashboard
-                    </Link>
-
-                    <Link
-                      href={
                         role === "CARRIER"
                           ? "/carrier/cargo-posts"
                           : "/cargo-owner/dashboard"
