@@ -10,7 +10,11 @@ FROM base AS deps
 
 COPY package*.json npm-shrinkwrap.json* ./
 COPY prisma ./prisma
-RUN npm ci --include=dev --ignore-scripts
+# Do not disable install scripts here. better-sqlite3 (used by the public
+# catalogue fallback) needs its native binding built for this exact Node ABI.
+# The build image already contains the compiler toolchain required for it.
+RUN npm ci --include=dev
+RUN npm rebuild better-sqlite3 --build-from-source
 RUN npx prisma generate
 
 FROM deps AS build
