@@ -4,5 +4,5 @@
 -- panel can render a diff of which fields changed (old -> new).
 
 ALTER TABLE "CargoPost"
-  ADD COLUMN IF NOT EXISTS "lastEditedAt" TIMESTAMP(3),
-  ADD COLUMN IF NOT EXISTS "editSnapshot" JSONB;
+  ADD COLUMN "lastEditedAt" TIMESTAMP(3),
+  ADD COLUMN "editSnapshot" JSONB;

@@ -5,6 +5,7 @@
  */
 import { spawnSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
+import { PrismaClient } from "@prisma/client";
 
 function fail(message) {
   console.error(message);
@@ -67,12 +68,43 @@ for (const dir of [
 const databaseUrl = buildDatabaseUrl();
 const env = { ...process.env, DATABASE_URL: databaseUrl };
 
+// The CargoPost edit-tracking columns were added additively. On volumes where the
+// original migration was never applied (or Prisma's _prisma_migrations bookkeeping
+// got out of sync), migrate deploy may skip them and the app would crash on every
+// query. Ensure the columns exist here, independent of migration checksums.
+// Only runs when the CargoPost table already exists, so fresh installs (where the
+// table is created later by migrate deploy) are unaffected.
+function ensureCargoPostEditTrackingColumns() {
+  const prisma = new PrismaClient({ datasources: { db: { url: databaseUrl } } });
+  return prisma.$queryRawUnsafe(`
+    SELECT to_regclass('public."CargoPost"') IS NOT NULL AS "exists"
+  `)
+    .then(async (rows) => {
+      if (!rows || !rows[0] || !rows[0].exists) {
+        await prisma.$disconnect();
+        return;
+      }
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "CargoPost"
+          ADD COLUMN IF NOT EXISTS "lastEditedAt" TIMESTAMP(3),
+          ADD COLUMN IF NOT EXISTS "editSnapshot" JSONB;
+      `);
+      await prisma.$disconnect();
+    })
+    .catch((error) => {
+      prisma.$disconnect().catch(() => undefined);
+      console.error("Could not ensure CargoPost edit-tracking columns:", error);
+      process.exit(1);
+    });
+}
+
 console.log(
   `DB target: ${process.env.POSTGRES_USER}@postgres:5432/${process.env.POSTGRES_DB}`
 );
 
 let migrated = false;
 let lastHint = "";
+await ensureCargoPostEditTrackingColumns();
 for (let attempt = 1; attempt <= 20; attempt++) {
   const result = spawnSync("npx", ["prisma", "migrate", "deploy"], {
     env,
