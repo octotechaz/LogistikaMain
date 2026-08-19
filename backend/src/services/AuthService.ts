@@ -16,13 +16,14 @@ const registerSchema = z.object({
   firstName: z.string().trim().min(2),
   lastName: z.string().trim().min(2),
   phone: phoneSchema,
-  email: z.string().trim().email(),
+  email: z.string().trim().email().optional().or(z.literal("")),
   password: passwordSchema,
   role: z.nativeEnum(Role).default(Role.CARRIER),
   companyName: z.string().trim().optional().or(z.literal(""))
 });
 
 const cargoOwnerSchema = registerSchema.omit({ role: true }).extend({
+  email: z.string().trim().email(),
   companyName: z.string().trim().optional().or(z.literal("")),
   voen: z.string().trim().optional().or(z.literal("")),
   city: z.string().trim().optional().or(z.literal(""))
@@ -103,13 +104,17 @@ export class AuthService {
   async register(input: unknown) {
     const payload = registerSchema.parse(input);
     const passwordHash = await hashPassword(payload.password);
+    const email =
+      payload.email && payload.email.length > 0
+        ? payload.email.toLowerCase()
+        : `${payload.phone}@tranzit.az`;
 
     const user = await prisma.user.create({
       data: {
         firstName: payload.firstName,
         lastName: payload.lastName,
         phone: payload.phone,
-        email: payload.email.toLowerCase(),
+        email,
         passwordHash,
         role: payload.role,
         companyName: payload.companyName || null,

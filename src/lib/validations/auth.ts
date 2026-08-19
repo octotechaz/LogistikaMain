@@ -33,7 +33,7 @@ export const registerSchema = z.object({
   firstName: z.string().trim().min(2, "Ad ən azı 2 simvol olmalıdır."),
   lastName: z.string().trim().min(2, "Soyad ən azı 2 simvol olmalıdır."),
   phone: phoneSchema,
-  email: z.string().trim().email("Email düzgün deyil."),
+  email: z.string().trim().email("Email düzgün deyil.").optional().or(z.literal("")),
   password: passwordSchema,
   role: z.string(),
   companyName: z.string().trim().optional().or(z.literal(""))
@@ -58,6 +58,7 @@ export const carrierRegisterSchema = registerSchema.extend({
 export const cargoOwnerRegisterSchema = registerSchema
   .omit({ role: true })
   .extend({
+    email: z.string().trim().email("Email düzgün deyil."),
     companyName: z.string().trim().optional().or(z.literal("")),
     voen: z.string().trim().optional().or(z.literal("")),
     city: z.string().trim().optional().or(z.literal(""))

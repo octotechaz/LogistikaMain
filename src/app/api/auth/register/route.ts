@@ -28,9 +28,14 @@ export async function POST(request: Request) {
       return fail("Bu rol üçün hesab yalnız uyğun qeydiyyat axını və ya admin tərəfindən yaradılmalıdır.", 403);
     }
 
+    const baseEmail =
+      basePayload.email && basePayload.email.length > 0
+        ? basePayload.email.toLowerCase()
+        : `${basePayload.phone}@tranzit.az`;
+
     const existingUser = await prisma.user.findFirst({
       where: {
-        OR: [{ email: basePayload.email.toLowerCase() }, { phone: basePayload.phone }]
+        OR: [{ email: baseEmail }, { phone: basePayload.phone }]
       }
     });
 
@@ -45,7 +50,7 @@ export async function POST(request: Request) {
           firstName: payload.firstName,
           lastName: payload.lastName,
           phone: payload.phone,
-          email: payload.email.toLowerCase(),
+          email: baseEmail,
           passwordHash: await hashPassword(payload.password),
           role: Role.CARRIER,
           companyName: payload.companyName || null,
@@ -76,7 +81,7 @@ export async function POST(request: Request) {
         firstName: basePayload.firstName,
         lastName: basePayload.lastName,
         phone: basePayload.phone,
-        email: basePayload.email.toLowerCase(),
+        email: baseEmail,
         passwordHash: await hashPassword(basePayload.password),
         role,
         companyName: basePayload.companyName || null,

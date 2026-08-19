@@ -255,7 +255,7 @@ export function RegisterForm({ role }: { role: PublicRegisterRole }) {
           name="email"
           type="email"
           placeholder="email@example.com"
-          required
+          required={!isCarrier}
           error={fieldErrors.email}
         />
         <TextField
