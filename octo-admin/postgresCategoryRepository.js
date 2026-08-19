@@ -2,17 +2,17 @@
 
 /**
  * PostgreSQL-backed category repository for octo-admin.
- * Replaces direct SQLite queries on public_categories.
+ * Optionally dual-writes to public-site SQLite via categoryPublicSync.
  *
  * All public methods return Promises. DTOs use legacy snake_case field names
  * so EJS views and form handlers require no changes.
  */
 
-function makeCategoryRepository(prisma) {
+function makeCategoryRepository(prisma, sync = null) {
   /** Map a Prisma PublicCategory row to the legacy snake_case DTO. */
   function toDto(row) {
     return {
-      id:               row.legacySqliteId,
+      id:               row.legacySqliteId || row.id,
       label:            row.label,
       icon_key:         row.iconKey,
       icon_tone:        row.iconTone,
@@ -29,12 +29,20 @@ function makeCategoryRepository(prisma) {
     return "cat_" + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   }
 
+  async function listRows() {
+    return prisma.publicCategory.findMany({
+      orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+    });
+  }
+
   return {
     /** Returns all categories ordered by sortOrder ASC, label ASC as snake_case DTOs. */
     async listOrdered() {
-      const rows = await prisma.publicCategory.findMany({
-        orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
-      });
+      let rows = await listRows();
+      if (rows.length === 0 && sync && typeof sync.ensurePostgresSeeded === "function") {
+        await sync.ensurePostgresSeeded(prisma);
+        rows = await listRows();
+      }
       return rows.map(toDto);
     },
 
@@ -43,11 +51,11 @@ function makeCategoryRepository(prisma) {
      * existing record identified by legacySqliteId. Otherwise inserts a new one.
      */
     async upsert(dto) {
-      const legacyId = dto.id && dto.id.trim() !== "" ? dto.id.trim() : generateLegacyId();
+      const legacyId = dto.id && String(dto.id).trim() !== "" ? String(dto.id).trim() : generateLegacyId();
       const iconKey   = dto.icon_key  || "boxes";
       const iconTone  = dto.icon_tone || "text-slate-500";
-      const sortOrder = parseInt(dto.sort_order) || 0;
-      const isActive  = dto.is_active === "1";
+      const sortOrder = parseInt(dto.sort_order, 10) || 0;
+      const isActive  = dto.is_active === "1" || dto.is_active === 1 || dto.is_active === true;
 
       const data = {
         label:     dto.label,
@@ -62,14 +70,32 @@ function makeCategoryRepository(prisma) {
         update: data,
         create: { ...data, legacySqliteId: legacyId },
       });
+
+      if (sync && typeof sync.upsertSqliteCategory === "function") {
+        sync.upsertSqliteCategory({
+          id: legacyId,
+          label: dto.label,
+          icon_key: iconKey,
+          icon_tone: iconTone,
+          match_cargo_type: dto.match_cargo_type || null,
+          match_vehicle_type: dto.match_vehicle_type || null,
+          match_keyword: dto.match_keyword || null,
+          sort_order: sortOrder,
+          is_active: isActive ? 1 : 0,
+        });
+      }
     },
 
     /** Delete a category by its legacy SQLite id. No-op when id is falsy. */
     async deleteById(id) {
       if (!id) return;
+      const legacyId = String(id);
       await prisma.publicCategory.delete({
-        where: { legacySqliteId: id },
+        where: { legacySqliteId: legacyId },
       });
+      if (sync && typeof sync.deleteSqliteCategory === "function") {
+        sync.deleteSqliteCategory(legacyId);
+      }
     },
   };
 }

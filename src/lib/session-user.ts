@@ -7,7 +7,36 @@ export type SessionUser = {
   role: string;
 };
 
+function browserHost() {
+  return typeof window === "undefined" ? "" : window.location.hostname.toLowerCase();
+}
+
+function isPortalHost() {
+  const host = browserHost();
+  return host === "portal.tranzit.az" ||
+    host === "portal.lvh.me" ||
+    host === "portal.tranzit.test" ||
+    host.startsWith("portal.");
+}
+
+function isAdminHost() {
+  const host = browserHost();
+  return host === "admin.tranzit.az" ||
+    host === "admin.lvh.me" ||
+    host === "admin.tranzit.test" ||
+    host.startsWith("admin.");
+}
+
+function isPublicOrPortalHost() {
+  const host = browserHost();
+  return !host || isPortalHost() || isAdminHost() || host === "tranzit.az" || host === "lvh.me" || host === "tranzit.test";
+}
+
 export async function fetchSessionUser(): Promise<SessionUser | null> {
+  // /api/auth/me belongs to the portal host. Shared public/admin components
+  // can render without making a guaranteed 404 request on those hosts.
+  if (!isPortalHost()) return null;
+
   try {
     const res = await fetch("/api/auth/me", {
       method: "GET",
@@ -33,6 +62,10 @@ export type LegacySessionUser = {
 };
 
 export async function fetchLegacySessionUser(): Promise<LegacySessionUser | null> {
+  // The Express session endpoint is useful on the portal/admin dashboard,
+  // but is intentionally unavailable on the public marketing host.
+  if (!isPublicOrPortalHost()) return null;
+
   try {
     const res = await fetch("/dashboard/session-user", {
       method: "GET",

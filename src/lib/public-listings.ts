@@ -6,11 +6,37 @@ import { prisma } from "@/lib/prisma";
 import { publicUserSelect } from "@/lib/prisma-selects";
 import type { CargoListing } from "@/types/classifieds";
 
-const publicListingInclude = {
-  images: {
-    orderBy: { createdAt: "asc" as const },
-    select: { url: true },
-  },
+const publicListingSelect = {
+  id: true,
+  ownerId: true,
+  cargoName: true,
+  cargoType: true,
+  description: true,
+  weight: true,
+  volume: true,
+  length: true,
+  width: true,
+  height: true,
+  quantity: true,
+  pickupAddress: true,
+  deliveryAddress: true,
+  pickupCity: true,
+  deliveryCity: true,
+  pickupDate: true,
+  pickupDeadlineDate: true,
+  requiredVehicleType: true,
+  proposedPrice: true,
+  contactPhone: true,
+  needsLoadingHelp: true,
+  needsUnloadingHelp: true,
+  requiresInvoice: true,
+  roundTrip: true,
+  legacyPickupTime: true,
+  legacyNote: true,
+  legacyViewCount: true,
+  expiresAt: true,
+  deactivatedAt: true,
+  createdAt: true,
   owner: { select: publicUserSelect },
   cargoOwnerProfile: {
     select: {
@@ -18,9 +44,13 @@ const publicListingInclude = {
       user: { select: publicUserSelect },
     },
   },
-} satisfies Prisma.CargoPostInclude;
+  images: {
+    orderBy: { createdAt: "asc" as const },
+    select: { url: true },
+  },
+} satisfies Prisma.CargoPostSelect;
 
-type PublicCargoPost = Prisma.CargoPostGetPayload<{ include: typeof publicListingInclude }>;
+type PublicCargoPost = Prisma.CargoPostGetPayload<{ select: typeof publicListingSelect }>;
 
 function ownerDisplayName(post: PublicCargoPost) {
   const profile = post.cargoOwnerProfile;
@@ -112,7 +142,7 @@ export async function getPublicListingsFromPostgres(): Promise<CargoListing[]> {
 
   const posts = await prisma.cargoPost.findMany({
     where: publicApprovedCargoPostWhere(),
-    include: publicListingInclude,
+    select: publicListingSelect,
     orderBy: { createdAt: "desc" },
   });
 
@@ -126,7 +156,7 @@ export async function getPublicListingByIdFromPostgres(id: string): Promise<Carg
     where: {
       AND: [listingIdWhere(id), publicApprovedCargoPostWhere()],
     },
-    include: publicListingInclude,
+    select: publicListingSelect,
   });
 
   if (!post) {
