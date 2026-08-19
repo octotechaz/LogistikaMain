@@ -58,6 +58,14 @@ export function VehicleForm({ initialData, mode = "create" }: { initialData?: Ve
     setError(null);
 
     const formData = new FormData(event.currentTarget);
+
+    const imageUrls = parseJsonArray(formData.get("imageUrls"));
+    if (imageUrls.length < 2) {
+      setError("Avtomobil üçün ən azı 2 şəkil əlavə edin.");
+      setIsLoading(false);
+      return;
+    }
+
     const payload = {
       vehicleType: String(formData.get("vehicleType") ?? ""),
       brand: String(formData.get("brand") ?? ""),
@@ -74,8 +82,7 @@ export function VehicleForm({ initialData, mode = "create" }: { initialData?: Ve
       workDays: formData.getAll("workDays").map(String),
       workHours: String(formData.get("workHours") ?? ""),
       serviceAreas: formData.getAll("serviceAreas").map(String),
-      imageUrls: parseJsonArray(formData.get("imageUrls")),
-      documentImageUrls: parseJsonArray(formData.get("documentImageUrls"))
+      imageUrls
     };
 
     const response = await fetch(mode === "edit" && initialData?.id ? `/api/vehicles/${initialData.id}` : "/api/vehicles", {
@@ -199,12 +206,12 @@ export function VehicleForm({ initialData, mode = "create" }: { initialData?: Ve
         </div>
       </fieldset>
 
-      <ImageUploader name="imageUrls" folder="vehicles" label="Avtomobil şəkilləri" initialUrls={initialData?.imageUrls} />
       <ImageUploader
-        name="documentImageUrls"
-        folder="vehicle-documents"
-        label="Sənəd şəkilləri"
-        initialUrls={initialData?.documentImageUrls}
+        name="imageUrls"
+        folder="vehicles"
+        label="Avtomobil şəkilləri"
+        initialUrls={initialData?.imageUrls}
+        maxFiles={3}
       />
 
       <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
