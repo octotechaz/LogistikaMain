@@ -65,28 +65,42 @@ services:
       - /tmp
       - /app/.next/cache
       - /home/node
+    healthcheck:
+      test: ["CMD", "node", "scripts/container-healthcheck.mjs"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     networks:
       - octobot-net
       - logistika-internal
     labels:
       - traefik.enable=true
       - traefik.docker.network=octobot-net
+      # Normalize all clear-text traffic before it reaches the application.
+      # Cloudflare must use Full/Full (strict), otherwise this redirect loops
+      # at Cloudflare when its edge talks HTTP to the origin.
+      - traefik.http.middlewares.tranzit-force-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.tranzit-force-https.redirectscheme.permanent=true
       # All public hosts hit Next (:3001). Admin UI is proxied to octo-admin
       # on 127.0.0.1:3005 via next.config rewrites (/dashboard, /octo-admin).
       # Routing admin Host directly to :3005 caused Cloudflare 502 when
       # octo-admin was still starting or briefly unavailable.
       - traefik.http.services.tranzit-next.loadbalancer.server.port=3001
 
-      # HTTP :80 — Cloudflare Flexible / origin http
+      # HTTP :80 — redirect to the canonical HTTPS origin.
       - traefik.http.routers.tranzit-main-http.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
       - traefik.http.routers.tranzit-main-http.entrypoints=web
-      - traefik.http.routers.tranzit-main-http.service=tranzit-next
+      - traefik.http.routers.tranzit-main-http.middlewares=tranzit-force-https
+      - traefik.http.routers.tranzit-main-http.service=noop@internal
       - traefik.http.routers.tranzit-portal-http.rule=Host(`portal.tranzit.az`)
       - traefik.http.routers.tranzit-portal-http.entrypoints=web
-      - traefik.http.routers.tranzit-portal-http.service=tranzit-next
+      - traefik.http.routers.tranzit-portal-http.middlewares=tranzit-force-https
+      - traefik.http.routers.tranzit-portal-http.service=noop@internal
       - traefik.http.routers.tranzit-admin-http.rule=Host(`admin.tranzit.az`)
       - traefik.http.routers.tranzit-admin-http.entrypoints=web
-      - traefik.http.routers.tranzit-admin-http.service=tranzit-next
+      - traefik.http.routers.tranzit-admin-http.middlewares=tranzit-force-https
+      - traefik.http.routers.tranzit-admin-http.service=noop@internal
 
       # HTTPS :443 — Cloudflare Full / direct TLS
       - traefik.http.routers.tranzit-main-https.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)

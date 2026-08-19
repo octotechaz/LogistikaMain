@@ -42,6 +42,22 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=octobot-net
+      - traefik.http.middlewares.logistika-force-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.logistika-force-https.redirectscheme.permanent=true
+
+      # HTTP is redirect-only; application traffic always uses HTTPS.
+      - traefik.http.routers.logistika-main-http.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
+      - traefik.http.routers.logistika-main-http.entrypoints=web
+      - traefik.http.routers.logistika-main-http.middlewares=logistika-force-https
+      - traefik.http.routers.logistika-main-http.service=noop@internal
+      - traefik.http.routers.logistika-portal-http.rule=Host(`portal.tranzit.az`)
+      - traefik.http.routers.logistika-portal-http.entrypoints=web
+      - traefik.http.routers.logistika-portal-http.middlewares=logistika-force-https
+      - traefik.http.routers.logistika-portal-http.service=noop@internal
+      - traefik.http.routers.logistika-admin-http.rule=Host(`admin.tranzit.az`)
+      - traefik.http.routers.logistika-admin-http.entrypoints=web
+      - traefik.http.routers.logistika-admin-http.middlewares=logistika-force-https
+      - traefik.http.routers.logistika-admin-http.service=noop@internal
 
       # Main site (Next.js - port 3001)
       - traefik.http.routers.logistika-main.rule=Host(`tranzit.az`)
@@ -58,7 +74,8 @@ services:
       - traefik.http.routers.logistika-portal.tls.certresolver=letsencrypt
       - traefik.http.routers.logistika-portal.service=logistika-main-svc
 
-      # Admin site (octo-admin - port 3005)
+      # Admin host also enters Next.js (port 3001); next.config proxies the
+      # Express admin process on loopback:3005 inside this same container.
       - traefik.http.routers.logistika-admin.rule=Host(`admin.tranzit.az`)
       - traefik.http.routers.logistika-admin.entrypoints=websecure
       - traefik.http.routers.logistika-admin.tls=true
@@ -73,4 +90,3 @@ networks:
   logistika-internal:
     external: true
     name: logistika-internal
-
