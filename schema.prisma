@@ -314,6 +314,8 @@ model CargoPost {
   roundTrip           String?
   legacyPickupTime    String?
   legacyNote          String?
+  lastEditedAt        DateTime?
+  editSnapshot        Json?
   legacyViewCount     Int         @default(0)
   legacyAdminStatus   String      @default("PENDING")
   status              CargoStatus @default(CANCELLED)

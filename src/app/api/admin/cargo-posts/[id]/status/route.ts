@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { Prisma } from "@prisma/client";
 import { fail, ok, parseZodError, requireApiUser } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import { runSmartMatching } from "@/lib/smart-matching";
@@ -49,7 +50,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       data: {
         legacyAdminStatus: payload.status,
         status: STATUS_MAP[payload.status],
-        deactivatedAt: null
+        deactivatedAt: null,
+        // Admin decided on the edited version — the review diff is no longer
+        // pending. lastEditedAt intentionally kept so the 24h limit holds.
+        editSnapshot: Prisma.DbNull
       },
       include: {
         images: true,

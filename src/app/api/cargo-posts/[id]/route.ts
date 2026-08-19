@@ -11,6 +11,69 @@ import {
 } from "@/lib/pickup-deadline";
 import { cargoPostSchema } from "@/lib/validations/cargo-post";
 
+const OWNER_EDIT_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+function buildEditSnapshot(existingCargoPost: {
+  cargoName: string;
+  cargoType: string;
+  description: string;
+  weight: number;
+  volume: number | null;
+  length: number | null;
+  width: number | null;
+  height: number | null;
+  quantity: string | null;
+  pickupAddress: string;
+  deliveryAddress: string;
+  pickupCity: string | null;
+  deliveryCity: string | null;
+  pickupDate: Date;
+  pickupDeadlineDate: Date | null;
+  requiredVehicleType: string | null;
+  proposedPrice: { toString(): string } | null;
+  priceNegotiable: boolean | string | null;
+  contactPhone: string | null;
+  needsLoadingHelp: boolean | string | null;
+  needsUnloadingHelp: boolean | string | null;
+  requiresInvoice: boolean | string | null;
+  roundTrip: boolean | string | null;
+  legacyPickupTime: string | null;
+  legacyNote: string | null;
+  images: Array<{ url: string }>;
+}) {
+  return {
+    at: new Date().toISOString(),
+    fields: {
+      cargoName: existingCargoPost.cargoName,
+      cargoType: existingCargoPost.cargoType,
+      description: existingCargoPost.description,
+      weight: existingCargoPost.weight,
+      volume: existingCargoPost.volume,
+      length: existingCargoPost.length,
+      width: existingCargoPost.width,
+      height: existingCargoPost.height,
+      quantity: existingCargoPost.quantity,
+      pickupAddress: existingCargoPost.pickupAddress,
+      deliveryAddress: existingCargoPost.deliveryAddress,
+      pickupCity: existingCargoPost.pickupCity,
+      deliveryCity: existingCargoPost.deliveryCity,
+      pickupDate: existingCargoPost.pickupDate.toISOString(),
+      pickupDeadlineDate: existingCargoPost.pickupDeadlineDate?.toISOString() ?? null,
+      requiredVehicleType: existingCargoPost.requiredVehicleType,
+      proposedPrice: existingCargoPost.proposedPrice?.toString() ?? null,
+      priceNegotiable: existingCargoPost.priceNegotiable,
+      contactPhone: existingCargoPost.contactPhone,
+      needsLoadingHelp: existingCargoPost.needsLoadingHelp,
+      needsUnloadingHelp: existingCargoPost.needsUnloadingHelp,
+      requiresInvoice: existingCargoPost.requiresInvoice,
+      roundTrip: existingCargoPost.roundTrip,
+      legacyPickupTime: existingCargoPost.legacyPickupTime,
+      legacyNote: existingCargoPost.legacyNote
+    },
+    imageUrls: existingCargoPost.images.map((image) => image.url)
+  };
+}
+
 async function findAuthorizedCargoPost(id: string, userId: string) {
   return prisma.cargoPost.findFirst({
     where: {
@@ -53,6 +116,21 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return fail("Yük elanı tapılmadı.", 404);
     }
 
+    const ownerResubmit = user.role === "CARGO_OWNER";
+    const wasPublished =
+      existingCargoPost.legacyAdminStatus === "APPROVED" ||
+      existingCargoPost.lastEditedAt !== null ||
+      existingCargoPost.editSnapshot !== null;
+
+    if (ownerResubmit && wasPublished) {
+      if (
+        existingCargoPost.lastEditedAt &&
+        Date.now() - existingCargoPost.lastEditedAt.getTime() < OWNER_EDIT_COOLDOWN_MS
+      ) {
+        return fail("Bu elan 24 saat ərzində yalnız 1 dəfə redaktə edilə bilər.", 429);
+      }
+    }
+
     const payload = cargoPostSchema.parse({
       cargoName: requestBody.cargoName ?? existingCargoPost.cargoName,
       cargoType: requestBody.cargoType ?? existingCargoPost.cargoType,
@@ -89,7 +167,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const pickupDeadlineDate = pickupDeadlineDateToDate(pickupDeadlineDateValue);
     const expiresAt = calculateExpiresAtFromPickupDeadline(pickupDeadlineDateValue);
     const { imageUrls, ...cargoPostData } = payload;
-    const ownerResubmit = user.role === "CARGO_OWNER";
     const cargoPost = await prisma.cargoPost.update({
       where: { id },
       data: {
@@ -109,7 +186,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           ? {
               legacyAdminStatus: "PENDING",
               status: "CANCELLED" as const,
-              deactivatedAt: null
+              deactivatedAt: null,
+              ...(wasPublished
+                ? {
+                    lastEditedAt: new Date(),
+                    editSnapshot: buildEditSnapshot(existingCargoPost)
+                  }
+                : {})
             }
           : {}),
         images: imageUrls

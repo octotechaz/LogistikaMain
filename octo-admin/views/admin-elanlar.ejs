@@ -36,6 +36,16 @@
     return 'elan-badge--muted';
   }
 
+  function editBadgeLabel(c) {
+    if (c.is_edited && c.status === 'PENDING') return 'Redaktə edilib – təsdiq gözləyir';
+    return statusLabel(c.status);
+  }
+
+  function editBadgeClass(c) {
+    if (c.is_edited && c.status === 'PENDING') return 'elan-badge--edited';
+    return statusClass(c.status);
+  }
+
   const cargosJson = JSON.stringify(cargoList.map(c => ({
     id: c.id,
     title: c.title,
@@ -67,6 +77,9 @@
     user_email: c.user_email,
     user_phone: c.user_phone,
     status: c.status,
+    is_edited: c.is_edited || false,
+    last_edited_at: c.last_edited_at || null,
+    edit_snapshot: c.edit_snapshot || null,
     images: c.images || [],
   }))).replace(/</g, '\\u003c');
 %>
@@ -241,6 +254,7 @@
   }
 
   .elan-badge--pending { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+  .elan-badge--edited { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
   .elan-badge--approved { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
   .elan-badge--rejected { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
   .elan-badge--muted { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
@@ -669,6 +683,111 @@
     object-fit: cover;
   }
 
+  .elan-diff-section {
+    border: 1px solid #bfdbfe;
+    background: #f0f6ff;
+  }
+
+  .elan-diff-section > h6 {
+    color: #1d4ed8;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .elan-diff-meta {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.75rem;
+  }
+
+  .elan-diff-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .elan-diff-row {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, auto) auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    font-size: 0.82rem;
+  }
+
+  .elan-diff-row .label {
+    color: #475569;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .elan-diff-row .old {
+    color: #b91c1c;
+    text-decoration: line-through;
+    word-break: break-word;
+    min-width: 0;
+  }
+
+  .elan-diff-row .arrow {
+    color: #94a3b8;
+  }
+
+  .elan-diff-row .new {
+    color: #047857;
+    font-weight: 600;
+    word-break: break-word;
+    min-width: 0;
+  }
+
+  .elan-diff-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .elan-diff-img {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    aspect-ratio: 1;
+    background: #fff;
+  }
+
+  .elan-diff-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .elan-diff-img span {
+    position: absolute;
+    inset-inline-start: 0;
+    bottom: 0;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    color: #fff;
+  }
+
+  .elan-diff-img.new-img span { background: #047857; }
+  .elan-diff-img.removed-img span { background: #b91c1c; }
+  .elan-diff-img.removed-img img { opacity: 0.45; }
+
+  .elan-diff-section h6.mt-0 { margin-top: 0; }
+
+  @media (max-width: 767.98px) {
+    .elan-diff-row { grid-template-columns: 1fr; gap: 0.15rem; }
+    .elan-diff-row .arrow { display: none; }
+  }
+
   .elan-modal-status-form {
     display: flex;
     flex-wrap: wrap;
@@ -797,7 +916,7 @@
                   </small>
                 </td>
                 <td>
-                  <span class="elan-badge <%= statusClass(cargo.status) %>"><%= statusLabel(cargo.status) %></span>
+                  <span class="elan-badge <%= editBadgeClass(cargo) %>"><%= editBadgeLabel(cargo) %></span>
                 </td>
                 <td class="text-end" onclick="event.stopPropagation()">
                   <div class="elan-actions admin-row-actions">
@@ -849,7 +968,7 @@
               <span class="elan-id">#<%= cargo.id %></span>
               <h3 class="elan-card-title"><%= cargo.title %></h3>
             </div>
-            <span class="elan-badge <%= statusClass(cargo.status) %>"><%= statusLabel(cargo.status) %></span>
+            <span class="elan-badge <%= editBadgeClass(cargo) %>"><%= editBadgeLabel(cargo) %></span>
           </div>
 
           <div class="elan-route">
@@ -970,8 +1089,12 @@
       if (!status) {
         table.column(5).search('');
       } else {
-        const label = statusLabel(status);
-        table.column(5).search('^' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', true, false);
+        const labels = [statusLabel(status)];
+        if (status === 'PENDING') labels.push('Redaktə edilib – təsdiq gözləyir');
+        const pattern = labels
+          .map(function (l) { return l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); })
+          .join('|');
+        table.column(5).search('^(' + pattern + ')$', true, false);
       }
       table.draw();
     }
@@ -1022,6 +1145,100 @@
     return 'elan-badge--muted';
   }
 
+  function editBadgeLabel(c) {
+    if (c.is_edited && c.status === 'PENDING') return 'Redaktə edilib – təsdiq gözləyir';
+    return statusLabel(c.status);
+  }
+
+  function editBadgeClass(c) {
+    if (c.is_edited && c.status === 'PENDING') return 'elan-badge--edited';
+    return statusClass(c.status);
+  }
+
+  function fmtEditValue(value) {
+    if (value == null || value === '') return '—';
+    return esc(value);
+  }
+
+  function strVal(v) {
+    return (v == null || v === '') ? '' : String(v);
+  }
+
+  function editDiffRows(snapshot, cargo) {
+    if (!snapshot || !snapshot.fields) return '';
+    const f = snapshot.fields;
+    const oldDims = [f.length, f.width, f.height].filter(function (v) { return v != null && v !== ''; }).join(' × ');
+    const newDims = [cargo.length, cargo.width, cargo.height].filter(function (v) { return v != null && v !== ''; }).join(' × ');
+
+    const rows = [
+      ['Başlıq', f.cargoName, cargo.title],
+      ['Növ', f.cargoType, cargo.cargo_type],
+      ['Təsvir', f.description, cargo.description],
+      ['Çəki', f.weight, cargo.weight],
+      ['Həcm', f.volume, cargo.volume],
+      ['Say', f.quantity, cargo.quantity],
+      ['Ölçülər', oldDims, newDims],
+      ['Yükləmə şəhəri', f.pickupCity, cargo.loading_city],
+      ['Yükləmə ünvanı', f.pickupAddress, cargo.loading_address],
+      ['Boşaltma şəhəri', f.deliveryCity, cargo.unloading_city],
+      ['Boşaltma ünvanı', f.deliveryAddress, cargo.unloading_address],
+      ['Yükləmə tarixi', f.pickupDate, cargo.pickup_date],
+      ['Son götürülmə', f.pickupDeadlineDate, cargo.latest_pickup_date],
+      ['Yükləmə saatı', f.legacyPickupTime, cargo.loading_time],
+      ['Nəqliyyat', f.requiredVehicleType, cargo.transport_type],
+      ['Qiymət', f.proposedPrice, cargo.price],
+      ['Əlaqə telefonu', f.contactPhone, cargo.phone],
+      ['Qeydlər', f.legacyNote, cargo.notes]
+    ];
+
+    return rows
+      .filter(function (r) { return strVal(r[1]) !== strVal(r[2]); })
+      .map(function (r) {
+        return '<div class="elan-diff-row">' +
+          '<span class="label">' + esc(r[0]) + '</span>' +
+          '<span class="old">' + fmtEditValue(r[1]) + '</span>' +
+          '<span class="arrow">→</span>' +
+          '<span class="new">' + fmtEditValue(r[2]) + '</span>' +
+        '</div>';
+      })
+      .join('');
+  }
+
+  function editDiffImages(snapshot, cargo) {
+    if (!snapshot) return '';
+    const oldImages = Array.isArray(snapshot.imageUrls) ? snapshot.imageUrls : [];
+    const newImages = Array.isArray(cargo.images) ? cargo.images : [];
+    const removed = oldImages.filter(function (url) { return newImages.indexOf(url) === -1; });
+    const added = newImages.filter(function (url) { return oldImages.indexOf(url) === -1; });
+
+    if (removed.length === 0 && added.length === 0) return '';
+
+    return '<h6>Şəkil dəyişiklikləri</h6>' +
+      '<div class="elan-diff-images">' +
+        added.map(function (url) {
+          return '<div class="elan-diff-img new-img"><img src="' + esc(url) + '" alt="Yeni şəkil"><span>Yeni</span></div>';
+        }).join('') +
+        removed.map(function (url) {
+          return '<div class="elan-diff-img removed-img"><img src="' + esc(url) + '" alt="Silinən şəkil"><span>Silinən</span></div>';
+        }).join('') +
+      '</div>';
+  }
+
+  function editDiffHtml(cargo) {
+    if (!cargo.is_edited || !cargo.edit_snapshot) return '';
+    const snap = cargo.edit_snapshot;
+    const diffRows = editDiffRows(snap, cargo);
+    const diffImgs = editDiffImages(snap, cargo);
+    const editedAt = cargo.last_edited_at ? fmtDateTime(cargo.last_edited_at) : '—';
+
+    return '<div class="elan-detail-section elan-diff-section">' +
+      '<h6><i class="bi bi-pencil-square"></i> Redaktə – dəyişilmiş sahələr</h6>' +
+      '<div class="elan-diff-meta">Redaktə olunub: ' + editedAt + '</div>' +
+      (diffRows ? '<div class="elan-diff-list">' + diffRows + '</div>' : '<div class="text-muted small">Sahə dəyişikliyi yoxdur.</div>') +
+      diffImgs +
+    '</div>';
+  }
+
   function flagChip(label, value) {
     const yes = value === 'Bəli' || value === true || value === 'true';
     return '<span class="elan-flag ' + (yes ? 'yes' : '') + '">' + esc(label) + ': <strong>' + esc(value || '—') + '</strong></span>';
@@ -1063,7 +1280,7 @@
           '<h3>' + esc(cargo.title) + '</h3>' +
           '<div class="text-muted small mt-1">' + esc(cargo.cargo_type || 'Növ göstərilməyib') + '</div>' +
         '</div>' +
-        '<span class="elan-badge ' + statusClass(cargo.status) + '">' + esc(statusLabel(cargo.status)) + '</span>' +
+        '<span class="elan-badge ' + editBadgeClass(cargo) + '">' + esc(editBadgeLabel(cargo)) + '</span>' +
       '</div>' +
 
       '<div class="elan-detail-section">' +
@@ -1125,6 +1342,8 @@
           ? '<div class="elan-detail-item full mt-3"><span class="label">Qeydlər</span><span class="value muted">' + esc(cargo.notes) + '</span></div>'
           : '') +
       '</div>' +
+
+      editDiffHtml(cargo) +
 
       '<div class="elan-detail-section mb-0">' +
         '<h6>Şəkillər</h6>' +

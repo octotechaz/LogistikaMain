@@ -33,6 +33,8 @@ function makeCargoRepository(prisma) {
       ? `${owner.firstName} ${lastName}`
       : owner.firstName || "";
 
+    const isEdited = row.legacyAdminStatus === "PENDING" && row.editSnapshot != null;
+
     return {
       id:                   row.legacySqliteId != null ? String(row.legacySqliteId) : String(row.id),
       title:                row.cargoName,
@@ -64,6 +66,9 @@ function makeCargoRepository(prisma) {
       user_email:           owner.email,
       user_phone:           owner.phone || "",
       status:               row.legacyAdminStatus,
+      is_edited:            isEdited,
+      last_edited_at:       row.lastEditedAt || null,
+      edit_snapshot:        isEdited ? row.editSnapshot : null,
       images:               Array.isArray(row.images) ? row.images.map((img) => img.url).filter(Boolean) : [],
     };
   }
@@ -104,7 +109,13 @@ function makeCargoRepository(prisma) {
       return prisma.$transaction(async (tx) => {
         const { count } = await tx.cargoPost.updateMany({
           where: resolvePostWhere(id),
-          data:  { legacyAdminStatus: status, status: STATUS_MAP[status], deactivatedAt: null },
+          data:  {
+            legacyAdminStatus: status,
+            status:            STATUS_MAP[status],
+            deactivatedAt:     null,
+            // Admin decision resolves the pending edit review diff.
+            editSnapshot:      null,
+          },
         });
         return count > 0;
       });
