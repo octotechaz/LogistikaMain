@@ -147,7 +147,9 @@ export function Navbar({
 
                     <Link
                       href={
-                        role === "CARRIER"
+                        role === "ADMIN"
+                          ? "/octo-admin"
+                          : role === "CARRIER"
                           ? "/carrier/cargo-posts"
                           : "/cargo-owner/dashboard"
                       }
@@ -155,7 +157,7 @@ export function Navbar({
                       onClick={() => setDropdownOpen(false)}
                       className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-logistics-orange"
                     >
-                      {role === "CARRIER" ? "Aktiv yüklər" : "Mənim elanlarım"}
+                      {role === "ADMIN" ? "Admin Paneli" : role === "CARRIER" ? "Aktiv yüklər" : "Mənim elanlarım"}
                     </Link>
 
                     <div className="my-1 border-t border-slate-100" />
