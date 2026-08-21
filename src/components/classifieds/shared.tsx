@@ -413,10 +413,28 @@ export function PublicNavbar() {
   );
 }
 
+const FOOTER_DEFAULTS = {
+  phone: "+994 50 123 45 67",
+  whatsapp: "994501234567",
+  email: "info@tranzit.az",
+  telegram: "tranzitaz",
+  workHours: "Hər gün 09:00-20:00",
+  copyright: "© 2026 Tranzit.AZ. Bütün hüquqlar qorunur.",
+  tagline: "Yük elanları və daşıma əlaqələri üçün public platforma.",
+};
+
 export function PublicFooter() {
   const pathname = usePathname();
   const legalLinks = footerNavItems.filter((item) => ["terms", "privacy", "rules"].includes(item.id));
   const platformLinks = footerNavItems.filter((item) => !["terms", "privacy", "rules"].includes(item.id));
+  const [fs, setFs] = useState(FOOTER_DEFAULTS);
+
+  useEffect(() => {
+    fetch("/api/public/footer-settings")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setFs({ ...FOOTER_DEFAULTS, ...data }); })
+      .catch(() => {});
+  }, []);
 
   return (
     <footer className="shrink-0 border-t border-slate-200 bg-white px-3 pb-4 pt-4 sm:px-4 lg:px-6 lg:pb-6">
@@ -438,7 +456,6 @@ export function PublicFooter() {
             <div className="mt-4 grid gap-2.5">
               {platformLinks.map((item) => {
                 const isActive = pathname === item.href;
-
                 return (
                   <Link
                     key={item.id}
@@ -457,7 +474,6 @@ export function PublicFooter() {
             <div className="mt-4 grid gap-2.5">
               {legalLinks.map((item) => {
                 const isActive = pathname === item.href;
-
                 return (
                   <Link
                     key={item.id}
@@ -474,15 +490,15 @@ export function PublicFooter() {
           <div>
             <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">Dəstək</h3>
             <a
-              href="tel:+994501234567"
+              href={`tel:${fs.phone}`}
               className="mt-4 inline-block font-semibold text-navy-900 transition hover:text-logistics-orange"
             >
-              +994 50 123 45 67
+              {fs.phone}
             </a>
-            <p className="mt-1 text-sm text-slate-500">Hər gün 09:00-20:00</p>
+            <p className="mt-1 text-sm text-slate-500">{fs.workHours}</p>
             <div className="mt-4 flex items-center gap-2.5">
               <a
-                href="https://wa.me/994501234567"
+                href={`https://wa.me/${fs.whatsapp}`}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="WhatsApp"
@@ -491,14 +507,14 @@ export function PublicFooter() {
                 <PhoneCall className="h-[18px] w-[18px]" />
               </a>
               <a
-                href="mailto:info@tranzit.az"
+                href={`mailto:${fs.email}`}
                 aria-label="E-poçt"
                 className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-sky-50 text-sky-600 transition hover:bg-sky-100"
               >
                 <MessageCircleMore className="h-[18px] w-[18px]" />
               </a>
               <a
-                href="https://t.me/tranzitaz"
+                href={`https://t.me/${fs.telegram}`}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Telegram"
@@ -511,8 +527,8 @@ export function PublicFooter() {
         </div>
 
         <div className="flex flex-col gap-2 border-t border-slate-200/80 px-5 py-4 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-7 lg:px-8">
-          <p>© 2026 Tranzit.AZ. Bütün hüquqlar qorunur.</p>
-          <p>Yük elanları və daşıma əlaqələri üçün public platforma.</p>
+          <p>{fs.copyright}</p>
+          <p>{fs.tagline}</p>
         </div>
       </div>
     </footer>

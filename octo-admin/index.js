@@ -967,6 +967,51 @@ app.post('/dashboard/whatsapp/logout', requireAuth, requireAdmin, async (req, re
     }
 });
 
+// Footer Ayarları - GET
+app.get('/dashboard/footer-ayarlari', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const [phone, whatsapp, email, telegram, workHours, copyright, tagline] = await Promise.all([
+            settingsRepository.getSetting('footer_phone', '+994 50 123 45 67'),
+            settingsRepository.getSetting('footer_whatsapp', '+994501234567'),
+            settingsRepository.getSetting('footer_email', 'info@tranzit.az'),
+            settingsRepository.getSetting('footer_telegram', 'tranzitaz'),
+            settingsRepository.getSetting('footer_work_hours', 'Hər gün 09:00-20:00'),
+            settingsRepository.getSetting('footer_copyright', '© 2026 Tranzit.AZ. Bütün hüquqlar qorunur.'),
+            settingsRepository.getSetting('footer_tagline', 'Yük elanları və daşıma əlaqələri üçün public platforma.'),
+        ]);
+        res.render('footer-ayarlari', {
+            user: req.session.user,
+            path: '/dashboard/footer-ayarlari',
+            saved: req.query.saved === '1',
+            error: req.query.error || null,
+            settings: { phone, whatsapp, email, telegram, workHours, copyright, tagline },
+        });
+    } catch (e) {
+        console.error('Footer ayarları yüklənmədi:', e);
+        res.redirect('/dashboard?error=footer');
+    }
+});
+
+// Footer Ayarları - POST
+app.post('/dashboard/footer-ayarlari', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const { phone, whatsapp, email, telegram, workHours, copyright, tagline } = req.body;
+        await Promise.all([
+            settingsRepository.setSetting('footer_phone', (phone || '').trim()),
+            settingsRepository.setSetting('footer_whatsapp', (whatsapp || '').trim()),
+            settingsRepository.setSetting('footer_email', (email || '').trim()),
+            settingsRepository.setSetting('footer_telegram', (telegram || '').trim()),
+            settingsRepository.setSetting('footer_work_hours', (workHours || '').trim()),
+            settingsRepository.setSetting('footer_copyright', (copyright || '').trim()),
+            settingsRepository.setSetting('footer_tagline', (tagline || '').trim()),
+        ]);
+        res.redirect('/dashboard/footer-ayarlari?saved=1');
+    } catch (e) {
+        console.error('Footer ayarları saxlanmadı:', e);
+        res.redirect('/dashboard/footer-ayarlari?error=save');
+    }
+});
+
 app.listen(OCTO_ADMIN_PORT, OCTO_ADMIN_HOST, () => {
     console.log(`Cargo Admin Panel running at http://${OCTO_ADMIN_HOST}:${OCTO_ADMIN_PORT}`);
 });
