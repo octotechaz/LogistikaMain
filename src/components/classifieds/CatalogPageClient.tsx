@@ -52,6 +52,7 @@ import {
   getPublicListings
 } from "@/lib/classifieds-format";
 import { classifiedsCargoTypes, classifiedsCities, classifiedsVehicleTypes } from "@/lib/classifieds-meta";
+// Dynamic filter options loaded from API (admin editable), fallback to static defaults
 import { resolveCategoryIcon } from "@/lib/category-icons";
 import { effectiveStatus } from "@/lib/status/classifieds";
 import { listingVisualTone } from "@/lib/listing-visual";
@@ -937,6 +938,9 @@ export function CatalogPageClient({
   const [sqliteListings, setSqliteListings] = useState<CargoListing[]>(initialListings);
   const [isDataLoaded, setIsDataLoaded] = useState(initialListings.length > 0);
   const [homeCategories, setHomeCategories] = useState<PublicListingCategory[]>(fallbackHomeCategories);
+  const [dynCities, setDynCities] = useState<string[]>(classifiedsCities);
+  const [dynCargoTypes, setDynCargoTypes] = useState<string[]>(classifiedsCargoTypes);
+  const [dynVehicleTypes, setDynVehicleTypes] = useState<string[]>(classifiedsVehicleTypes);
   const [filters, setFilters] = useState(createEmptyFilters());
   const [draftFilters, setDraftFilters] = useState(createEmptyFilters());
   const [sortBy, setSortBy] = useState<SortMode>("newest");
@@ -958,9 +962,10 @@ export function CatalogPageClient({
     let cancelled = false;
 
     async function loadPublicData() {
-      const [listingsPayload, categoriesPayload] = await Promise.all([
+      const [listingsPayload, categoriesPayload, filtersPayload] = await Promise.all([
         fetchJsonWithRetry<{ data?: CargoListing[] }>("/api/public/listings"),
         fetchJsonWithRetry<{ data?: PublicListingCategory[] }>("/api/public/categories"),
+        fetch("/api/public/filters").then((r) => r.ok ? r.json() : null).catch(() => null),
       ]);
 
       if (cancelled) {
@@ -984,6 +989,10 @@ export function CatalogPageClient({
       if (nextCategories && nextCategories.length > 0) {
         setHomeCategories(nextCategories);
       }
+
+      if (filtersPayload?.cities?.length) setDynCities(filtersPayload.cities);
+      if (filtersPayload?.cargoTypes?.length) setDynCargoTypes(filtersPayload.cargoTypes);
+      if (filtersPayload?.vehicleTypes?.length) setDynVehicleTypes(filtersPayload.vehicleTypes);
 
       setIsDataLoaded(true);
     }
@@ -1275,7 +1284,7 @@ export function CatalogPageClient({
                   label={t("search_pickup_city", "Yükləmə şəhəri")}
                   value={draftFilters.pickupCity}
                   onChange={(value) => updateFilter("pickupCity", value)}
-                  options={classifiedsCities}
+                  options={dynCities}
                   className="w-full"
                 />
                 <div className="hidden lg:flex lg:items-start">
@@ -1298,7 +1307,7 @@ export function CatalogPageClient({
                   label={t("search_delivery_city", "Çatdırılma şəhəri")}
                   value={draftFilters.deliveryCity}
                   onChange={(value) => updateFilter("deliveryCity", value)}
-                  options={classifiedsCities}
+                  options={dynCities}
                   className="w-full"
                 />
               </div>
@@ -1309,14 +1318,14 @@ export function CatalogPageClient({
                 label={t("search_cargo_type", "Yük növü")}
                 value={draftFilters.cargoType}
                 onChange={(value) => updateFilter("cargoType", value)}
-                options={classifiedsCargoTypes}
+                options={dynCargoTypes}
                 className="w-full"
               />
               <CatalogSelectCard
                 label={t("search_vehicle_type", "Nəqliyyat növü")}
                 value={draftFilters.vehicleType}
                 onChange={(value) => updateFilter("vehicleType", value)}
-                options={classifiedsVehicleTypes}
+                options={dynVehicleTypes}
                 className="w-full"
               />
               <CatalogInputCard
@@ -1614,7 +1623,7 @@ export function CatalogPageClient({
                 label={t("search_pickup_city", "Yükləmə şəhəri")}
                 value={draftFilters.pickupCity}
                 onChange={(value) => updateFilter("pickupCity", value)}
-                options={classifiedsCities}
+                options={dynCities}
                 className="w-full"
               />
             </CatalogFilterField>
@@ -1642,7 +1651,7 @@ export function CatalogPageClient({
                 label={t("search_delivery_city", "Çatdırılma şəhəri")}
                 value={draftFilters.deliveryCity}
                 onChange={(value) => updateFilter("deliveryCity", value)}
-                options={classifiedsCities}
+                options={dynCities}
                 className="w-full"
               />
             </CatalogFilterField>
@@ -1652,7 +1661,7 @@ export function CatalogPageClient({
                 label={t("search_cargo_type", "Yük növü")}
                 value={draftFilters.cargoType}
                 onChange={(value) => updateFilter("cargoType", value)}
-                options={classifiedsCargoTypes}
+                options={dynCargoTypes}
                 className="w-full"
               />
             </CatalogFilterField>
@@ -1662,7 +1671,7 @@ export function CatalogPageClient({
                 label={t("search_vehicle_type", "Nəqliyyat növü")}
                 value={draftFilters.vehicleType}
                 onChange={(value) => updateFilter("vehicleType", value)}
-                options={classifiedsVehicleTypes}
+                options={dynVehicleTypes}
                 className="w-full"
               />
             </CatalogFilterField>

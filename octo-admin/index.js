@@ -1166,6 +1166,58 @@ app.post('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res
     }
 });
 
+// Filter Ayarları - GET
+app.get('/dashboard/filter-ayarlari', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const DEFAULT_CITIES = ["Bakı","Sumqayıt","Gəncə","Xırdalan","Quba","Qəbələ","Mingəçevir","Şəki","Lənkəran","Masallı","Şamaxı","Naxçıvan"];
+        const DEFAULT_CARGO_TYPES = ["Mebel","Tikinti materialı","Kubik","Ərzaq","Texnika","Paletli yük","Soyudulmuş məhsul","Sənaye avadanlığı"];
+        const DEFAULT_VEHICLE_TYPES = ["Ford Transit","Kamaz","TIR","Tentli yük maşını","Soyuduculu maşın","Platforma","Konteyner daşıyan"];
+
+        const rows = await prisma.appSetting.findMany({
+            where: { key: { in: ['filters_cities','filters_cargo_types','filters_vehicle_types'] } }
+        });
+        const map = Object.fromEntries(rows.map(r => [r.key, r.value]));
+
+        const parse = (key, def) => { try { return map[key] ? JSON.parse(map[key]) : def; } catch { return def; } };
+
+        res.render('filter-ayarlari', {
+            user: req.session.user,
+            path: '/dashboard/filter-ayarlari',
+            saved: req.query.saved === '1',
+            error: req.query.error || null,
+            filters: {
+                cities: parse('filters_cities', DEFAULT_CITIES),
+                cargoTypes: parse('filters_cargo_types', DEFAULT_CARGO_TYPES),
+                vehicleTypes: parse('filters_vehicle_types', DEFAULT_VEHICLE_TYPES),
+            },
+        });
+    } catch (e) {
+        console.error('Filter ayarları yüklənmədi:', e);
+        res.redirect('/dashboard?error=filters');
+    }
+});
+
+// Filter Ayarları - POST
+app.post('/dashboard/filter-ayarlari', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const parse = (val, def) => { try { const a = JSON.parse(val); return Array.isArray(a) ? a.filter(Boolean) : def; } catch { return def; } };
+        const cities = parse(req.body.cities_json, []);
+        const cargoTypes = parse(req.body.cargo_types_json, []);
+        const vehicleTypes = parse(req.body.vehicle_types_json, []);
+
+        await Promise.all([
+            prisma.appSetting.upsert({ where: { key: 'filters_cities' }, update: { value: JSON.stringify(cities) }, create: { key: 'filters_cities', value: JSON.stringify(cities) } }),
+            prisma.appSetting.upsert({ where: { key: 'filters_cargo_types' }, update: { value: JSON.stringify(cargoTypes) }, create: { key: 'filters_cargo_types', value: JSON.stringify(cargoTypes) } }),
+            prisma.appSetting.upsert({ where: { key: 'filters_vehicle_types' }, update: { value: JSON.stringify(vehicleTypes) }, create: { key: 'filters_vehicle_types', value: JSON.stringify(vehicleTypes) } }),
+        ]);
+
+        res.redirect('/dashboard/filter-ayarlari?saved=1');
+    } catch (e) {
+        console.error('Filter ayarları saxlanmadı:', e);
+        res.redirect('/dashboard/filter-ayarlari?error=save');
+    }
+});
+
 // Footer Ayarları - GET
 app.get('/dashboard/footer-ayarlari', requireAuth, requireAdmin, async (req, res) => {
     try {
