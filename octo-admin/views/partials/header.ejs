@@ -848,13 +848,11 @@
                     <span>Profil Ayarları</span>
                 </a>
             <% } %>
-            <% if (!(user && user.role === 'ADMIN')) { %>
             <hr class="my-2 border-light w-100">
             <a href="<%= typeof publicAppUrl !== 'undefined' ? publicAppUrl : 'https://tranzit.az' %>" class="nav-link-item" title="Sayta qayıt">
                 <i class="bi bi-box-arrow-up-right"></i>
                 <span>Sayta qayıt</span>
             </a>
-            <% } %>
         </div>
         <div class="sidebar-footer">
             <div class="user-info">
