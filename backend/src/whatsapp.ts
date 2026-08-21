@@ -10,58 +10,119 @@ function extractPhoneFromWhatsAppId(id: string | undefined | null): string | nul
 }
 
 const AUTH_DIR = path.join(process.cwd(), 'octo-admin', 'data', 'auth_info_baileys');
+const RECONNECT_DELAY_MS = 3000;
+const MAX_RECONNECT_ATTEMPTS = 10;
 
 export class WhatsAppService {
     private socket: any = null;
     private status: 'connecting' | 'connected' | 'disconnected' | 'qr_ready' = 'disconnected';
     private currentQr: string | null = null;
     private connectedPhone: string | null = null;
+    private reconnectAttempts = 0;
+    private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    private isInitializing = false;
 
     constructor() {
-        this.init();
+        this.init().catch((err) => console.error('WhatsApp init xətası:', err));
+    }
+
+    private destroySocket() {
+        if (this.socket) {
+            try {
+                this.socket.ev.removeAllListeners();
+                this.socket.ws?.close();
+            } catch (_) {}
+            this.socket = null;
+        }
     }
 
     async init() {
-        const { state, saveCreds } = await createMultiFileAuthState(AUTH_DIR);
+        if (this.isInitializing) return;
+        this.isInitializing = true;
 
-        this.connectedPhone = extractPhoneFromWhatsAppId(state.creds?.me?.id);
-        this.status = 'connecting';
+        try {
+            const { state, saveCreds } = await createMultiFileAuthState(AUTH_DIR);
 
-        this.socket = makeWASocket({
-            auth: state,
-            printQRInTerminal: false,
-            browser: ['Logistika Panel', 'Chrome', '1.0.0'],
-            logger: pino({ level: 'silent' }) // Logları gizle
-        });
+            this.connectedPhone = extractPhoneFromWhatsAppId(state.creds?.me?.id);
+            this.status = 'connecting';
 
-        this.socket.ev.on('connection.update', (update: any) => {
-            const { connection, lastDisconnect, qr } = update;
+            this.destroySocket();
 
-            if (qr) {
-                console.log('WhatsApp QR Code ready');
-                this.currentQr = qr;
-                this.status = 'qr_ready';
-            }
+            this.socket = makeWASocket({
+                auth: state,
+                printQRInTerminal: false,
+                browser: ['Logistika Panel', 'Chrome', '1.0.0'],
+                logger: pino({ level: 'silent' }),
+                connectTimeoutMs: 30000,
+                keepAliveIntervalMs: 15000,
+            });
 
-            if (connection === 'close') {
-                const shouldReconnect = (lastDisconnect.error as any)?.output?.statusCode !== DisconnectReason.loggedOut;
+            this.socket.ev.on('connection.update', (update: any) => {
+                const { connection, lastDisconnect, qr } = update;
 
-                this.status = 'disconnected';
-                this.currentQr = null;
-                this.connectedPhone = null;
-
-                if (shouldReconnect) {
-                    this.init();
+                if (qr) {
+                    console.log('WhatsApp QR Code ready');
+                    this.currentQr = qr;
+                    this.status = 'qr_ready';
                 }
-            } else if (connection === 'open') {
-                this.status = 'connected';
-                this.currentQr = null;
-                this.connectedPhone = extractPhoneFromWhatsAppId(this.socket?.user?.id);
-                console.log('WhatsApp bağlantısı uğurla quruldu!', this.connectedPhone ? `(${this.connectedPhone})` : '');
-            }
-        });
 
-        this.socket.ev.on('creds.update', saveCreds);
+                if (connection === 'close') {
+                    const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
+                    const isLoggedOut = statusCode === DisconnectReason.loggedOut;
+
+                    this.status = 'disconnected';
+                    this.currentQr = null;
+                    this.connectedPhone = null;
+                    this.destroySocket();
+
+                    if (isLoggedOut) {
+                        console.log('WhatsApp çıxış edildi, yenidən qoşulma dayandırıldı.');
+                        this.reconnectAttempts = 0;
+                        return;
+                    }
+
+                    if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                        console.error(`WhatsApp ${MAX_RECONNECT_ATTEMPTS} cəhddən sonra qoşula bilmədi. Dayandırıldı.`);
+                        this.reconnectAttempts = 0;
+                        return;
+                    }
+
+                    this.reconnectAttempts++;
+                    const delay = RECONNECT_DELAY_MS * this.reconnectAttempts;
+                    console.log(`WhatsApp yenidən qoşulur... (${this.reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}, ${delay}ms sonra)`);
+
+                    if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+                    this.reconnectTimer = setTimeout(() => {
+                        this.init().catch((err) => console.error('WhatsApp reconnect xətası:', err));
+                    }, delay);
+
+                } else if (connection === 'open') {
+                    this.reconnectAttempts = 0;
+                    this.status = 'connected';
+                    this.currentQr = null;
+                    this.connectedPhone = extractPhoneFromWhatsAppId(this.socket?.user?.id);
+                    console.log('WhatsApp bağlantısı uğurla quruldu!', this.connectedPhone ? `(${this.connectedPhone})` : '');
+                }
+            });
+
+            this.socket.ev.on('creds.update', saveCreds);
+        } catch (err) {
+            console.error('WhatsApp init zamanı xəta:', err);
+            this.status = 'disconnected';
+            this.isInitializing = false;
+
+            if (this.reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                this.reconnectAttempts++;
+                const delay = RECONNECT_DELAY_MS * this.reconnectAttempts;
+                if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+                this.reconnectTimer = setTimeout(() => {
+                    this.init().catch((e) => console.error('WhatsApp reconnect xətası:', e));
+                }, delay);
+            }
+            return;
+        }
+
+        this.isInitializing = false;
     }
 
     getStatus() {
@@ -131,6 +192,13 @@ export class WhatsAppService {
     }
 
     async logout() {
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+        this.reconnectAttempts = 0;
+        this.isInitializing = false;
+
         try {
             if (this.socket) {
                 await this.socket.logout();
@@ -138,14 +206,15 @@ export class WhatsAppService {
         } catch (e) {
             // socket.logout may fail if already disconnected; ignore
         }
+
+        this.destroySocket();
         this.status = 'disconnected';
         this.currentQr = null;
         this.connectedPhone = null;
 
-        // Delete stored session so init() always produces a fresh QR
         await fs.rm(AUTH_DIR, { recursive: true, force: true }).catch(() => {});
 
-        this.init();
+        this.init().catch((err) => console.error('WhatsApp logout sonrası init xətası:', err));
     }
 }
 
