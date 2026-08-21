@@ -40,12 +40,22 @@ function dashboardPathForRole(role: MiddlewareRole): string {
   return "/octo-admin";
 }
 
-/** Paths an ADMIN JWT may access outside Express (logout + Next admin APIs). */
+/** Portal user-only path prefixes that ADMIN must not access. */
+const ADMIN_BLOCKED_PREFIXES = [
+  "/carrier",
+  "/cargo-owner",
+  "/driver",
+  "/dispatcher",
+  "/operator",
+];
+
+/** Paths an ADMIN JWT may access outside Express (logout + Next admin APIs + public site). */
 function isAdminAllowedPath(pathname: string): boolean {
   if (isDelegatedToExpress(pathname)) return true;
   if (pathname === "/api/auth/logout") return true;
   if (isAdminPath(pathname)) return true;
-  return false;
+  if (ADMIN_BLOCKED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p + "?"))) return false;
+  return true;
 }
 
 function adminPanelAbsoluteUrl(): string {
