@@ -33,5 +33,21 @@
   "footer_platform": "Platforma",
   "footer_legal": "Hüquqi",
   "footer_support": "Dəstək",
-  "about_advantages_title": "Əsas üstünlüklər"
+  "about_advantages_title": "Əsas üstünlüklər",
+  "search_eyebrow": "Axtarış planı",
+  "search_title": "Marşrutunuzu planlayın",
+  "search_route_label": "Yükləmə və çatdırılma nöqtələri",
+  "search_pickup_city": "Yükləmə şəhəri",
+  "search_delivery_city": "Çatdırılma şəhəri",
+  "search_cargo_type": "Yük növü",
+  "search_vehicle_type": "Nəqliyyat növü",
+  "search_keyword": "Açar söz",
+  "search_keyword_placeholder": "məs: mebel, taxta, taxıl",
+  "search_btn": "Axtar",
+  "search_btn_loading": "Axtarılır...",
+  "search_advanced_btn": "Ətraflı filter",
+  "search_advanced_hint": "Ətraflı filtrdən istifadə edərək uyğun nəticələri daha tez tapa bilərsiniz.",
+  "search_select": "Seçin",
+  "listings_title": "Son elanlar",
+  "categories_title": "Kateqoriyalara baxın"
 }

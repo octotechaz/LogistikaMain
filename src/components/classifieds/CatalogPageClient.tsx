@@ -1262,17 +1262,17 @@ export function CatalogPageClient({
 
           <div className="relative z-10 mt-6 min-w-0 overflow-visible rounded-[24px] border border-[var(--planner-outline)] bg-[var(--planner-surface-raised)] p-3 sm:mt-8 sm:p-5">
             <div className="border-b border-[var(--planner-outline)] pb-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--planner-primary)]">Axtarış planı</p>
-              <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-[var(--planner-text)]">Marşrutunuzu planlayın</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--planner-primary)]">{t("search_eyebrow", "Axtarış planı")}</p>
+              <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-[var(--planner-text)]">{t("search_title", "Marşrutunuzu planlayın")}</h2>
             </div>
 
             <div className="mt-4">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.1em] text-[var(--planner-text-muted)]">
-                Yükləmə və çatdırılma nöqtələri
+                {t("search_route_label", "Yükləmə və çatdırılma nöqtələri")}
               </p>
               <div className="grid min-w-0 gap-3 overflow-visible lg:grid-cols-[minmax(0,1fr)_48px_minmax(0,1fr)]">
                 <CatalogSelectCard
-                  label="Yükləmə şəhəri"
+                  label={t("search_pickup_city", "Yükləmə şəhəri")}
                   value={draftFilters.pickupCity}
                   onChange={(value) => updateFilter("pickupCity", value)}
                   options={classifiedsCities}
@@ -1295,7 +1295,7 @@ export function CatalogPageClient({
                   </button>
                 </div>
                 <CatalogSelectCard
-                  label="Çatdırılma şəhəri"
+                  label={t("search_delivery_city", "Çatdırılma şəhəri")}
                   value={draftFilters.deliveryCity}
                   onChange={(value) => updateFilter("deliveryCity", value)}
                   options={classifiedsCities}
@@ -1306,22 +1306,22 @@ export function CatalogPageClient({
 
             <div className="mt-3 grid min-w-0 gap-3 overflow-visible sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.25fr)_148px]">
               <CatalogSelectCard
-                label="Yük növü"
+                label={t("search_cargo_type", "Yük növü")}
                 value={draftFilters.cargoType}
                 onChange={(value) => updateFilter("cargoType", value)}
                 options={classifiedsCargoTypes}
                 className="w-full"
               />
               <CatalogSelectCard
-                label="Nəqliyyat növü"
+                label={t("search_vehicle_type", "Nəqliyyat növü")}
                 value={draftFilters.vehicleType}
                 onChange={(value) => updateFilter("vehicleType", value)}
                 options={classifiedsVehicleTypes}
                 className="w-full"
               />
               <CatalogInputCard
-                label="Açar söz"
-                placeholder="məs: mebel, taxta, taxıl"
+                label={t("search_keyword", "Açar söz")}
+                placeholder={t("search_keyword_placeholder", "məs: mebel, taxta, taxıl")}
                 value={draftFilters.keyword}
                 onChange={(value) => updateFilter("keyword", value)}
                 className="w-full"
@@ -1333,7 +1333,7 @@ export function CatalogPageClient({
                   disabled={isSearching}
                 >
                   {isSearching ? <LoaderCircle className="h-4.5 w-4.5 animate-spin" /> : <Search className="h-4.5 w-4.5" />}
-                  {isSearching ? "Axtarılır..." : "Axtar"}
+                  {isSearching ? t("search_btn_loading", "Axtarılır...") : t("search_btn", "Axtar")}
                 </Button>
               </div>
             </div>
@@ -1351,7 +1351,7 @@ export function CatalogPageClient({
                   )}
                 >
                   <SlidersHorizontal className="h-4 w-4" />
-                  Ətraflı filter
+                  {t("search_advanced_btn", "Ətraflı filter")}
                   <ChevronDown className={cn("h-4 w-4 transition-transform", showAdvancedFilters && "rotate-180")} />
                 </button>
 
@@ -1368,7 +1368,7 @@ export function CatalogPageClient({
               </div>
 
               <p className="min-w-0 max-w-full text-sm leading-5 text-[var(--planner-text-muted)]">
-                Ətraflı filtrdən istifadə edərək uyğun nəticələri daha tez tapa bilərsiniz.
+                {t("search_advanced_hint", "Ətraflı filtrdən istifadə edərək uyğun nəticələri daha tez tapa bilərsiniz.")}
               </p>
             </div>
 
@@ -1472,7 +1472,7 @@ export function CatalogPageClient({
           </div>
 
           <div className="mt-8 flex items-center justify-between gap-4">
-            <h2 className="text-[1.9rem] font-bold text-[#171717]">Son elanlar</h2>
+            <h2 className="text-[1.9rem] font-bold text-[#171717]">{t("listings_title", "Son elanlar")}</h2>
             <button
               type="button"
               onClick={() => setShowAllHomeListings((current) => !current)}
@@ -1574,7 +1574,7 @@ export function CatalogPageClient({
           ) : null}
 
           <div className="mt-8 border-t border-slate-200 pt-5">
-            <h2 className="text-base font-semibold text-navy-900">Kateqoriyalara baxın</h2>
+            <h2 className="text-base font-semibold text-navy-900">{t("categories_title", "Kateqoriyalara baxın")}</h2>
             <div className="-mx-1 mt-3 flex max-w-full gap-3 overflow-x-auto px-1 py-2 pb-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:justify-start sm:gap-8 sm:px-0 sm:gap-4">
               {homeCategoryViews.map((category) => (
                 <HomeCategoryButton
@@ -1609,9 +1609,9 @@ export function CatalogPageClient({
       <section className="mx-auto max-w-[1780px] px-4 py-5 sm:px-6 lg:px-8">
         <div className="overflow-visible rounded-[18px] border border-slate-200/90 bg-[linear-gradient(180deg,#ffffff_0%,#fbfcfe_100%)] shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
           <div className="grid w-full gap-3 p-4 sm:grid-cols-2 min-[1180px]:grid-cols-[180px_48px_190px_160px_190px_minmax(220px,1fr)_150px] lg:p-[18px]">
-            <CatalogFilterField label="Yükləmə şəhəri">
+            <CatalogFilterField label={t("search_pickup_city", "Yükləmə şəhəri")}>
               <CatalogSelectCard
-                label="Yükləmə şəhəri"
+                label={t("search_pickup_city", "Yükləmə şəhəri")}
                 value={draftFilters.pickupCity}
                 onChange={(value) => updateFilter("pickupCity", value)}
                 options={classifiedsCities}
@@ -1637,9 +1637,9 @@ export function CatalogPageClient({
               </button>
             </div>
 
-            <CatalogFilterField label="Çatdırılma şəhəri">
+            <CatalogFilterField label={t("search_delivery_city", "Çatdırılma şəhəri")}>
               <CatalogSelectCard
-                label="Çatdırılma şəhəri"
+                label={t("search_delivery_city", "Çatdırılma şəhəri")}
                 value={draftFilters.deliveryCity}
                 onChange={(value) => updateFilter("deliveryCity", value)}
                 options={classifiedsCities}
@@ -1647,9 +1647,9 @@ export function CatalogPageClient({
               />
             </CatalogFilterField>
 
-            <CatalogFilterField label="Yük növü">
+            <CatalogFilterField label={t("search_cargo_type", "Yük növü")}>
               <CatalogSelectCard
-                label="Yük növü"
+                label={t("search_cargo_type", "Yük növü")}
                 value={draftFilters.cargoType}
                 onChange={(value) => updateFilter("cargoType", value)}
                 options={classifiedsCargoTypes}
@@ -1657,9 +1657,9 @@ export function CatalogPageClient({
               />
             </CatalogFilterField>
 
-            <CatalogFilterField label="Nəqliyyat növü">
+            <CatalogFilterField label={t("search_vehicle_type", "Nəqliyyat növü")}>
               <CatalogSelectCard
-                label="Nəqliyyat növü"
+                label={t("search_vehicle_type", "Nəqliyyat növü")}
                 value={draftFilters.vehicleType}
                 onChange={(value) => updateFilter("vehicleType", value)}
                 options={classifiedsVehicleTypes}
@@ -1667,10 +1667,10 @@ export function CatalogPageClient({
               />
             </CatalogFilterField>
 
-            <CatalogFilterField label="Açar söz">
+            <CatalogFilterField label={t("search_keyword", "Açar söz")}>
               <CatalogInputCard
-                label="Açar söz"
-                placeholder="məs: mebel, taxta, taxıl"
+                label={t("search_keyword", "Açar söz")}
+                placeholder={t("search_keyword_placeholder", "məs: mebel, taxta, taxıl")}
                 value={draftFilters.keyword}
                 onChange={(value) => updateFilter("keyword", value)}
                 className="w-full"
@@ -1684,7 +1684,7 @@ export function CatalogPageClient({
                 disabled={isSearching}
               >
                 {isSearching ? <LoaderCircle className="h-4.5 w-4.5 animate-spin" /> : <Search className="h-4.5 w-4.5" />}
-                {isSearching ? "Axtarılır..." : "Axtar"}
+                {isSearching ? t("search_btn_loading", "Axtarılır...") : t("search_btn", "Axtar")}
               </Button>
             </div>
           </div>

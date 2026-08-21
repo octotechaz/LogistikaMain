@@ -33,5 +33,21 @@
   "footer_platform": "Platform",
   "footer_legal": "Legal",
   "footer_support": "Support",
-  "about_advantages_title": "Key Advantages"
+  "about_advantages_title": "Key Advantages",
+  "search_eyebrow": "Search Plan",
+  "search_title": "Plan Your Route",
+  "search_route_label": "Loading and delivery points",
+  "search_pickup_city": "Pickup city",
+  "search_delivery_city": "Delivery city",
+  "search_cargo_type": "Cargo type",
+  "search_vehicle_type": "Vehicle type",
+  "search_keyword": "Keyword",
+  "search_keyword_placeholder": "e.g: furniture, wood, grain",
+  "search_btn": "Search",
+  "search_btn_loading": "Searching...",
+  "search_advanced_btn": "Advanced filter",
+  "search_advanced_hint": "Use the advanced filter to find matching results faster.",
+  "search_select": "Select",
+  "listings_title": "Recent listings",
+  "categories_title": "Browse by category"
 }

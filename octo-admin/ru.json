@@ -33,5 +33,21 @@
   "footer_platform": "Платформа",
   "footer_legal": "Правовая информация",
   "footer_support": "Поддержка",
-  "about_advantages_title": "Основные преимущества"
+  "about_advantages_title": "Основные преимущества",
+  "search_eyebrow": "План поиска",
+  "search_title": "Запланируйте маршрут",
+  "search_route_label": "Точки погрузки и доставки",
+  "search_pickup_city": "Город погрузки",
+  "search_delivery_city": "Город доставки",
+  "search_cargo_type": "Тип груза",
+  "search_vehicle_type": "Тип транспорта",
+  "search_keyword": "Ключевое слово",
+  "search_keyword_placeholder": "напр: мебель, дерево, зерно",
+  "search_btn": "Найти",
+  "search_btn_loading": "Поиск...",
+  "search_advanced_btn": "Расширенный фильтр",
+  "search_advanced_hint": "Используйте расширенный фильтр для более быстрого поиска подходящих результатов.",
+  "search_select": "Выбрать",
+  "listings_title": "Последние объявления",
+  "categories_title": "Просмотр по категориям"
 }

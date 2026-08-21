@@ -31,6 +31,9 @@
         <a class="nav-link active" data-bs-toggle="tab" href="#tab-home">Ana Səhifə</a>
     </li>
     <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#tab-search">Axtarış & Kataloq</a>
+    </li>
+    <li class="nav-item">
         <a class="nav-link" data-bs-toggle="tab" href="#tab-about">Haqqımızda</a>
     </li>
     <li class="nav-item">
@@ -57,6 +60,91 @@
                         <label class="form-label fw-semibold">Alt başlıq</label>
                         <input type="text" name="home_hero_subtitle" class="form-control lang-field" data-key="home_hero_subtitle"
                             value="<%= settings.home_hero_subtitle %>">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Axtarış & Kataloq -->
+        <div class="tab-pane fade" id="tab-search">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-search me-2 text-primary"></i>Axtarış paneli başlıqları</h6>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Eyebrow mətni (kiçik)</label>
+                        <input type="text" name="search_eyebrow" class="form-control lang-field" data-key="search_eyebrow" value="<%= settings.search_eyebrow %>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Əsas başlıq</label>
+                        <input type="text" name="search_title" class="form-control lang-field" data-key="search_title" value="<%= settings.search_title %>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Marşrut bölməsi başlığı</label>
+                        <input type="text" name="search_route_label" class="form-control lang-field" data-key="search_route_label" value="<%= settings.search_route_label %>">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-funnel me-2 text-warning"></i>Filter sahələri</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Yükləmə şəhəri</label>
+                            <input type="text" name="search_pickup_city" class="form-control lang-field" data-key="search_pickup_city" value="<%= settings.search_pickup_city %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Çatdırılma şəhəri</label>
+                            <input type="text" name="search_delivery_city" class="form-control lang-field" data-key="search_delivery_city" value="<%= settings.search_delivery_city %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Yük növü</label>
+                            <input type="text" name="search_cargo_type" class="form-control lang-field" data-key="search_cargo_type" value="<%= settings.search_cargo_type %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nəqliyyat növü</label>
+                            <input type="text" name="search_vehicle_type" class="form-control lang-field" data-key="search_vehicle_type" value="<%= settings.search_vehicle_type %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Açar söz sahəsi</label>
+                            <input type="text" name="search_keyword" class="form-control lang-field" data-key="search_keyword" value="<%= settings.search_keyword %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Açar söz placeholder</label>
+                            <input type="text" name="search_keyword_placeholder" class="form-control lang-field" data-key="search_keyword_placeholder" value="<%= settings.search_keyword_placeholder %>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-toggles me-2 text-success"></i>Düymə və mesajlar</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Axtar düyməsi</label>
+                            <input type="text" name="search_btn" class="form-control lang-field" data-key="search_btn" value="<%= settings.search_btn %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Axtarılır... mətni</label>
+                            <input type="text" name="search_btn_loading" class="form-control lang-field" data-key="search_btn_loading" value="<%= settings.search_btn_loading %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ətraflı filter düyməsi</label>
+                            <input type="text" name="search_advanced_btn" class="form-control lang-field" data-key="search_advanced_btn" value="<%= settings.search_advanced_btn %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ətraflı filter hint mətni</label>
+                            <input type="text" name="search_advanced_hint" class="form-control lang-field" data-key="search_advanced_hint" value="<%= settings.search_advanced_hint %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Son elanlar başlığı</label>
+                            <input type="text" name="listings_title" class="form-control lang-field" data-key="listings_title" value="<%= settings.listings_title %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Kateqoriyalar başlığı</label>
+                            <input type="text" name="categories_title" class="form-control lang-field" data-key="categories_title" value="<%= settings.categories_title %>">
+                        </div>
                     </div>
                 </div>
             </div>

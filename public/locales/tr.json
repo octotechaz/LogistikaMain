@@ -33,5 +33,21 @@
   "footer_platform": "Platform",
   "footer_legal": "Hukuki",
   "footer_support": "Destek",
-  "about_advantages_title": "Temel Avantajlar"
+  "about_advantages_title": "Temel Avantajlar",
+  "search_eyebrow": "Arama Planı",
+  "search_title": "Güzergahınızı Planlayın",
+  "search_route_label": "Yükleme ve teslimat noktaları",
+  "search_pickup_city": "Yükleme şehri",
+  "search_delivery_city": "Teslimat şehri",
+  "search_cargo_type": "Yük türü",
+  "search_vehicle_type": "Araç türü",
+  "search_keyword": "Anahtar kelime",
+  "search_keyword_placeholder": "örn: mobilya, tahta, tahıl",
+  "search_btn": "Ara",
+  "search_btn_loading": "Aranıyor...",
+  "search_advanced_btn": "Gelişmiş filtre",
+  "search_advanced_hint": "Uygun sonuçları daha hızlı bulmak için gelişmiş filtreyi kullanın.",
+  "search_select": "Seç",
+  "listings_title": "Son ilanlar",
+  "categories_title": "Kategoriye göre göz at"
 }

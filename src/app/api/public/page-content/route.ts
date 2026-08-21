@@ -18,6 +18,21 @@ const CONTENT_KEYS = [
   "howitworks_title",
   "howitworks_description",
   "howitworks_steps",
+  "search_eyebrow",
+  "search_title",
+  "search_route_label",
+  "search_pickup_city",
+  "search_delivery_city",
+  "search_cargo_type",
+  "search_vehicle_type",
+  "search_keyword",
+  "search_keyword_placeholder",
+  "search_btn",
+  "search_btn_loading",
+  "search_advanced_btn",
+  "search_advanced_hint",
+  "listings_title",
+  "categories_title",
 ];
 
 async function loadLocaleFile(locale: Locale): Promise<Record<string, unknown>> {

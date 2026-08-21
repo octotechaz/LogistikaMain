@@ -974,7 +974,7 @@ app.get('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res)
         const lang = SUPPORTED_LOCALES.includes(req.query.lang) ? req.query.lang : 'az';
         const suffix = `_${lang}`;
 
-        const BASE_KEYS = ['home_hero_title','home_hero_subtitle','about_hero_title','about_hero_description','about_paragraphs','about_advantages','howitworks_title','howitworks_description','howitworks_steps'];
+        const BASE_KEYS = ['home_hero_title','home_hero_subtitle','about_hero_title','about_hero_description','about_paragraphs','about_advantages','howitworks_title','howitworks_description','howitworks_steps','search_eyebrow','search_title','search_route_label','search_pickup_city','search_delivery_city','search_cargo_type','search_vehicle_type','search_keyword','search_keyword_placeholder','search_btn','search_btn_loading','search_advanced_btn','search_advanced_hint','listings_title','categories_title'];
         const dbKeys = BASE_KEYS.map(k => `${k}${suffix}`);
         const rows = await prisma.appSetting.findMany({ where: { key: { in: dbKeys } } });
         // key-dən suffix-i sondan sil
@@ -1036,6 +1036,21 @@ app.get('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res)
                 howitworks_title: g('howitworks_title'),
                 howitworks_description: g('howitworks_description'),
                 steps,
+                search_eyebrow: g('search_eyebrow'),
+                search_title: g('search_title'),
+                search_route_label: g('search_route_label'),
+                search_pickup_city: g('search_pickup_city'),
+                search_delivery_city: g('search_delivery_city'),
+                search_cargo_type: g('search_cargo_type'),
+                search_vehicle_type: g('search_vehicle_type'),
+                search_keyword: g('search_keyword'),
+                search_keyword_placeholder: g('search_keyword_placeholder'),
+                search_btn: g('search_btn'),
+                search_btn_loading: g('search_btn_loading'),
+                search_advanced_btn: g('search_advanced_btn'),
+                search_advanced_hint: g('search_advanced_hint'),
+                listings_title: g('listings_title'),
+                categories_title: g('categories_title'),
             },
         });
     } catch (e) {
@@ -1050,7 +1065,7 @@ app.get('/dashboard/api/page-content', requireAuth, requireAdmin, async (req, re
         const SUPPORTED_LOCALES = ['az', 'ru', 'en', 'tr'];
         const lang = SUPPORTED_LOCALES.includes(req.query.locale) ? req.query.locale : 'az';
         const suffix = `_${lang}`;
-        const BASE_KEYS = ['home_hero_title','home_hero_subtitle','about_hero_title','about_hero_description','about_paragraphs','about_advantages','howitworks_title','howitworks_description','howitworks_steps'];
+        const BASE_KEYS = ['home_hero_title','home_hero_subtitle','about_hero_title','about_hero_description','about_paragraphs','about_advantages','howitworks_title','howitworks_description','howitworks_steps','search_eyebrow','search_title','search_route_label','search_pickup_city','search_delivery_city','search_cargo_type','search_vehicle_type','search_keyword','search_keyword_placeholder','search_btn','search_btn_loading','search_advanced_btn','search_advanced_hint','listings_title','categories_title'];
         const dbKeys = BASE_KEYS.map(k => `${k}${suffix}`);
         const rows = await prisma.appSetting.findMany({ where: { key: { in: dbKeys } } });
         const map = {};
@@ -1091,6 +1106,13 @@ app.post('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res
             about_hero_title, about_hero_description,
             about_paragraphs_raw, about_advantages_raw,
             howitworks_title, howitworks_description,
+            search_eyebrow, search_title, search_route_label,
+            search_pickup_city, search_delivery_city,
+            search_cargo_type, search_vehicle_type,
+            search_keyword, search_keyword_placeholder,
+            search_btn, search_btn_loading,
+            search_advanced_btn, search_advanced_hint,
+            listings_title, categories_title,
         } = req.body;
 
         const steps = [];
@@ -1105,16 +1127,32 @@ app.post('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res
         const paragraphs = (about_paragraphs_raw || '').split('\n').map(s => s.trim()).filter(Boolean);
         const advantages = (about_advantages_raw || '').split('\n').map(s => s.trim()).filter(Boolean);
 
+        const str = (v) => (v || '').trim();
         const upserts = [
-            [`home_hero_title${suffix}`, (home_hero_title || '').trim()],
-            [`home_hero_subtitle${suffix}`, (home_hero_subtitle || '').trim()],
-            [`about_hero_title${suffix}`, (about_hero_title || '').trim()],
-            [`about_hero_description${suffix}`, (about_hero_description || '').trim()],
+            [`home_hero_title${suffix}`, str(home_hero_title)],
+            [`home_hero_subtitle${suffix}`, str(home_hero_subtitle)],
+            [`about_hero_title${suffix}`, str(about_hero_title)],
+            [`about_hero_description${suffix}`, str(about_hero_description)],
             [`about_paragraphs${suffix}`, JSON.stringify(paragraphs)],
             [`about_advantages${suffix}`, JSON.stringify(advantages)],
-            [`howitworks_title${suffix}`, (howitworks_title || '').trim()],
-            [`howitworks_description${suffix}`, (howitworks_description || '').trim()],
+            [`howitworks_title${suffix}`, str(howitworks_title)],
+            [`howitworks_description${suffix}`, str(howitworks_description)],
             [`howitworks_steps${suffix}`, JSON.stringify(steps)],
+            [`search_eyebrow${suffix}`, str(search_eyebrow)],
+            [`search_title${suffix}`, str(search_title)],
+            [`search_route_label${suffix}`, str(search_route_label)],
+            [`search_pickup_city${suffix}`, str(search_pickup_city)],
+            [`search_delivery_city${suffix}`, str(search_delivery_city)],
+            [`search_cargo_type${suffix}`, str(search_cargo_type)],
+            [`search_vehicle_type${suffix}`, str(search_vehicle_type)],
+            [`search_keyword${suffix}`, str(search_keyword)],
+            [`search_keyword_placeholder${suffix}`, str(search_keyword_placeholder)],
+            [`search_btn${suffix}`, str(search_btn)],
+            [`search_btn_loading${suffix}`, str(search_btn_loading)],
+            [`search_advanced_btn${suffix}`, str(search_advanced_btn)],
+            [`search_advanced_hint${suffix}`, str(search_advanced_hint)],
+            [`listings_title${suffix}`, str(listings_title)],
+            [`categories_title${suffix}`, str(categories_title)],
         ];
 
         await Promise.all(upserts.map(([key, value]) =>
