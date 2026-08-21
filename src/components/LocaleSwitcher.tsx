@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LOCALE_LABELS, SUPPORTED_LOCALES, useLocale, type Locale } from "@/hooks/useLocale";
+import { LOCALE_LABELS, SUPPORTED_LOCALES, useLocale, type Locale } from "@/components/providers/LocaleProvider";
 import { cn } from "@/lib/utils";
 import AZ from "country-flag-icons/react/1x1/AZ";
 import RU from "country-flag-icons/react/1x1/RU";

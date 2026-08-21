@@ -3,6 +3,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import "remixicon/fonts/remixicon.css";
 import "@/app/globals.css";
 import { ClassifiedsProvider } from "@/components/providers/ClassifiedsProvider";
+import { LocaleProvider } from "@/components/providers/LocaleProvider";
 import { appName } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -27,7 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="az">
       <body className="min-h-screen">
-        <ClassifiedsProvider>{children}</ClassifiedsProvider>
+        <LocaleProvider><ClassifiedsProvider>{children}</ClassifiedsProvider></LocaleProvider>
       </body>
     </html>
   );
