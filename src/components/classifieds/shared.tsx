@@ -39,6 +39,7 @@ import { effectiveStatus, listingStatusLabels } from "@/lib/status/classifieds";
 import { footerNavItems, getActiveTopbarItemId, topbarNavItems } from "@/lib/topbar";
 import { cn } from "@/lib/utils";
 import type { CargoListing } from "@/types/classifieds";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 
 const topbarTabTransition: Transition = {
   type: "spring",
@@ -305,6 +306,7 @@ export function PublicNavbar() {
             </nav>
 
             <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+              <LocaleSwitcher className="hidden sm:flex" />
               {showFavorites ? <FavoriteNavLink /> : null}
 
               {user ? (

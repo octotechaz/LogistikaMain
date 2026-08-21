@@ -1,22 +1,18 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, createContext, useContext } from "react";
 
 export type Locale = "az" | "ru" | "en" | "tr";
 export const SUPPORTED_LOCALES: Locale[] = ["az", "ru", "en", "tr"];
-export const LOCALE_LABELS: Record<Locale, string> = {
-  az: "AZ",
-  ru: "RU",
-  en: "EN",
-  tr: "TR",
-};
+export const LOCALE_LABELS: Record<Locale, string> = { az: "AZ", ru: "RU", en: "EN", tr: "TR" };
 export const DEFAULT_LOCALE: Locale = "az";
-
 export type Messages = Record<string, unknown>;
+
+const STORAGE_KEY = "tranzit_locale";
 
 function getStoredLocale(): Locale {
   if (typeof window === "undefined") return DEFAULT_LOCALE;
-  const stored = localStorage.getItem("tranzit_locale") as Locale | null;
+  const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
   if (stored && SUPPORTED_LOCALES.includes(stored)) return stored;
   const browserLang = navigator.language.slice(0, 2) as Locale;
   if (SUPPORTED_LOCALES.includes(browserLang)) return browserLang;
@@ -33,9 +29,7 @@ async function loadStaticMessages(locale: Locale): Promise<Messages> {
     const data = await res.json();
     staticCache[locale] = data;
     return data;
-  } catch {
-    return {};
-  }
+  } catch { return {}; }
 }
 
 async function loadDynamicContent(locale: Locale): Promise<Messages> {
@@ -46,17 +40,12 @@ async function loadDynamicContent(locale: Locale): Promise<Messages> {
     const data = await res.json();
     contentCache[locale] = data;
     return data;
-  } catch {
-    return {};
-  }
+  } catch { return {}; }
 }
 
 async function loadMessages(locale: Locale): Promise<Messages> {
-  const [staticMsgs, dynamicMsgs] = await Promise.all([
-    loadStaticMessages(locale),
-    loadDynamicContent(locale),
-  ]);
-  return { ...staticMsgs, ...dynamicMsgs };
+  const [s, d] = await Promise.all([loadStaticMessages(locale), loadDynamicContent(locale)]);
+  return { ...s, ...d };
 }
 
 export function useLocale() {
@@ -67,14 +56,21 @@ export function useLocale() {
   useEffect(() => {
     const initial = getStoredLocale();
     setLocaleState(initial);
-    loadMessages(initial).then((m) => {
-      setMessages(m);
-      setReady(true);
-    });
+    loadMessages(initial).then((m) => { setMessages(m); setReady(true); });
+
+    function onStorage(e: StorageEvent) {
+      if (e.key === STORAGE_KEY && e.newValue && SUPPORTED_LOCALES.includes(e.newValue as Locale)) {
+        const next = e.newValue as Locale;
+        setLocaleState(next);
+        loadMessages(next).then(setMessages);
+      }
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   const setLocale = useCallback((next: Locale) => {
-    localStorage.setItem("tranzit_locale", next);
+    localStorage.setItem(STORAGE_KEY, next);
     delete contentCache[next];
     setLocaleState(next);
     loadMessages(next).then(setMessages);

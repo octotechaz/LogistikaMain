@@ -1,15 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ClipboardList, PhoneCall, ShieldCheck, UploadCloud, type LucideIcon } from "lucide-react";
 import { PageSection, PublicPage } from "@/components/classifieds/shared";
+import { useLocale } from "@/hooks/useLocale";
 
-const ICON_MAP: Record<string, LucideIcon> = {
-  UploadCloud,
-  ShieldCheck,
-  ClipboardList,
-  PhoneCall,
-};
+const ICON_MAP: Record<string, LucideIcon> = { UploadCloud, ShieldCheck, ClipboardList, PhoneCall };
 
 const DEFAULT_STEPS = [
   { icon: "UploadCloud", title: "Asan yük yerləşdirmə", text: "Yük sahibi qeydiyyatdan keçərək yük formunu bir neçə kliklə doldurur." },
@@ -19,23 +14,11 @@ const DEFAULT_STEPS = [
 ];
 
 export function HowItWorksPageClient() {
-  const [title, setTitle] = useState("Sadə elan modeli, sürətli əlaqə");
-  const [description, setDescription] = useState("Tranzit.AZ marketplace deyil. Platforma yük elanını dərc edir və sürücünü birbaşa yük sahibi ilə danışdırır.");
-  const [steps, setSteps] = useState(DEFAULT_STEPS);
+  const { t, tSteps } = useLocale();
 
-  useEffect(() => {
-    fetch("/api/public/page-content")
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => {
-        if (!d) return;
-        if (d.howitworks_title) setTitle(d.howitworks_title);
-        if (d.howitworks_description) setDescription(d.howitworks_description);
-        if (d.howitworks_steps) {
-          try { setSteps(JSON.parse(d.howitworks_steps)); } catch { /* keep default */ }
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const title = t("howitworks_title", "Sadə elan modeli, sürətli əlaqə");
+  const description = t("howitworks_description", "Tranzit.AZ marketplace deyil. Platforma yük elanını dərc edir və sürücünü birbaşa yük sahibi ilə danışdırır.");
+  const steps = tSteps("howitworks_steps", DEFAULT_STEPS);
 
   return (
     <PublicPage emphasizeBackground>

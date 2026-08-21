@@ -58,6 +58,7 @@ import { listingVisualTone } from "@/lib/listing-visual";
 import { cn } from "@/lib/utils";
 import { fetchJsonWithRetry } from "@/lib/fetch-json";
 import type { CargoListing, ListingFilters, PublicListingCategory } from "@/types/classifieds";
+import { useLocale } from "@/hooks/useLocale";
 
 type CatalogMode = "home" | "loads";
 type SortMode = "newest" | "price-desc" | "price-asc" | "weight-desc";
@@ -932,11 +933,10 @@ export function CatalogPageClient({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLocale();
   const [sqliteListings, setSqliteListings] = useState<CargoListing[]>(initialListings);
   const [isDataLoaded, setIsDataLoaded] = useState(initialListings.length > 0);
   const [homeCategories, setHomeCategories] = useState<PublicListingCategory[]>(fallbackHomeCategories);
-  const [heroTitle, setHeroTitle] = useState("Daşımalarınızı bizimlə asanlaşdırın");
-  const [heroSubtitle, setHeroSubtitle] = useState("Yükünüz üçün doğru marşrutu, nəqliyyatı və daşıyıcını bir yerdə tapın.");
   const [filters, setFilters] = useState(createEmptyFilters());
   const [draftFilters, setDraftFilters] = useState(createEmptyFilters());
   const [sortBy, setSortBy] = useState<SortMode>("newest");
@@ -958,10 +958,9 @@ export function CatalogPageClient({
     let cancelled = false;
 
     async function loadPublicData() {
-      const [listingsPayload, categoriesPayload, pageContent] = await Promise.all([
+      const [listingsPayload, categoriesPayload] = await Promise.all([
         fetchJsonWithRetry<{ data?: CargoListing[] }>("/api/public/listings"),
         fetchJsonWithRetry<{ data?: PublicListingCategory[] }>("/api/public/categories"),
-        fetch("/api/public/page-content").then((r) => r.ok ? r.json() : null).catch(() => null),
       ]);
 
       if (cancelled) {
@@ -985,9 +984,6 @@ export function CatalogPageClient({
       if (nextCategories && nextCategories.length > 0) {
         setHomeCategories(nextCategories);
       }
-
-      if (pageContent?.home_hero_title) setHeroTitle(pageContent.home_hero_title);
-      if (pageContent?.home_hero_subtitle) setHeroSubtitle(pageContent.home_hero_subtitle);
 
       setIsDataLoaded(true);
     }
@@ -1255,10 +1251,10 @@ export function CatalogPageClient({
             <div className="mx-auto max-w-[1240px]">
               <div className="max-w-2xl">
                 <h1 className="max-w-xl text-4xl font-bold leading-[1.08] tracking-[-0.035em] sm:text-5xl lg:text-[3.65rem]">
-                  {heroTitle}
+                  {t("home_hero_title", "Daşımalarınızı bizimlə asanlaşdırın")}
                 </h1>
                 <p className="mt-5 max-w-lg text-base leading-7 text-slate-200 sm:text-lg">
-                  {heroSubtitle}
+                  {t("home_hero_subtitle", "Yükünüz üçün doğru marşrutu, nəqliyyatı və daşıyıcını bir yerdə tapın.")}
                 </p>
               </div>
             </div>
