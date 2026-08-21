@@ -33,7 +33,8 @@ export async function GET() {
       label: cat.label,
       iconKey: cat.icon_key,
       iconTone: cat.icon_tone,
-      matchCargoType: cat.match_cargo_type,
+      matchCargoType: cat.match_cargo_type ?? null,
+      matchKeyword: cat.match_keyword ?? null,
       sortOrder: cat.sort_order,
       isActive: cat.is_active === 1
     }));
@@ -48,7 +49,8 @@ export async function GET() {
         label: "Ev əşyaları",
         iconKey: "couch",
         iconTone: "text-amber-500",
-        matchCargoType: "Ev",
+        matchCargoType: "Mebel",
+        matchKeyword: "mebel,ev əşyası,ev esyasi",
         sortOrder: 1,
         isActive: true
       },
@@ -57,7 +59,8 @@ export async function GET() {
         label: "Tikinti",
         iconKey: "hammer",
         iconTone: "text-slate-500",
-        matchCargoType: "Tikinti",
+        matchCargoType: "Tikinti materialı",
+        matchKeyword: "tikinti",
         sortOrder: 2,
         isActive: true
       },
@@ -66,7 +69,8 @@ export async function GET() {
         label: "Qida",
         iconKey: "apple-whole",
         iconTone: "text-green-500",
-        matchCargoType: "Erzaq",
+        matchCargoType: "Ərzaq",
+        matchKeyword: "ərzaq,erzaq,qida",
         sortOrder: 3,
         isActive: true
       },
@@ -75,7 +79,8 @@ export async function GET() {
         label: "Digər",
         iconKey: "box",
         iconTone: "text-blue-500",
-        matchCargoType: "Diger",
+        matchCargoType: null,
+        matchKeyword: "kubik,texnika,paletli,maye,heyvan,sənaye,soyudulmuş",
         sortOrder: 4,
         isActive: true
       }
