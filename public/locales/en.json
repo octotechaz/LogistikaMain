@@ -1,0 +1,37 @@
+{
+  "home_hero_title": "Simplify Your Shipments With Us",
+  "home_hero_subtitle": "Find the right route, vehicle and carrier for your cargo in one place.",
+  "about_hero_title": "About the Platform",
+  "about_hero_description": "Tranzit.AZ is a cargo listing platform that accelerates connections in the freight market with a clear and convenient workflow.",
+  "about_paragraphs": [
+    "Tranzit.AZ is an online cargo listing platform that simplifies communication between cargo owners, drivers and transport companies. Our goal is to make finding a carrier for your cargo fast, transparent and convenient.",
+    "On the platform, cargo owners can post their listings for free, while drivers and transport companies can easily find matching loads and get in touch."
+  ],
+  "about_advantages": [
+    "Save time — drivers find you, not the other way around.",
+    "Easy listing placement",
+    "Search by cargo type, vehicle and city",
+    "New order opportunities for drivers and transport companies",
+    "Direct call and communication without intermediaries",
+    "Drivers can view loads and call without registration"
+  ],
+  "howitworks_title": "Simple listing model, fast connection",
+  "howitworks_description": "Tranzit.AZ is not a marketplace. The platform publishes cargo listings and connects drivers directly with cargo owners.",
+  "howitworks_steps": [
+    { "icon": "UploadCloud", "title": "Easy cargo listing", "text": "The cargo owner registers and fills out the cargo form in a few clicks." },
+    { "icon": "ShieldCheck", "title": "Confirmation time", "text": "Your listing is reviewed within minutes and published if it complies with the rules." },
+    { "icon": "ClipboardList", "title": "Accessible listing page", "text": "Your listing appears on the main page and becomes accessible to drivers." },
+    { "icon": "PhoneCall", "title": "Direct call", "text": "Individual drivers contact you directly and agree on the details of the shipment." }
+  ],
+  "footer_phone": "+994 50 123 45 67",
+  "footer_work_hours": "Every day 09:00-20:00",
+  "footer_copyright": "© 2026 Tranzit.AZ. All rights reserved.",
+  "footer_tagline": "Public platform for cargo listings and transport connections.",
+  "nav_loads": "Listings",
+  "nav_about": "About Platform",
+  "nav_howitworks": "How It Works",
+  "footer_platform": "Platform",
+  "footer_legal": "Legal",
+  "footer_support": "Support",
+  "about_advantages_title": "Key Advantages"
+}

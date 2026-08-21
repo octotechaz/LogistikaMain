@@ -1,53 +1,73 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 export const dynamic = "force-dynamic";
 
-const DEFAULTS: Record<string, string> = {
-  about_hero_title: "Platforma haqqında",
-  about_hero_description: "Tranzit.AZ yük bazarında əlaqəni sürətləndirən, aydın və rahat iş axını təqdim edən elan platformasıdır.",
-  about_paragraphs: JSON.stringify([
-    "Tranzit.AZ yük sahibləri, sürücülər və daşıma şirkətləri arasında əlaqəni asanlaşdıran onlayn yük elanları platformasıdır. Məqsədimiz yükünüzün daha asan tapılmasını sürətli, şəffaf və rahat etməkdir.",
-    "Platformada yük sahibləri öz elanlarını pulsuz yerləşdirə, sürücülər və daşıma şirkətləri isə uyğun yükləri asanlıqla taparaq əlaqə saxlaya bilərlər."
-  ]),
-  about_advantages: JSON.stringify([
-    "Vaxta qənaət - Siz sürücü yox, sürücülər sizi axtarır.",
-    "Rahat elan yerləşdirmə",
-    "Yük növü, nəqliyyat və şəhərə görə axtarış sistemi",
-    "Sürücülər və daşıma şirkətləri üçün yeni sifariş imkanları",
-    "Birbaşa zəng və vasitəsiz danışıq imkanı",
-    "Sürücülər üçün qeydiyyat olmadan yük görmə və zəng etmə imkanları"
-  ]),
-  howitworks_title: "Sadə elan modeli, sürətli əlaqə",
-  howitworks_description: "Tranzit.AZ marketplace deyil. Platforma yük elanını dərc edir və sürücünü birbaşa yük sahibi ilə danışdırır.",
-  howitworks_steps: JSON.stringify([
-    { icon: "UploadCloud", title: "Asan yük yerləşdirmə", text: "Yük sahibi qeydiyyatdan keçərək yük formunu bir neçə kliklə doldurur." },
-    { icon: "ShieldCheck", title: "Təsdiqləmə vaxtı", text: "Dəqiqələr içində elanınız yoxlanılır, qaydalara uyğun olduqda təsdiqlənir." },
-    { icon: "ClipboardList", title: "Əlçatan elan səhifəsi", text: "Elanınız əsas səhifədə görünərək sürücülər üçün daha əlçatan olur." },
-    { icon: "PhoneCall", title: "Birbaşa zəng", text: "Fərdi sürücülər birbaşa sizinlə əlaqə saxlayaraq daşınmanın detallarını razılaşdırır." }
-  ]),
-  home_hero_title: "Daşımalarınızı bizimlə asanlaşdırın",
-  home_hero_subtitle: "Yükünüz üçün doğru marşrutu, nəqliyyatı və daşıyıcını bir yerdə tapın.",
-};
+const SUPPORTED_LOCALES = ["az", "ru", "en", "tr"] as const;
+type Locale = (typeof SUPPORTED_LOCALES)[number];
 
-export async function GET() {
+const CONTENT_KEYS = [
+  "home_hero_title",
+  "home_hero_subtitle",
+  "about_hero_title",
+  "about_hero_description",
+  "about_paragraphs",
+  "about_advantages",
+  "howitworks_title",
+  "howitworks_description",
+  "howitworks_steps",
+];
+
+async function loadLocaleFile(locale: Locale): Promise<Record<string, unknown>> {
   try {
-    const rows = await prisma.appSetting.findMany({
-      where: { key: { in: Object.keys(DEFAULTS) } },
-    });
+    const filePath = path.join(process.cwd(), "public", "locales", `${locale}.json`);
+    const content = await readFile(filePath, "utf-8");
+    return JSON.parse(content);
+  } catch {
+    return {};
+  }
+}
 
-    const map: Record<string, string> = {};
+function normalizeValue(key: string, raw: string): unknown {
+  if (["about_paragraphs", "about_advantages", "howitworks_steps"].includes(key)) {
+    try { return JSON.parse(raw); } catch { return raw; }
+  }
+  return raw;
+}
+
+export async function GET(request: NextRequest) {
+  const localeParam = request.nextUrl.searchParams.get("locale") ?? "az";
+  const locale: Locale = SUPPORTED_LOCALES.includes(localeParam as Locale)
+    ? (localeParam as Locale)
+    : "az";
+
+  try {
+    const localeDefaults = await loadLocaleFile(locale);
+
+    const dbKeys = CONTENT_KEYS.map((k) => `${k}_${locale}`);
+    const rows = await prisma.appSetting.findMany({
+      where: { key: { in: dbKeys } },
+    });
+    const dbMap: Record<string, string> = {};
     for (const row of rows) {
-      map[row.key] = row.value;
+      dbMap[row.key] = row.value;
     }
 
     const result: Record<string, unknown> = {};
-    for (const key of Object.keys(DEFAULTS)) {
-      result[key] = map[key] ?? DEFAULTS[key];
+    for (const key of CONTENT_KEYS) {
+      const dbKey = `${key}_${locale}`;
+      if (dbMap[dbKey] !== undefined) {
+        result[key] = normalizeValue(key, dbMap[dbKey]);
+      } else if (localeDefaults[key] !== undefined) {
+        result[key] = localeDefaults[key];
+      }
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({ locale, ...result });
   } catch {
-    return NextResponse.json(DEFAULTS);
+    const localeDefaults = await loadLocaleFile(locale).catch(() => ({}));
+    return NextResponse.json({ locale, ...localeDefaults });
   }
 }

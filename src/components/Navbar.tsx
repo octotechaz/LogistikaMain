@@ -6,6 +6,7 @@ import { LogOut, Truck, UserRound } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { useApiAuthUser } from "@/hooks/useApiAuthUser";
 import { cn } from "@/lib/utils";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 
 export function Navbar({
   user: initialUser
@@ -105,6 +106,8 @@ export function Navbar({
           >
             Necə işləyir
           </Link>
+
+          <LocaleSwitcher className="hidden sm:flex" />
 
           {user ? (
             <div className="relative hidden sm:block" ref={dropdownRef}>

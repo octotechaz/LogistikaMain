@@ -970,36 +970,33 @@ app.post('/dashboard/whatsapp/logout', requireAuth, requireAdmin, async (req, re
 // Səhifə Məzmunu - GET
 app.get('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res) => {
     try {
-        const keys = [
-            'home_hero_title','home_hero_subtitle',
-            'about_hero_title','about_hero_description','about_paragraphs','about_advantages',
-            'howitworks_title','howitworks_description','howitworks_steps',
-        ];
-        const rows = await prisma.appSetting.findMany({ where: { key: { in: keys } } });
-        const map = Object.fromEntries(rows.map(r => [r.key, r.value]));
+        const SUPPORTED_LOCALES = ['az', 'ru', 'en', 'tr'];
+        const lang = SUPPORTED_LOCALES.includes(req.query.lang) ? req.query.lang : 'az';
+        const suffix = `_${lang}`;
 
-        const defaultParagraphs = [
-            'Tranzit.AZ yük sahibləri, sürücülər və daşıma şirkətləri arasında əlaqəni asanlaşdıran onlayn yük elanları platformasıdır. Məqsədimiz yükünüzün daha asan tapılmasını sürətli, şəffaf və rahat etməkdir.',
-            'Platformada yük sahibləri öz elanlarını pulsuz yerləşdirə, sürücülər və daşıma şirkətləri isə uyğun yükləri asanlıqla taparaq əlaqə saxlaya bilərlər.'
-        ];
-        const defaultAdvantages = [
-            'Vaxta qənaət - Siz sürücü yox, sürücülər sizi axtarır.',
-            'Rahat elan yerləşdirmə',
-            'Yük növü, nəqliyyat və şəhərə görə axtarış sistemi',
-            'Sürücülər və daşıma şirkətləri üçün yeni sifariş imkanları',
-            'Birbaşa zəng və vasitəsiz danışıq imkanı',
-            'Sürücülər üçün qeydiyyat olmadan yük görmə və zəng etmə imkanları'
-        ];
-        const defaultSteps = [
-            { icon: 'UploadCloud', title: 'Asan yük yerləşdirmə', text: 'Yük sahibi qeydiyyatdan keçərək yük formunu bir neçə kliklə doldurur.' },
-            { icon: 'ShieldCheck', title: 'Təsdiqləmə vaxtı', text: 'Dəqiqələr içində elanınız yoxlanılır, qaydalara uyğun olduqda təsdiqlənir.' },
-            { icon: 'ClipboardList', title: 'Əlçatan elan səhifəsi', text: 'Elanınız əsas səhifədə görünərək sürücülər üçün daha əlçatan olur.' },
-            { icon: 'PhoneCall', title: 'Birbaşa zəng', text: 'Fərdi sürücülər birbaşa sizinlə əlaqə saxlayaraq daşınmanın detallarını razılaşdırır.' },
-        ];
+        const BASE_KEYS = ['home_hero_title','home_hero_subtitle','about_hero_title','about_hero_description','about_paragraphs','about_advantages','howitworks_title','howitworks_description','howitworks_steps'];
+        const dbKeys = BASE_KEYS.map(k => `${k}${suffix}`);
+        const rows = await prisma.appSetting.findMany({ where: { key: { in: dbKeys } } });
+        const map = Object.fromEntries(rows.map(r => [r.key.replace(suffix, ''), r.value]));
 
-        let paragraphs = defaultParagraphs;
-        let advantages = defaultAdvantages;
-        let steps = defaultSteps;
+        const fs = require('fs');
+        const nodePath = require('path');
+        let localeDefaults = {};
+        try {
+            const filePath = nodePath.join(process.cwd(), 'public', 'locales', `${lang}.json`);
+            localeDefaults = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        } catch {}
+
+        const g = (key) => map[key] || (typeof localeDefaults[key] === 'string' ? localeDefaults[key] : '');
+
+        let paragraphs = Array.isArray(localeDefaults.about_paragraphs) ? localeDefaults.about_paragraphs : [];
+        let advantages = Array.isArray(localeDefaults.about_advantages) ? localeDefaults.about_advantages : [];
+        let steps = Array.isArray(localeDefaults.howitworks_steps) ? localeDefaults.howitworks_steps : [
+            { icon: 'UploadCloud', title: '', text: '' },
+            { icon: 'ShieldCheck', title: '', text: '' },
+            { icon: 'ClipboardList', title: '', text: '' },
+            { icon: 'PhoneCall', title: '', text: '' },
+        ];
         try { if (map.about_paragraphs) paragraphs = JSON.parse(map.about_paragraphs); } catch {}
         try { if (map.about_advantages) advantages = JSON.parse(map.about_advantages); } catch {}
         try { if (map.howitworks_steps) steps = JSON.parse(map.howitworks_steps); } catch {}
@@ -1008,16 +1005,18 @@ app.get('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res)
             user: req.session.user,
             path: '/dashboard/sehife-mezmunu',
             saved: req.query.saved === '1',
+            savedLang: req.query.lang || 'az',
             error: req.query.error || null,
+            currentLang: lang,
             settings: {
-                home_hero_title: map.home_hero_title || 'Daşımalarınızı bizimlə asanlaşdırın',
-                home_hero_subtitle: map.home_hero_subtitle || 'Yükünüz üçün doğru marşrutu, nəqliyyatı və daşıyıcını bir yerdə tapın.',
-                about_hero_title: map.about_hero_title || 'Platforma haqqında',
-                about_hero_description: map.about_hero_description || 'Tranzit.AZ yük bazarında əlaqəni sürətləndirən, aydın və rahat iş axını təqdim edən elan platformasıdır.',
+                home_hero_title: g('home_hero_title'),
+                home_hero_subtitle: g('home_hero_subtitle'),
+                about_hero_title: g('about_hero_title'),
+                about_hero_description: g('about_hero_description'),
                 about_paragraphs_raw: paragraphs.join('\n'),
                 about_advantages_raw: advantages.join('\n'),
-                howitworks_title: map.howitworks_title || 'Sadə elan modeli, sürətli əlaqə',
-                howitworks_description: map.howitworks_description || 'Tranzit.AZ marketplace deyil. Platforma yük elanını dərc edir və sürücünü birbaşa yük sahibi ilə danışdırır.',
+                howitworks_title: g('howitworks_title'),
+                howitworks_description: g('howitworks_description'),
                 steps,
             },
         });
@@ -1030,6 +1029,10 @@ app.get('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res)
 // Səhifə Məzmunu - POST
 app.post('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res) => {
     try {
+        const SUPPORTED_LOCALES = ['az', 'ru', 'en', 'tr'];
+        const lang = SUPPORTED_LOCALES.includes(req.body.lang) ? req.body.lang : 'az';
+        const suffix = `_${lang}`;
+
         const {
             home_hero_title, home_hero_subtitle,
             about_hero_title, about_hero_description,
@@ -1050,22 +1053,22 @@ app.post('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res
         const advantages = (about_advantages_raw || '').split('\n').map(s => s.trim()).filter(Boolean);
 
         const upserts = [
-            ['home_hero_title', (home_hero_title || '').trim()],
-            ['home_hero_subtitle', (home_hero_subtitle || '').trim()],
-            ['about_hero_title', (about_hero_title || '').trim()],
-            ['about_hero_description', (about_hero_description || '').trim()],
-            ['about_paragraphs', JSON.stringify(paragraphs)],
-            ['about_advantages', JSON.stringify(advantages)],
-            ['howitworks_title', (howitworks_title || '').trim()],
-            ['howitworks_description', (howitworks_description || '').trim()],
-            ['howitworks_steps', JSON.stringify(steps)],
+            [`home_hero_title${suffix}`, (home_hero_title || '').trim()],
+            [`home_hero_subtitle${suffix}`, (home_hero_subtitle || '').trim()],
+            [`about_hero_title${suffix}`, (about_hero_title || '').trim()],
+            [`about_hero_description${suffix}`, (about_hero_description || '').trim()],
+            [`about_paragraphs${suffix}`, JSON.stringify(paragraphs)],
+            [`about_advantages${suffix}`, JSON.stringify(advantages)],
+            [`howitworks_title${suffix}`, (howitworks_title || '').trim()],
+            [`howitworks_description${suffix}`, (howitworks_description || '').trim()],
+            [`howitworks_steps${suffix}`, JSON.stringify(steps)],
         ];
 
         await Promise.all(upserts.map(([key, value]) =>
             prisma.appSetting.upsert({ where: { key }, update: { value }, create: { key, value } })
         ));
 
-        res.redirect('/dashboard/sehife-mezmunu?saved=1');
+        res.redirect(`/dashboard/sehife-mezmunu?saved=1&lang=${lang}`);
     } catch (e) {
         console.error('Səhifə məzmunu saxlanmadı:', e);
         res.redirect('/dashboard/sehife-mezmunu?error=save');
