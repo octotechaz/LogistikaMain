@@ -977,35 +977,53 @@ app.get('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res)
         const BASE_KEYS = ['home_hero_title','home_hero_subtitle','about_hero_title','about_hero_description','about_paragraphs','about_advantages','howitworks_title','howitworks_description','howitworks_steps'];
         const dbKeys = BASE_KEYS.map(k => `${k}${suffix}`);
         const rows = await prisma.appSetting.findMany({ where: { key: { in: dbKeys } } });
-        const map = Object.fromEntries(rows.map(r => [r.key.replace(suffix, ''), r.value]));
+        // key-dən suffix-i sondan sil
+        const map = {};
+        for (const row of rows) {
+            const baseKey = row.key.endsWith(suffix) ? row.key.slice(0, -suffix.length) : row.key;
+            map[baseKey] = row.value;
+        }
 
-        const fs = require('fs');
-        const nodePath = require('path');
+        // Locale JSON faylını octo-admin qovluğundan oxu
         let localeDefaults = {};
         try {
-            const filePath = nodePath.join(process.cwd(), 'public', 'locales', `${lang}.json`);
-            localeDefaults = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        } catch {}
+            const localePath = path.join(__dirname, `${lang}.json`);
+            localeDefaults = JSON.parse(fs.readFileSync(localePath, 'utf-8'));
+        } catch (e) {
+            // public/locales/ yedəyi
+            try {
+                const localePath2 = path.join(__dirname, '..', 'public', 'locales', `${lang}.json`);
+                localeDefaults = JSON.parse(fs.readFileSync(localePath2, 'utf-8'));
+            } catch {}
+        }
 
-        const g = (key) => map[key] || (typeof localeDefaults[key] === 'string' ? localeDefaults[key] : '');
+        const g = (key) => {
+            if (map[key] !== undefined && map[key] !== '') return map[key];
+            if (typeof localeDefaults[key] === 'string') return localeDefaults[key];
+            return '';
+        };
 
-        let paragraphs = Array.isArray(localeDefaults.about_paragraphs) ? localeDefaults.about_paragraphs : [];
-        let advantages = Array.isArray(localeDefaults.about_advantages) ? localeDefaults.about_advantages : [];
-        let steps = Array.isArray(localeDefaults.howitworks_steps) ? localeDefaults.howitworks_steps : [
+        const DEFAULT_STEPS = [
             { icon: 'UploadCloud', title: '', text: '' },
             { icon: 'ShieldCheck', title: '', text: '' },
             { icon: 'ClipboardList', title: '', text: '' },
             { icon: 'PhoneCall', title: '', text: '' },
         ];
+
+        let paragraphs = Array.isArray(localeDefaults.about_paragraphs) ? localeDefaults.about_paragraphs : [];
+        let advantages = Array.isArray(localeDefaults.about_advantages) ? localeDefaults.about_advantages : [];
+        let steps = Array.isArray(localeDefaults.howitworks_steps) ? localeDefaults.howitworks_steps : DEFAULT_STEPS;
         try { if (map.about_paragraphs) paragraphs = JSON.parse(map.about_paragraphs); } catch {}
         try { if (map.about_advantages) advantages = JSON.parse(map.about_advantages); } catch {}
         try { if (map.howitworks_steps) steps = JSON.parse(map.howitworks_steps); } catch {}
+
+        // steps-i həmişə 4 elementli et
+        while (steps.length < 4) steps.push(DEFAULT_STEPS[steps.length]);
 
         res.render('sehife-mezmunu', {
             user: req.session.user,
             path: '/dashboard/sehife-mezmunu',
             saved: req.query.saved === '1',
-            savedLang: req.query.lang || 'az',
             error: req.query.error || null,
             currentLang: lang,
             settings: {
@@ -1023,6 +1041,41 @@ app.get('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res)
     } catch (e) {
         console.error('Səhifə məzmunu yüklənmədi:', e);
         res.redirect('/dashboard?error=content');
+    }
+});
+
+// Səhifə məzmunu - dil üzrə JSON API (admin panel JS üçün)
+app.get('/dashboard/api/page-content', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const SUPPORTED_LOCALES = ['az', 'ru', 'en', 'tr'];
+        const lang = SUPPORTED_LOCALES.includes(req.query.locale) ? req.query.locale : 'az';
+        const suffix = `_${lang}`;
+        const BASE_KEYS = ['home_hero_title','home_hero_subtitle','about_hero_title','about_hero_description','about_paragraphs','about_advantages','howitworks_title','howitworks_description','howitworks_steps'];
+        const dbKeys = BASE_KEYS.map(k => `${k}${suffix}`);
+        const rows = await prisma.appSetting.findMany({ where: { key: { in: dbKeys } } });
+        const map = {};
+        for (const row of rows) {
+            const baseKey = row.key.endsWith(suffix) ? row.key.slice(0, -suffix.length) : row.key;
+            map[baseKey] = row.value;
+        }
+
+        let localeDefaults = {};
+        try {
+            const localePath = path.join(__dirname, `${lang}.json`);
+            localeDefaults = JSON.parse(fs.readFileSync(localePath, 'utf-8'));
+        } catch {}
+
+        const result = {};
+        for (const key of BASE_KEYS) {
+            if (map[key] !== undefined && map[key] !== '') {
+                try { result[key] = JSON.parse(map[key]); } catch { result[key] = map[key]; }
+            } else {
+                result[key] = localeDefaults[key] ?? '';
+            }
+        }
+        res.json({ locale: lang, ...result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
 });
 

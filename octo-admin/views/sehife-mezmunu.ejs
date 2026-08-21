@@ -224,7 +224,7 @@ function applyFieldsFromData(data, lang) {
 
 function applyLang(lang) {
   if (Object.keys(langCache[lang]).length === 0) {
-    fetch('/api/public/page-content?locale=' + lang)
+    fetch('/dashboard/api/page-content?locale=' + lang)
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) applyFieldsFromData(data, lang); });
   } else {

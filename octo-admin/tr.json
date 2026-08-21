@@ -1,0 +1,37 @@
+{
+  "home_hero_title": "Taşımalarınızı Bizimle Kolaylaştırın",
+  "home_hero_subtitle": "Yükünüz için doğru güzergahı, aracı ve taşıyıcıyı tek bir yerde bulun.",
+  "about_hero_title": "Platform Hakkında",
+  "about_hero_description": "Tranzit.AZ, yük pazarında bağlantıyı hızlandıran, açık ve rahat bir iş akışı sunan ilan platformasıdır.",
+  "about_paragraphs": [
+    "Tranzit.AZ, yük sahipleri, sürücüler ve taşımacılık şirketleri arasındaki iletişimi kolaylaştıran çevrimiçi bir yük ilanları platformudur. Amacımız, yükünüz için taşıyıcı bulmayı hızlı, şeffaf ve kolay hale getirmektir.",
+    "Platformda yük sahipleri ilanlarını ücretsiz yayınlayabilir, sürücüler ve taşımacılık şirketleri ise uygun yükleri kolayca bulup iletişime geçebilir."
+  ],
+  "about_advantages": [
+    "Zamandan tasarruf — sürücü aramıyorsunuz, sürücüler sizi arıyor.",
+    "Kolay ilan yayınlama",
+    "Yük türü, araç ve şehre göre arama",
+    "Sürücüler ve taşımacılık şirketleri için yeni sipariş fırsatları",
+    "Doğrudan arama ve aracısız iletişim",
+    "Sürücüler kayıt olmadan yükleri görüp arayabilir"
+  ],
+  "howitworks_title": "Basit ilan modeli, hızlı bağlantı",
+  "howitworks_description": "Tranzit.AZ bir pazar yeri değildir. Platform, yük ilanını yayınlar ve sürücüyü doğrudan yük sahibiyle buluşturur.",
+  "howitworks_steps": [
+    { "icon": "UploadCloud", "title": "Kolay yük yayınlama", "text": "Yük sahibi kayıt olarak yük formunu birkaç tıklamayla doldurur." },
+    { "icon": "ShieldCheck", "title": "Onay süresi", "text": "İlanınız dakikalar içinde incelenir ve kurallara uygunsa onaylanır." },
+    { "icon": "ClipboardList", "title": "Erişilebilir ilan sayfası", "text": "İlanınız ana sayfada görünür ve sürücüler için daha erişilebilir hale gelir." },
+    { "icon": "PhoneCall", "title": "Doğrudan arama", "text": "Sürücüler sizi doğrudan arayarak taşıma detaylarını görüşür." }
+  ],
+  "footer_phone": "+994 50 123 45 67",
+  "footer_work_hours": "Her gün 09:00-20:00",
+  "footer_copyright": "© 2026 Tranzit.AZ. Tüm hakları saklıdır.",
+  "footer_tagline": "Yük ilanları ve taşıma bağlantıları için açık platform.",
+  "nav_loads": "İlanlar",
+  "nav_about": "Platform Hakkında",
+  "nav_howitworks": "Nasıl Çalışır",
+  "footer_platform": "Platform",
+  "footer_legal": "Hukuki",
+  "footer_support": "Destek",
+  "about_advantages_title": "Temel Avantajlar"
+}
