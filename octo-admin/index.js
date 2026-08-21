@@ -967,6 +967,111 @@ app.post('/dashboard/whatsapp/logout', requireAuth, requireAdmin, async (req, re
     }
 });
 
+// Səhifə Məzmunu - GET
+app.get('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const keys = [
+            'home_hero_title','home_hero_subtitle',
+            'about_hero_title','about_hero_description','about_paragraphs','about_advantages',
+            'howitworks_title','howitworks_description','howitworks_steps',
+        ];
+        const rows = await prisma.appSetting.findMany({ where: { key: { in: keys } } });
+        const map = Object.fromEntries(rows.map(r => [r.key, r.value]));
+
+        const defaultParagraphs = [
+            'Tranzit.AZ yük sahibləri, sürücülər və daşıma şirkətləri arasında əlaqəni asanlaşdıran onlayn yük elanları platformasıdır. Məqsədimiz yükünüzün daha asan tapılmasını sürətli, şəffaf və rahat etməkdir.',
+            'Platformada yük sahibləri öz elanlarını pulsuz yerləşdirə, sürücülər və daşıma şirkətləri isə uyğun yükləri asanlıqla taparaq əlaqə saxlaya bilərlər.'
+        ];
+        const defaultAdvantages = [
+            'Vaxta qənaət - Siz sürücü yox, sürücülər sizi axtarır.',
+            'Rahat elan yerləşdirmə',
+            'Yük növü, nəqliyyat və şəhərə görə axtarış sistemi',
+            'Sürücülər və daşıma şirkətləri üçün yeni sifariş imkanları',
+            'Birbaşa zəng və vasitəsiz danışıq imkanı',
+            'Sürücülər üçün qeydiyyat olmadan yük görmə və zəng etmə imkanları'
+        ];
+        const defaultSteps = [
+            { icon: 'UploadCloud', title: 'Asan yük yerləşdirmə', text: 'Yük sahibi qeydiyyatdan keçərək yük formunu bir neçə kliklə doldurur.' },
+            { icon: 'ShieldCheck', title: 'Təsdiqləmə vaxtı', text: 'Dəqiqələr içində elanınız yoxlanılır, qaydalara uyğun olduqda təsdiqlənir.' },
+            { icon: 'ClipboardList', title: 'Əlçatan elan səhifəsi', text: 'Elanınız əsas səhifədə görünərək sürücülər üçün daha əlçatan olur.' },
+            { icon: 'PhoneCall', title: 'Birbaşa zəng', text: 'Fərdi sürücülər birbaşa sizinlə əlaqə saxlayaraq daşınmanın detallarını razılaşdırır.' },
+        ];
+
+        let paragraphs = defaultParagraphs;
+        let advantages = defaultAdvantages;
+        let steps = defaultSteps;
+        try { if (map.about_paragraphs) paragraphs = JSON.parse(map.about_paragraphs); } catch {}
+        try { if (map.about_advantages) advantages = JSON.parse(map.about_advantages); } catch {}
+        try { if (map.howitworks_steps) steps = JSON.parse(map.howitworks_steps); } catch {}
+
+        res.render('sehife-mezmunu', {
+            user: req.session.user,
+            path: '/dashboard/sehife-mezmunu',
+            saved: req.query.saved === '1',
+            error: req.query.error || null,
+            settings: {
+                home_hero_title: map.home_hero_title || 'Daşımalarınızı bizimlə asanlaşdırın',
+                home_hero_subtitle: map.home_hero_subtitle || 'Yükünüz üçün doğru marşrutu, nəqliyyatı və daşıyıcını bir yerdə tapın.',
+                about_hero_title: map.about_hero_title || 'Platforma haqqında',
+                about_hero_description: map.about_hero_description || 'Tranzit.AZ yük bazarında əlaqəni sürətləndirən, aydın və rahat iş axını təqdim edən elan platformasıdır.',
+                about_paragraphs_raw: paragraphs.join('\n'),
+                about_advantages_raw: advantages.join('\n'),
+                howitworks_title: map.howitworks_title || 'Sadə elan modeli, sürətli əlaqə',
+                howitworks_description: map.howitworks_description || 'Tranzit.AZ marketplace deyil. Platforma yük elanını dərc edir və sürücünü birbaşa yük sahibi ilə danışdırır.',
+                steps,
+            },
+        });
+    } catch (e) {
+        console.error('Səhifə məzmunu yüklənmədi:', e);
+        res.redirect('/dashboard?error=content');
+    }
+});
+
+// Səhifə Məzmunu - POST
+app.post('/dashboard/sehife-mezmunu', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const {
+            home_hero_title, home_hero_subtitle,
+            about_hero_title, about_hero_description,
+            about_paragraphs_raw, about_advantages_raw,
+            howitworks_title, howitworks_description,
+        } = req.body;
+
+        const steps = [];
+        for (let i = 0; i < 4; i++) {
+            steps.push({
+                icon: req.body[`step_icon_${i}`] || 'UploadCloud',
+                title: (req.body[`step_title_${i}`] || '').trim(),
+                text: (req.body[`step_text_${i}`] || '').trim(),
+            });
+        }
+
+        const paragraphs = (about_paragraphs_raw || '').split('\n').map(s => s.trim()).filter(Boolean);
+        const advantages = (about_advantages_raw || '').split('\n').map(s => s.trim()).filter(Boolean);
+
+        const upserts = [
+            ['home_hero_title', (home_hero_title || '').trim()],
+            ['home_hero_subtitle', (home_hero_subtitle || '').trim()],
+            ['about_hero_title', (about_hero_title || '').trim()],
+            ['about_hero_description', (about_hero_description || '').trim()],
+            ['about_paragraphs', JSON.stringify(paragraphs)],
+            ['about_advantages', JSON.stringify(advantages)],
+            ['howitworks_title', (howitworks_title || '').trim()],
+            ['howitworks_description', (howitworks_description || '').trim()],
+            ['howitworks_steps', JSON.stringify(steps)],
+        ];
+
+        await Promise.all(upserts.map(([key, value]) =>
+            prisma.appSetting.upsert({ where: { key }, update: { value }, create: { key, value } })
+        ));
+
+        res.redirect('/dashboard/sehife-mezmunu?saved=1');
+    } catch (e) {
+        console.error('Səhifə məzmunu saxlanmadı:', e);
+        res.redirect('/dashboard/sehife-mezmunu?error=save');
+    }
+});
+
 // Footer Ayarları - GET
 app.get('/dashboard/footer-ayarlari', requireAuth, requireAdmin, async (req, res) => {
     try {
