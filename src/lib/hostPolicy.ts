@@ -317,10 +317,12 @@ export function hostPolicyResult(
     return { action: "block404" };
   }
 
-  // Rule 4: Remaining /api/* paths — portal host only
-  // Auth/user APIs belong to PORTAL_HOST. Block on admin, public, and unknown hosts.
+  // Rule 4: Remaining /api/* paths — portal host + publicSite for auth APIs
+  // /api/auth/* is called from tranzit.az (login, forgot-password, register-owner, etc.)
+  // so it must be accessible on publicSite host as well as portal host.
   if (isAnyApiPath(pathname)) {
     if (matchNextHost(incomingHost, "portal", env)) return { action: "pass" };
+    if (matchNextHost(incomingHost, "publicSite", env) && segmentMatch(pathname, "/api/auth")) return { action: "pass" };
     if (!isProd && isTunnelDevHost(incomingHost, env)) {
       return { action: "pass" };
     }
