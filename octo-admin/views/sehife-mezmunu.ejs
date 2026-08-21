@@ -191,24 +191,55 @@ function collectCurrentFields() {
   });
 }
 
+function applyFieldsFromData(data, lang) {
+  document.querySelectorAll('.lang-field').forEach(el => {
+    const key = el.getAttribute('data-key');
+    // Addım sahələri: step_title_0, step_text_0 -> howitworks_steps[i]
+    const stepTitleMatch = key.match(/^step_title_(\d+)$/);
+    const stepTextMatch = key.match(/^step_text_(\d+)$/);
+    const stepIconMatch = key.match(/^step_icon_(\d+)$/);
+    let val = '';
+    if (stepTitleMatch && Array.isArray(data.howitworks_steps)) {
+      val = (data.howitworks_steps[+stepTitleMatch[1]] || {}).title || '';
+    } else if (stepTextMatch && Array.isArray(data.howitworks_steps)) {
+      val = (data.howitworks_steps[+stepTextMatch[1]] || {}).text || '';
+    } else if (stepIconMatch) {
+      // select üçün ayrıca idarə et
+      const iconVal = Array.isArray(data.howitworks_steps)
+        ? (data.howitworks_steps[+stepIconMatch[1]] || {}).icon || 'UploadCloud'
+        : 'UploadCloud';
+      const select = document.querySelector(`[name="step_icon_${stepIconMatch[1]}"]`);
+      if (select) { select.value = iconVal; updateIconPreview(select); }
+      langCache[lang][key] = iconVal;
+      return;
+    } else {
+      const rawKey = key.endsWith('_raw') ? key.slice(0, -4) : key;
+      val = data[rawKey] ?? data[key] ?? '';
+      if (Array.isArray(val)) val = val.join('\n');
+    }
+    el.value = val;
+    langCache[lang][key] = val;
+  });
+}
+
 function applyLang(lang) {
   if (Object.keys(langCache[lang]).length === 0) {
     fetch('/api/public/page-content?locale=' + lang)
       .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data) return;
-        document.querySelectorAll('.lang-field').forEach(el => {
-          const key = el.getAttribute('data-key');
-          let val = data[key.replace('_raw', '')] ?? data[key] ?? '';
-          if (Array.isArray(val)) val = val.join('\n');
-          el.value = val;
-          langCache[lang][key] = el.value;
-        });
-      });
+      .then(data => { if (data) applyFieldsFromData(data, lang); });
   } else {
     document.querySelectorAll('.lang-field').forEach(el => {
       const key = el.getAttribute('data-key');
       if (langCache[lang][key] !== undefined) el.value = langCache[lang][key];
+    });
+    // Icon select-lər üçün
+    [0,1,2,3].forEach(i => {
+      const iconKey = `step_icon_${i}`;
+      const select = document.querySelector(`[name="${iconKey}"]`);
+      if (select && langCache[lang][iconKey]) {
+        select.value = langCache[lang][iconKey];
+        updateIconPreview(select);
+      }
     });
   }
 }
@@ -231,9 +262,14 @@ document.querySelectorAll('.lang-tab-btn').forEach(btn => {
   });
 });
 
-// Az default dəyərləri cache-ə yüklə
+// Cari dil sahələrini cache-ə yüklə
 document.querySelectorAll('.lang-field').forEach(el => {
-  langCache['az'][el.getAttribute('data-key')] = el.value;
+  langCache[currentLang][el.getAttribute('data-key')] = el.value;
+});
+// Icon select-ləri cari dil cache-inə əlavə et
+[0,1,2,3].forEach(i => {
+  const select = document.querySelector(`[name="step_icon_${i}"]`);
+  if (select) langCache[currentLang][`step_icon_${i}`] = select.value;
 });
 </script>
 
