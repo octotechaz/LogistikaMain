@@ -40,6 +40,7 @@ import { footerNavItems, getActiveTopbarItemId, topbarNavItems } from "@/lib/top
 import { cn } from "@/lib/utils";
 import type { CargoListing } from "@/types/classifieds";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { useLocale } from "@/hooks/useLocale";
 
 const topbarTabTransition: Transition = {
   type: "spring",
@@ -63,9 +64,16 @@ export function AppLogo() {
   );
 }
 
+const NAV_LABEL_KEYS: Record<string, string> = {
+  loads: "nav_loads",
+  about: "nav_about",
+  help: "nav_howitworks",
+};
+
 export function PublicNavbar() {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useLocale();
   const resolvedTopbarItemId = getActiveTopbarItemId(pathname);
   const [optimisticTopbarItemId, setOptimisticTopbarItemId] = useState(resolvedTopbarItemId);
   const activeTopbarItemId = optimisticTopbarItemId;
@@ -205,7 +213,7 @@ export function PublicNavbar() {
                           : "text-slate-600 hover:bg-slate-50 hover:text-navy-900"
                       )}
                     >
-                      {item.label}
+                      {t(NAV_LABEL_KEYS[item.id] ?? "", item.label)}
                     </Link>
                   );
                 })}
@@ -291,7 +299,7 @@ export function PublicNavbar() {
                         isActive ? "text-navy-900" : ""
                       )}
                     >
-                      <span className="relative z-10">{item.label}</span>
+                      <span className="relative z-10">{t(NAV_LABEL_KEYS[item.id] ?? "", item.label)}</span>
                       {isActive ? (
                         <motion.span
                           layoutId="topbar-active-underline"
@@ -425,8 +433,14 @@ const FOOTER_DEFAULTS = {
   tagline: "Yük elanları və daşıma əlaqələri üçün public platforma.",
 };
 
+const FOOTER_NAV_LABEL_KEYS: Record<string, string> = {
+  about: "nav_about",
+  contact: "nav_contact",
+};
+
 export function PublicFooter() {
   const pathname = usePathname();
+  const { t } = useLocale();
   const legalLinks = footerNavItems.filter((item) => ["terms", "privacy", "rules"].includes(item.id));
   const platformLinks = footerNavItems.filter((item) => !["terms", "privacy", "rules"].includes(item.id));
   const [fs, setFs] = useState(FOOTER_DEFAULTS);
@@ -454,7 +468,7 @@ export function PublicFooter() {
           </div>
 
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">Platforma</h3>
+            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">{t("footer_platform", "Platforma")}</h3>
             <div className="mt-4 grid gap-2.5">
               {platformLinks.map((item) => {
                 const isActive = pathname === item.href;
@@ -464,7 +478,7 @@ export function PublicFooter() {
                     href={item.href}
                     className={cn("w-fit transition", isActive ? "font-semibold text-logistics-orange" : "hover:text-navy-900")}
                   >
-                    {item.label}
+                    {t(FOOTER_NAV_LABEL_KEYS[item.id] ?? "", item.label)}
                   </Link>
                 );
               })}
@@ -472,7 +486,7 @@ export function PublicFooter() {
           </div>
 
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">Hüquqi</h3>
+            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">{t("footer_legal", "Hüquqi")}</h3>
             <div className="mt-4 grid gap-2.5">
               {legalLinks.map((item) => {
                 const isActive = pathname === item.href;
@@ -490,14 +504,14 @@ export function PublicFooter() {
           </div>
 
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">Dəstək</h3>
+            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">{t("footer_support", "Dəstək")}</h3>
             <a
               href={`tel:${fs.phone}`}
               className="mt-4 inline-block font-semibold text-navy-900 transition hover:text-logistics-orange"
             >
               {fs.phone}
             </a>
-            <p className="mt-1 text-sm text-slate-500">{fs.workHours}</p>
+            <p className="mt-1 text-sm text-slate-500">{t("footer_work_hours", fs.workHours)}</p>
             <div className="mt-4 flex items-center gap-2.5">
               <a
                 href={`https://wa.me/${fs.whatsapp}`}
@@ -529,8 +543,8 @@ export function PublicFooter() {
         </div>
 
         <div className="flex flex-col gap-2 border-t border-slate-200/80 px-5 py-4 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-7 lg:px-8">
-          <p>{fs.copyright}</p>
-          <p>{fs.tagline}</p>
+          <p>{t("footer_copyright", fs.copyright)}</p>
+          <p>{t("footer_tagline", fs.tagline)}</p>
         </div>
       </div>
     </footer>
