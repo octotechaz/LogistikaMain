@@ -18,10 +18,26 @@
   "howitworks_title": "Basit ilan modeli, hızlı bağlantı",
   "howitworks_description": "Tranzit.AZ bir pazar yeri değildir. Platform, yük ilanını yayınlar ve sürücüyü doğrudan yük sahibiyle buluşturur.",
   "howitworks_steps": [
-    { "icon": "UploadCloud", "title": "Kolay yük yayınlama", "text": "Yük sahibi kayıt olarak yük formunu birkaç tıklamayla doldurur." },
-    { "icon": "ShieldCheck", "title": "Onay süresi", "text": "İlanınız dakikalar içinde incelenir ve kurallara uygunsa onaylanır." },
-    { "icon": "ClipboardList", "title": "Erişilebilir ilan sayfası", "text": "İlanınız ana sayfada görünür ve sürücüler için daha erişilebilir hale gelir." },
-    { "icon": "PhoneCall", "title": "Doğrudan arama", "text": "Sürücüler sizi doğrudan arayarak taşıma detaylarını görüşür." }
+    {
+      "icon": "UploadCloud",
+      "title": "Kolay yük yayınlama",
+      "text": "Yük sahibi kayıt olarak yük formunu birkaç tıklamayla doldurur."
+    },
+    {
+      "icon": "ShieldCheck",
+      "title": "Onay süresi",
+      "text": "İlanınız dakikalar içinde incelenir ve kurallara uygunsa onaylanır."
+    },
+    {
+      "icon": "ClipboardList",
+      "title": "Erişilebilir ilan sayfası",
+      "text": "İlanınız ana sayfada görünür ve sürücüler için daha erişilebilir hale gelir."
+    },
+    {
+      "icon": "PhoneCall",
+      "title": "Doğrudan arama",
+      "text": "Sürücüler sizi doğrudan arayarak taşıma detaylarını görüşür."
+    }
   ],
   "footer_phone": "+994 50 123 45 67",
   "footer_work_hours": "Her gün 09:00-20:00",
@@ -126,5 +142,20 @@
   "role_carrier_title": "Ben taşıyıcıyım",
   "role_carrier_desc": "Araç ekleyin, aktif yükleri takip edin ve başvuru gönderin.",
   "role_owner_title": "Ben yük sahibiyim",
-  "role_owner_desc": "Yük ilanı oluşturun, başvuruları görün ve uygun taşıyıcıyı seçin."
+  "role_owner_desc": "Yük ilanı oluşturun, başvuruları görün ve uygun taşıyıcıyı seçin.",
+  "carrier_highlight_1": "İlan veremez, ancak aktif yükleri takip edip uygun ilanları favorilerine ekleyebilir.",
+  "carrier_highlight_2": "WhatsApp ve iletişim numarasıyla yük sahipleriyle rahat iletişim için profil tamamlanır.",
+  "carrier_highlight_3": "Araç türü, taşınan yük türleri, hacim ve ağırlık limiti daha sonra eşleştirmede kullanılır.",
+  "carrier_field_contact_phone": "İletişim numarası",
+  "carrier_field_whatsapp": "Aktif WhatsApp numarası",
+  "carrier_company_placeholder": "Örn. Araz Logistics",
+  "carrier_vehicle_type": "Araç türü",
+  "carrier_location_address": "Konum adresi",
+  "carrier_location_placeholder": "Örn. Bakü, Babek Bulvarı 24",
+  "carrier_cargo_volume": "Kargo alanı hacmi",
+  "carrier_cargo_volume_placeholder": "Örn. 32",
+  "carrier_max_weight": "Maksimum yük kapasitesi",
+  "carrier_max_weight_placeholder": "Örn. 18",
+  "carrier_cargo_types_title": "Hangi yükler taşınabilir",
+  "carrier_map_title": "Haritada konum"
 }

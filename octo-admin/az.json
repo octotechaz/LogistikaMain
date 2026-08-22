@@ -18,10 +18,26 @@
   "howitworks_title": "Sadə elan modeli, sürətli əlaqə",
   "howitworks_description": "Tranzit.AZ marketplace deyil. Platforma yük elanını dərc edir və sürücünü birbaşa yük sahibi ilə danışdırır.",
   "howitworks_steps": [
-    { "icon": "UploadCloud", "title": "Asan yük yerləşdirmə", "text": "Yük sahibi qeydiyyatdan keçərək yük formunu bir neçə kliklə doldurur." },
-    { "icon": "ShieldCheck", "title": "Təsdiqləmə vaxtı", "text": "Dəqiqələr içində elanınız yoxlanılır, qaydalara uyğun olduqda təsdiqlənir." },
-    { "icon": "ClipboardList", "title": "Əlçatan elan səhifəsi", "text": "Elanınız əsas səhifədə görünərək sürücülər üçün daha əlçatan olur." },
-    { "icon": "PhoneCall", "title": "Birbaşa zəng", "text": "Fərdi sürücülər birbaşa sizinlə əlaqə saxlayaraq daşınmanın detallarını razılaşdırır." }
+    {
+      "icon": "UploadCloud",
+      "title": "Asan yük yerləşdirmə",
+      "text": "Yük sahibi qeydiyyatdan keçərək yük formunu bir neçə kliklə doldurur."
+    },
+    {
+      "icon": "ShieldCheck",
+      "title": "Təsdiqləmə vaxtı",
+      "text": "Dəqiqələr içində elanınız yoxlanılır, qaydalara uyğun olduqda təsdiqlənir."
+    },
+    {
+      "icon": "ClipboardList",
+      "title": "Əlçatan elan səhifəsi",
+      "text": "Elanınız əsas səhifədə görünərək sürücülər üçün daha əlçatan olur."
+    },
+    {
+      "icon": "PhoneCall",
+      "title": "Birbaşa zəng",
+      "text": "Fərdi sürücülər birbaşa sizinlə əlaqə saxlayaraq daşınmanın detallarını razılaşdırır."
+    }
   ],
   "footer_phone": "+994 50 123 45 67",
   "footer_work_hours": "Hər gün 09:00-20:00",
@@ -126,5 +142,20 @@
   "role_carrier_title": "Yük daşıyanam",
   "role_carrier_desc": "Avtomobil əlavə edin, aktiv yükləri izləyin və müraciət göndərin.",
   "role_owner_title": "Yük sahibiyəm",
-  "role_owner_desc": "Yük elanı yaradın, müraciətləri görün və uyğun daşıyıcını seçin."
+  "role_owner_desc": "Yük elanı yaradın, müraciətləri görün və uyğun daşıyıcını seçin.",
+  "carrier_highlight_1": "Elan verə bilməz, amma aktiv yükləri izləyib uyğun elanları seçilmişlərə əlavə edə bilər.",
+  "carrier_highlight_2": "WhatsApp və əlaqə nömrəsi ilə yük sahibləri ilə rahat əlaqə qurmaq üçün profil tamlanır.",
+  "carrier_highlight_3": "Avtomobil növü, daşıdığı yük növləri, həcm və çəki limiti sonradan uyğunlaşmada istifadə olunur.",
+  "carrier_field_contact_phone": "Əlaqə nömrəsi",
+  "carrier_field_whatsapp": "Aktiv WhatsApp nömrəsi",
+  "carrier_company_placeholder": "Məsələn, Araz Logistics",
+  "carrier_vehicle_type": "Avtomobil növü",
+  "carrier_location_address": "Yerləşmə ünvanı",
+  "carrier_location_placeholder": "Məsələn, Bakı, Babək prospekti 24",
+  "carrier_cargo_volume": "Yük yeri həcmi",
+  "carrier_cargo_volume_placeholder": "Məsələn, 32",
+  "carrier_max_weight": "Maksimal daşıma çəkisi",
+  "carrier_max_weight_placeholder": "Məsələn, 18",
+  "carrier_cargo_types_title": "Hansı yükləri daşıya bilər",
+  "carrier_map_title": "Xəritədə yerləşmə"
 }

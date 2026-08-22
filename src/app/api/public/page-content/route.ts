@@ -64,6 +64,13 @@ const CONTENT_KEYS = [
   "role_select_eyebrow","role_select_title",
   "role_carrier_title","role_carrier_desc",
   "role_owner_title","role_owner_desc",
+  "carrier_highlight_1","carrier_highlight_2","carrier_highlight_3",
+  "carrier_field_contact_phone","carrier_field_whatsapp",
+  "carrier_company_placeholder","carrier_vehicle_type",
+  "carrier_location_address","carrier_location_placeholder",
+  "carrier_cargo_volume","carrier_cargo_volume_placeholder",
+  "carrier_max_weight","carrier_max_weight_placeholder",
+  "carrier_cargo_types_title","carrier_map_title",
 ];
 
 async function loadLocaleFile(locale: Locale): Promise<Record<string, unknown>> {

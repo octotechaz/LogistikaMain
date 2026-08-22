@@ -18,10 +18,26 @@
   "howitworks_title": "Simple listing model, fast connection",
   "howitworks_description": "Tranzit.AZ is not a marketplace. The platform publishes cargo listings and connects drivers directly with cargo owners.",
   "howitworks_steps": [
-    { "icon": "UploadCloud", "title": "Easy cargo listing", "text": "The cargo owner registers and fills out the cargo form in a few clicks." },
-    { "icon": "ShieldCheck", "title": "Confirmation time", "text": "Your listing is reviewed within minutes and published if it complies with the rules." },
-    { "icon": "ClipboardList", "title": "Accessible listing page", "text": "Your listing appears on the main page and becomes accessible to drivers." },
-    { "icon": "PhoneCall", "title": "Direct call", "text": "Individual drivers contact you directly and agree on the details of the shipment." }
+    {
+      "icon": "UploadCloud",
+      "title": "Easy cargo listing",
+      "text": "The cargo owner registers and fills out the cargo form in a few clicks."
+    },
+    {
+      "icon": "ShieldCheck",
+      "title": "Confirmation time",
+      "text": "Your listing is reviewed within minutes and published if it complies with the rules."
+    },
+    {
+      "icon": "ClipboardList",
+      "title": "Accessible listing page",
+      "text": "Your listing appears on the main page and becomes accessible to drivers."
+    },
+    {
+      "icon": "PhoneCall",
+      "title": "Direct call",
+      "text": "Individual drivers contact you directly and agree on the details of the shipment."
+    }
   ],
   "footer_phone": "+994 50 123 45 67",
   "footer_work_hours": "Every day 09:00-20:00",
@@ -126,5 +142,20 @@
   "role_carrier_title": "I am a carrier",
   "role_carrier_desc": "Add a vehicle, track active loads and send requests.",
   "role_owner_title": "I am a cargo owner",
-  "role_owner_desc": "Create cargo listings, view requests and choose the right carrier."
+  "role_owner_desc": "Create cargo listings, view requests and choose the right carrier.",
+  "carrier_highlight_1": "Cannot post listings, but can track active loads and add suitable ones to favourites.",
+  "carrier_highlight_2": "Profile is completed to easily communicate with cargo owners via WhatsApp and contact number.",
+  "carrier_highlight_3": "Vehicle type, cargo types, volume and weight limit are used for matching later.",
+  "carrier_field_contact_phone": "Contact number",
+  "carrier_field_whatsapp": "Active WhatsApp number",
+  "carrier_company_placeholder": "e.g. Araz Logistics",
+  "carrier_vehicle_type": "Vehicle type",
+  "carrier_location_address": "Location address",
+  "carrier_location_placeholder": "e.g. Baku, Babak Avenue 24",
+  "carrier_cargo_volume": "Cargo space volume",
+  "carrier_cargo_volume_placeholder": "e.g. 32",
+  "carrier_max_weight": "Maximum load capacity",
+  "carrier_max_weight_placeholder": "e.g. 18",
+  "carrier_cargo_types_title": "What cargo can be transported",
+  "carrier_map_title": "Location on map"
 }
