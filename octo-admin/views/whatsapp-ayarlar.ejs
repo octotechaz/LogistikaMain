@@ -148,63 +148,54 @@
         const imgWrap = document.getElementById('waImgWrap');
         const initialStatus = '<%= whatsapp.status %>';
 
-        if (initialStatus === 'error') {
+        // Artıq qoşulubsa polling başlatma — sonsuz reload-un qarşısını al
+        if (initialStatus === 'error' || initialStatus === 'connected') {
             return;
         }
 
         function setQrHeading() {
-            if (preparing) {
-                preparing.style.display = 'none';
-            }
-            if (qrBlock) {
-                qrBlock.style.display = '';
-            }
-            if (imgWrap) {
-                imgWrap.style.display = '';
-            }
+            if (preparing) preparing.style.display = 'none';
+            if (qrBlock) qrBlock.style.display = '';
+            if (imgWrap) imgWrap.style.display = '';
         }
 
+        let pollInterval = null;
+        let reloading = false;
+
         async function pollWhatsAppStatus() {
+            if (reloading) return;
             try {
                 const response = await fetch('/dashboard/whatsapp/status.json', {
                     headers: { 'Accept': 'application/json' },
                     cache: 'no-store'
                 });
 
-                if (!response.ok) {
-                    throw new Error('status fetch failed');
-                }
+                if (!response.ok) throw new Error('status fetch failed');
 
                 const data = await response.json();
 
                 if (data.status === 'connected') {
+                    reloading = true;
+                    clearInterval(pollInterval);
                     window.location.reload();
                     return;
                 }
 
                 if (data.status === 'qr_ready' && data.qrDataUrl) {
                     setQrHeading();
-                    if (qrImage) {
-                        qrImage.src = data.qrDataUrl;
-                    }
-                    if (statusText) {
-                        statusText.textContent = 'QR kod yeniləndi. Telefonunuzdan oxudun.';
-                    }
+                    if (qrImage) qrImage.src = data.qrDataUrl;
+                    if (statusText) statusText.textContent = 'QR kod yeniləndi. Telefonunuzdan oxudun.';
                     return;
                 }
 
-                if (statusText) {
-                    statusText.textContent = 'WhatsApp servisi hazırlanır...';
-                }
+                if (statusText) statusText.textContent = 'WhatsApp servisi hazırlanır...';
             } catch (error) {
-                if (statusText) {
-                    statusText.textContent = 'Status yenilənmədi. Səhifə bir azdan yenilənəcək.';
-                }
+                if (statusText) statusText.textContent = 'Status yenilənmədi...';
             }
         }
 
         pollWhatsAppStatus();
-        window.setInterval(pollWhatsAppStatus, 3000);
+        pollInterval = window.setInterval(pollWhatsAppStatus, 3000);
     })();
 </script>
 
