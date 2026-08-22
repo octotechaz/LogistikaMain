@@ -623,34 +623,36 @@ export function DashboardShell({
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const prefetchedRef = useRef<Set<string>>(new Set());
 
+  const { t } = useLocale();
+
   const navItems =
     section === "owner"
       ? [
-          { href: "/cargo-owner/dashboard", label: "Mənim elanlarım", icon: "ri-list-check-3" },
-          { href: "/cargo-owner/cargo-posts/new", label: "Yeni elan", icon: "ri-add-box-line" }
+          { href: "/cargo-owner/dashboard", label: t("dashboard_nav_my_listings", "Mənim elanlarım"), icon: "ri-list-check-3" },
+          { href: "/cargo-owner/cargo-posts/new", label: t("dashboard_nav_new_listing", "Yeni elan"), icon: "ri-add-box-line" }
         ]
       : section === "carrier"
         ? [
-            { href: "/carrier/dashboard", label: "Dashboard", icon: "ri-dashboard-3-line" },
-            { href: "/carrier/cargo-posts", label: "Aktiv yüklər", icon: "ri-truck-line" },
-            { href: "/carrier/applications", label: "Müraciətlərim", icon: "ri-file-list-3-line" },
-            { href: "/carrier/vehicles", label: "Avtomobillər", icon: "ri-car-line" }
+            { href: "/carrier/dashboard", label: t("dashboard_nav_dashboard", "Dashboard"), icon: "ri-dashboard-3-line" },
+            { href: "/carrier/cargo-posts", label: t("dashboard_nav_active_loads", "Aktiv yüklər"), icon: "ri-truck-line" },
+            { href: "/carrier/applications", label: t("dashboard_nav_applications", "Müraciətlərim"), icon: "ri-file-list-3-line" },
+            { href: "/carrier/vehicles", label: t("dashboard_nav_vehicles", "Avtomobillər"), icon: "ri-car-line" }
           ]
         : [
-            { href: "/admin/dashboard", label: "Ümumi görünüş", icon: "ri-dashboard-3-line" },
-            { href: "/admin/users", label: "İstifadəçilər", icon: "ri-group-line" },
-            { href: "/admin/loads", label: "Elanlar", icon: "ri-article-line" },
-            { href: "/admin/categories", label: "Kateqoriyalar", icon: "ri-function-line" },
-            { href: "/admin/banners", label: "Bannerlər", icon: "ri-image-line" },
-            { href: "/admin/statistics", label: "Statistika", icon: "ri-bar-chart-box-line" }
+            { href: "/admin/dashboard", label: t("dashboard_nav_overview", "Ümumi görünüş"), icon: "ri-dashboard-3-line" },
+            { href: "/admin/users", label: t("dashboard_nav_users", "İstifadəçilər"), icon: "ri-group-line" },
+            { href: "/admin/loads", label: t("dashboard_nav_listings", "Elanlar"), icon: "ri-article-line" },
+            { href: "/admin/categories", label: t("dashboard_nav_categories", "Kateqoriyalar"), icon: "ri-function-line" },
+            { href: "/admin/banners", label: t("dashboard_nav_banners", "Bannerlər"), icon: "ri-image-line" },
+            { href: "/admin/statistics", label: t("dashboard_nav_statistics", "Statistika"), icon: "ri-bar-chart-box-line" }
           ];
 
   const sectionMeta =
     section === "owner"
-      ? { panel: "Yük Sahibi Paneli", name: sessionUser?.firstName || "Yük Sahibi" }
+      ? { panel: t("dashboard_owner_panel", "Yük Sahibi Paneli"), name: sessionUser?.firstName || t("dashboard_owner_default_name", "Yük Sahibi") }
       : section === "carrier"
-        ? { panel: "Daşıyıcı Panel", name: sessionUser?.firstName || "Daşıyıcı" }
-        : { panel: "Admin Panel", name: "Admin İstifadəçi" };
+        ? { panel: t("dashboard_carrier_panel", "Daşıyıcı Paneli"), name: sessionUser?.firstName || t("dashboard_carrier_default_name", "Daşıyıcı") }
+        : { panel: t("dashboard_admin_panel", "Admin Paneli"), name: "Admin" };
 
   const rootPaths = new Set(["/cargo-owner/dashboard", "/carrier/dashboard", "/admin/dashboard"]);
 
@@ -744,13 +746,17 @@ export function DashboardShell({
         </div>
 
         <div className="shrink-0 space-y-2 border-t border-slate-200 bg-slate-50/50 p-4">
+          <div className="flex items-center justify-between px-1 pb-1">
+            <span className="text-xs font-medium text-slate-400">{sectionMeta.panel}</span>
+            <LocaleSwitcher />
+          </div>
           <ButtonLink
             href="/"
             variant="secondary"
             className="h-11 w-full justify-start border-slate-200 bg-white px-4 text-slate-700 shadow-sm hover:bg-slate-50"
           >
             <i className="ri-home-4-line mr-2 text-[18px] text-slate-400"></i>
-            Sayta bax
+            {t("dashboard_btn_view_site", "Sayta bax")}
           </ButtonLink>
 
           <Button
@@ -759,7 +765,7 @@ export function DashboardShell({
             onClick={logout}
           >
             <i className="ri-logout-box-line mr-2 text-[18px] opacity-80"></i>
-            Çıxış et
+            {t("dashboard_btn_logout", "Çıxış et")}
           </Button>
         </div>
       </aside>
@@ -787,6 +793,7 @@ export function DashboardShell({
               );
             })}
           </div>
+          <LocaleSwitcher className="shrink-0" />
         </header>
 
         <div className="w-full flex-1 p-6 lg:p-10">
