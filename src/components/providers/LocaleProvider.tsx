@@ -121,14 +121,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <LocaleContext.Provider value={{ locale, setLocale, t, tArray, tSteps, ready }}>
-      <div
-        style={{
-          opacity: transitioning ? 0 : 1,
-          transition: transitioning ? "none" : "opacity 0.18s ease",
-        }}
-      >
-        {children}
-      </div>
+      {children}
     </LocaleContext.Provider>
   );
 }
