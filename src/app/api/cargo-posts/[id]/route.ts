@@ -160,6 +160,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       roundTrip: requestBody.roundTrip ?? existingCargoPost.roundTrip ?? undefined,
       legacyPickupTime: requestBody.legacyPickupTime ?? existingCargoPost.legacyPickupTime ?? undefined,
       legacyNote: requestBody.legacyNote ?? existingCargoPost.legacyNote ?? undefined,
+      categoryId: requestBody.categoryId ?? existingCargoPost.categoryId ?? undefined,
       imageUrls: requestBody.imageUrls ?? existingCargoPost.images.map((image) => image.url)
     });
     const measurements = validateCargoMeasurements(payload);

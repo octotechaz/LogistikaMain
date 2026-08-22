@@ -58,11 +58,14 @@ function makeCategoryRepository(prisma, sync = null) {
       const isActive  = dto.is_active === "1" || dto.is_active === 1 || dto.is_active === true;
 
       const data = {
-        label:     dto.label,
+        label:           dto.label,
         iconKey,
         iconTone,
         sortOrder,
         isActive,
+        matchCargoType:   dto.match_cargo_type   ? String(dto.match_cargo_type).trim()   : null,
+        matchVehicleType: dto.match_vehicle_type ? String(dto.match_vehicle_type).trim() : null,
+        matchKeyword:     dto.match_keyword       ? String(dto.match_keyword).trim()      : null,
       };
 
       await prisma.publicCategory.upsert({

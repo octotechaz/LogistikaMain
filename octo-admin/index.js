@@ -742,12 +742,12 @@ app.get('/dashboard/kategoriler', requireAuth, requireAdmin, async (req, res) =>
 
 app.post('/dashboard/kategoriler', requireAuth, requireAdmin, async (req, res) => {
     try {
-        const { id, label, icon_key, icon_tone, sort_order, is_active } = req.body;
+        const { id, label, icon_key, icon_tone, sort_order, is_active, match_cargo_type, match_vehicle_type, match_keyword } = req.body;
         const trimmedLabel = String(label || '').trim();
         if (!trimmedLabel) {
             return res.redirect('/dashboard/kategoriler?error=save');
         }
-        await categoryRepository.upsert({ id, label: trimmedLabel, icon_key, icon_tone, sort_order, is_active });
+        await categoryRepository.upsert({ id, label: trimmedLabel, icon_key, icon_tone, sort_order, is_active, match_cargo_type, match_vehicle_type, match_keyword });
         res.redirect('/dashboard/kategoriler?saved=1');
     } catch (error) {
         console.error(error);

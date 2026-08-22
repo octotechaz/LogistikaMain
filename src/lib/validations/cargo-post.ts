@@ -69,6 +69,7 @@ export const cargoPostSchema = z
     roundTrip: z.string().trim().optional(),
     legacyPickupTime: z.string().trim().optional(),
     legacyNote: z.string().trim().optional(),
+    categoryId: z.string().trim().optional(),
     imageUrls: z
       .array(z.string().url().or(z.string().startsWith("/")))
       .max(listingImageMaxFiles, listingImageMaxFilesMessage)

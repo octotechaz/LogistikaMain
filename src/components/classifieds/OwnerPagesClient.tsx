@@ -59,6 +59,14 @@ type SessionUser = {
   role: string;
 };
 
+type PublicCategory = {
+  id: string;
+  label: string;
+  iconKey: string;
+  iconTone: string;
+  isActive: boolean;
+};
+
 function stringValue(value: unknown) {
   return value === null || value === undefined ? "" : String(value);
 }
@@ -233,6 +241,8 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
   const searchParams = useSearchParams();
   const { ready, listings, saveListing } = useClassifieds();
   const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<PublicCategory[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [fieldErrors, setFieldErrors] = useState<
     Partial<
       Record<"pickupAddress" | "deliveryAddress" | "pickupDeadlineDate" | "contactPhone", string>
@@ -293,6 +303,21 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
   useEffect(() => {
     setContactPhone(editing?.ownerPhone || sessionUser.phone || "");
   }, [editing?.ownerPhone, sessionUser.phone]);
+
+  useEffect(() => {
+    fetch("/api/public/categories", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.data)) setCategories(data.data);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (editing) {
+      setSelectedCategoryId((editing as unknown as { categoryId?: string }).categoryId || "");
+    }
+  }, [editing?.id]);
 
   const initialPhotoUrls = useMemo(
     () =>
@@ -547,6 +572,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
       roundTrip: draft.roundTrip,
       legacyPickupTime: draft.pickupTime || undefined,
       legacyNote: draft.note || undefined,
+      categoryId: selectedCategoryId || undefined,
       imageUrls: photos
     };
 
@@ -702,6 +728,33 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                   </div>
                 </div>
               </div>
+
+              {categories.length > 0 && (
+                <div className="form-group mb-0">
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                    Kateqoriya
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <i className="ri-price-tag-3-line text-slate-400"></i>
+                    </div>
+                    <select
+                      name="categoryId"
+                      value={selectedCategoryId}
+                      onChange={(e) => setSelectedCategoryId(e.target.value)}
+                      className="form-select w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pl-10 text-[15px] py-2.5 h-auto transition-shadow appearance-none"
+                    >
+                      <option value="">Kateqoriya seçin (isteğe bağlı)</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>{cat.label}</option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <i className="ri-arrow-down-s-line text-slate-400"></i>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="form-group mb-0 md:col-span-2">
                 <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
