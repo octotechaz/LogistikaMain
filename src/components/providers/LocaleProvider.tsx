@@ -25,7 +25,7 @@ const contentCache: Partial<Record<Locale, Messages>> = {};
 async function loadStaticMessages(locale: Locale): Promise<Messages> {
   if (staticCache[locale]) return staticCache[locale]!;
   try {
-    const res = await fetch(`/locales/${locale}.json`);
+    const res = await fetch(`/locales/${locale}.json`, { cache: "no-store" });
     const data = await res.json();
     staticCache[locale] = data;
     return data;
@@ -35,7 +35,7 @@ async function loadStaticMessages(locale: Locale): Promise<Messages> {
 async function loadDynamicContent(locale: Locale): Promise<Messages> {
   if (contentCache[locale]) return contentCache[locale]!;
   try {
-    const res = await fetch(`/api/public/page-content?locale=${locale}`);
+    const res = await fetch(`/api/public/page-content?locale=${locale}`, { cache: "no-store" });
     if (!res.ok) return {};
     const data = await res.json();
     contentCache[locale] = data;
@@ -80,6 +80,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
         const next = e.newValue as Locale;
         setLocaleState(next);
         delete contentCache[next];
+        delete staticCache[next];
         loadMessages(next).then(setMessages);
       }
     }
@@ -92,6 +93,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const setLocale = useCallback((next: Locale) => {
     localStorage.setItem(STORAGE_KEY, next);
     delete contentCache[next];
+    delete staticCache[next];
     setTransitioning(true);
     loadMessages(next).then((m) => {
       setLocaleState(next);

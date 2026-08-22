@@ -118,9 +118,13 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ locale, ...result });
+    return NextResponse.json({ locale, ...result }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
   } catch {
     const localeDefaults = await loadLocaleFile(locale).catch(() => ({}));
-    return NextResponse.json({ locale, ...localeDefaults });
+    return NextResponse.json({ locale, ...localeDefaults }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
   }
 }
