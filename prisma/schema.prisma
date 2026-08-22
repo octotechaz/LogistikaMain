@@ -314,6 +314,7 @@ model CargoPost {
   roundTrip           String?
   legacyPickupTime    String?
   legacyNote          String?
+  categoryId          String?
   lastEditedAt        DateTime?
   editSnapshot        Json?
   legacyViewCount     Int         @default(0)
