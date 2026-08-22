@@ -1,10 +1,44 @@
 import { NextResponse } from "next/server";
 import Database from "better-sqlite3";
 import path from "path";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+function formatSqliteCategories(categories: unknown[]) {
+  return (categories as Record<string, unknown>[]).map((cat) => ({
+    id: cat.id,
+    label: cat.label,
+    iconKey: cat.icon_key,
+    iconTone: cat.icon_tone,
+    matchCargoType: cat.match_cargo_type ?? null,
+    matchVehicleType: cat.match_vehicle_type ?? null,
+    matchKeyword: cat.match_keyword ?? null,
+    sortOrder: cat.sort_order,
+    isActive: cat.is_active === 1,
+  }));
+}
+
+async function loadFromPrisma() {
+  const rows = await prisma.publicCategory.findMany({
+    where: { isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+  });
+  return rows.map((row) => ({
+    id: row.legacySqliteId || row.id,
+    label: row.label,
+    iconKey: row.iconKey,
+    iconTone: row.iconTone,
+    matchCargoType: row.matchCargoType ?? null,
+    matchVehicleType: row.matchVehicleType ?? null,
+    matchKeyword: row.matchKeyword ?? null,
+    sortOrder: row.sortOrder,
+    isActive: row.isActive,
+  }));
+}
+
 export async function GET() {
+  // 1. SQLite-dan oxu (primary)
   try {
     const dbPath =
       process.env.PUBLIC_LISTINGS_SQLITE_PATH ||
@@ -13,78 +47,36 @@ export async function GET() {
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
     const db = new Database(dbPath, { fileMustExist: false });
 
-    // public_categories table may not exist yet, but it gets created by octo-admin.
-    // Try to get categories from the db
     const tableExists = db
       .prepare("SELECT 1 AS ok FROM sqlite_master WHERE type = 'table' AND name = 'public_categories' LIMIT 1")
       .get() as { ok: number } | undefined;
 
-    if (!tableExists) {
+    if (tableExists) {
+      const categories = db
+        .prepare("SELECT * FROM public_categories WHERE is_active = 1 ORDER BY sort_order ASC, label ASC")
+        .all();
       db.close();
-      throw new Error("public_categories missing");
-    }
 
-    const categories = db.prepare("SELECT * FROM public_categories WHERE is_active = 1 ORDER BY sort_order ASC, label ASC").all();
-    db.close();
-
-    // SQLite'dan gelen veriyi Next.js component'inin beklediği formata çeviriyoruz
-    const formattedCategories = categories.map((cat: any) => ({
-      id: cat.id,
-      label: cat.label,
-      iconKey: cat.icon_key,
-      iconTone: cat.icon_tone,
-      matchCargoType: cat.match_cargo_type ?? null,
-      matchKeyword: cat.match_keyword ?? null,
-      sortOrder: cat.sort_order,
-      isActive: cat.is_active === 1
-    }));
-    
-    return NextResponse.json({ data: formattedCategories });
-  } catch (error) {
-    console.error("Categories fetch error:", error);
-    // Fallback data in case of error (or if table doesn't exist yet)
-    const fallbackCategories = [
-      {
-        id: "cat-1",
-        label: "Ev əşyaları",
-        iconKey: "couch",
-        iconTone: "text-amber-500",
-        matchCargoType: "Mebel",
-        matchKeyword: "mebel,ev əşyası,ev esyasi",
-        sortOrder: 1,
-        isActive: true
-      },
-      {
-        id: "cat-2",
-        label: "Tikinti",
-        iconKey: "hammer",
-        iconTone: "text-slate-500",
-        matchCargoType: "Tikinti materialı",
-        matchKeyword: "tikinti",
-        sortOrder: 2,
-        isActive: true
-      },
-      {
-        id: "cat-3",
-        label: "Qida",
-        iconKey: "apple-whole",
-        iconTone: "text-green-500",
-        matchCargoType: "Ərzaq",
-        matchKeyword: "ərzaq,erzaq,qida",
-        sortOrder: 3,
-        isActive: true
-      },
-      {
-        id: "cat-4",
-        label: "Digər",
-        iconKey: "box",
-        iconTone: "text-blue-500",
-        matchCargoType: null,
-        matchKeyword: "kubik,texnika,paletli,maye,heyvan,sənaye,soyudulmuş",
-        sortOrder: 4,
-        isActive: true
+      if (categories.length > 0) {
+        return NextResponse.json({ data: formatSqliteCategories(categories) });
       }
-    ];
-    return NextResponse.json({ data: fallbackCategories });
+    } else {
+      db.close();
+    }
+  } catch {
+    // SQLite uğursuz oldu, Prisma-ya keç
   }
+
+  // 2. Prisma-dan oxu (fallback)
+  try {
+    const categories = await loadFromPrisma();
+    if (categories.length > 0) {
+      return NextResponse.json({ data: categories });
+    }
+  } catch {
+    // Prisma da uğursuz oldu
+  }
+
+  // 3. Heç bir mənbə yoxdursa boş array qaytar (hardcoded kateqoriya yox)
+  return NextResponse.json({ data: [] });
 }
