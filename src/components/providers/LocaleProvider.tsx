@@ -25,7 +25,7 @@ const contentCache: Partial<Record<Locale, Messages>> = {};
 async function loadStaticMessages(locale: Locale): Promise<Messages> {
   if (staticCache[locale]) return staticCache[locale]!;
   try {
-    const res = await fetch(`/locales/${locale}.json`, { cache: "no-store" });
+    const res = await fetch(`/locales/${locale}.json`);
     const data = await res.json();
     staticCache[locale] = data;
     return data;
@@ -33,7 +33,6 @@ async function loadStaticMessages(locale: Locale): Promise<Messages> {
 }
 
 async function loadDynamicContent(locale: Locale): Promise<Messages> {
-  if (contentCache[locale]) return contentCache[locale]!;
   try {
     const res = await fetch(`/api/public/page-content?locale=${locale}`, { cache: "no-store" });
     if (!res.ok) return {};
