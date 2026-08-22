@@ -157,5 +157,15 @@
   "carrier_max_weight": "Maksimum yük kapasitesi",
   "carrier_max_weight_placeholder": "Örn. 18",
   "carrier_cargo_types_title": "Hangi yükler taşınabilir",
-  "carrier_map_title": "Haritada konum"
+  "carrier_map_title": "Haritada konum",
+  "nav_home": "Ana sayfa",
+  "nav_active_loads": "Aktif yükler",
+  "nav_new_listing": "Yeni ilan",
+  "nav_panel": "Panel",
+  "nav_welcome": "Hoş geldiniz",
+  "nav_user": "Kullanıcı",
+  "nav_admin_panel": "Yönetici Paneli",
+  "nav_my_listings": "İlanlarım",
+  "nav_logout": "Çıkış yap",
+  "nav_contact": "İletişim"
 }

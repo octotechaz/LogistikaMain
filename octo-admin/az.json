@@ -157,5 +157,15 @@
   "carrier_max_weight": "Maksimal daşıma çəkisi",
   "carrier_max_weight_placeholder": "Məsələn, 18",
   "carrier_cargo_types_title": "Hansı yükləri daşıya bilər",
-  "carrier_map_title": "Xəritədə yerləşmə"
+  "carrier_map_title": "Xəritədə yerləşmə",
+  "nav_home": "Ana səhifə",
+  "nav_active_loads": "Aktiv yüklər",
+  "nav_new_listing": "Yeni elan",
+  "nav_panel": "Panel",
+  "nav_welcome": "Xoş gəldiniz",
+  "nav_user": "İstifadəçi",
+  "nav_admin_panel": "Admin Paneli",
+  "nav_my_listings": "Mənim elanlarım",
+  "nav_logout": "Çıxış et",
+  "nav_contact": "Əlaqə"
 }

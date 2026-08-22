@@ -157,5 +157,15 @@
   "carrier_max_weight": "Максимальная грузоподъёмность",
   "carrier_max_weight_placeholder": "Например, 18",
   "carrier_cargo_types_title": "Какие грузы может перевозить",
-  "carrier_map_title": "Местоположение на карте"
+  "carrier_map_title": "Местоположение на карте",
+  "nav_home": "Главная",
+  "nav_active_loads": "Активные грузы",
+  "nav_new_listing": "Новое объявление",
+  "nav_panel": "Панель",
+  "nav_welcome": "Добро пожаловать",
+  "nav_user": "Пользователь",
+  "nav_admin_panel": "Панель администратора",
+  "nav_my_listings": "Мои объявления",
+  "nav_logout": "Выйти",
+  "nav_contact": "Контакт"
 }

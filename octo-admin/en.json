@@ -157,5 +157,15 @@
   "carrier_max_weight": "Maximum load capacity",
   "carrier_max_weight_placeholder": "e.g. 18",
   "carrier_cargo_types_title": "What cargo can be transported",
-  "carrier_map_title": "Location on map"
+  "carrier_map_title": "Location on map",
+  "nav_home": "Home",
+  "nav_active_loads": "Active loads",
+  "nav_new_listing": "New listing",
+  "nav_panel": "Panel",
+  "nav_welcome": "Welcome",
+  "nav_user": "User",
+  "nav_admin_panel": "Admin Panel",
+  "nav_my_listings": "My listings",
+  "nav_logout": "Sign out",
+  "nav_contact": "Contact"
 }
