@@ -307,7 +307,8 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
 
   useEffect(() => {
     setCategoriesLoading(true);
-    fetch("/api/public/categories", { cache: "no-store" })
+    const base = process.env.NEXT_PUBLIC_APP_URL || "";
+    fetch(`${base}/api/public/categories`, { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data?.data)) setCategories(data.data);
