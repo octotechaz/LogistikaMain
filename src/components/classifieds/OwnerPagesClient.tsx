@@ -307,10 +307,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
 
   useEffect(() => {
     setCategoriesLoading(true);
-    const base = (typeof window !== "undefined" && window.location.hostname !== "portal.tranzit.az")
-      ? ""
-      : "https://tranzit.az";
-    fetch(`${base}/api/public/categories`, { cache: "no-store" })
+    fetch(`https://tranzit.az/api/public/categories`, { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data?.data)) setCategories(data.data);

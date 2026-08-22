@@ -5,6 +5,16 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 function formatSqliteCategories(categories: unknown[]) {
   return (categories as Record<string, unknown>[]).map((cat) => ({
     id: cat.id,
@@ -58,7 +68,7 @@ export async function GET() {
       db.close();
 
       if (categories.length > 0) {
-        return NextResponse.json({ data: formatSqliteCategories(categories) });
+        return NextResponse.json({ data: formatSqliteCategories(categories) }, { headers: CORS_HEADERS });
       }
     } else {
       db.close();
@@ -71,12 +81,12 @@ export async function GET() {
   try {
     const categories = await loadFromPrisma();
     if (categories.length > 0) {
-      return NextResponse.json({ data: categories });
+      return NextResponse.json({ data: categories }, { headers: CORS_HEADERS });
     }
   } catch {
     // Prisma da uğursuz oldu
   }
 
   // 3. Heç bir mənbə yoxdursa boş array qaytar (hardcoded kateqoriya yox)
-  return NextResponse.json({ data: [] });
+  return NextResponse.json({ data: [] }, { headers: CORS_HEADERS });
 }
