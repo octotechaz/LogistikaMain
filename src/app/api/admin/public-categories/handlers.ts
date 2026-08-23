@@ -31,6 +31,7 @@ function normalizeCategory(input: Partial<PublicListingCategory>): PublicListing
   return {
     id,
     label,
+    labelTranslations: input.labelTranslations && typeof input.labelTranslations === "object" ? input.labelTranslations : undefined,
     iconKey,
     iconTone: String(input.iconTone || "text-slate-500").trim(),
     matchCargoType: input.matchCargoType ? String(input.matchCargoType).trim() : undefined,

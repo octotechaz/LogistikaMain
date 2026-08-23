@@ -107,6 +107,7 @@ function getDatabase() {
       CREATE TABLE IF NOT EXISTS public_categories (
         id TEXT PRIMARY KEY,
         label TEXT NOT NULL,
+        label_translations TEXT,
         icon_key TEXT NOT NULL,
         icon_tone TEXT NOT NULL DEFAULT 'text-slate-500',
         match_cargo_type TEXT,
@@ -185,9 +186,18 @@ export function getPublicSqliteListingById(id: string) {
 }
 
 function mapCategory(row: SqliteCategoryRow): PublicListingCategory {
+  let labelTranslations: Record<string, string> | undefined;
+  if ((row as unknown as { label_translations?: string }).label_translations) {
+    try {
+      labelTranslations = JSON.parse((row as unknown as { label_translations: string }).label_translations);
+    } catch {
+      labelTranslations = undefined;
+    }
+  }
   return {
     id: row.id,
     label: row.label,
+    labelTranslations,
     iconKey: row.icon_key,
     iconTone: row.icon_tone,
     matchCargoType: row.match_cargo_type ?? undefined,
@@ -213,11 +223,12 @@ export function upsertPublicSqliteCategory(category: PublicListingCategory) {
   getDatabase()
     .prepare(`
       INSERT INTO public_categories (
-        id, label, icon_key, icon_tone, match_cargo_type, match_vehicle_type,
+        id, label, label_translations, icon_key, icon_tone, match_cargo_type, match_vehicle_type,
         match_keyword, sort_order, is_active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         label = excluded.label,
+        label_translations = excluded.label_translations,
         icon_key = excluded.icon_key,
         icon_tone = excluded.icon_tone,
         match_cargo_type = excluded.match_cargo_type,
@@ -229,6 +240,7 @@ export function upsertPublicSqliteCategory(category: PublicListingCategory) {
     .run(
       category.id,
       category.label,
+      category.labelTranslations ? JSON.stringify(category.labelTranslations) : null,
       category.iconKey,
       category.iconTone,
       category.matchCargoType || null,

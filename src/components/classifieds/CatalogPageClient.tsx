@@ -1061,6 +1061,7 @@ export function CatalogPageClient({
     () => {
       const allCategory: HomeCategoryView = {
         ...fallbackHomeCategories[0],
+        label: t("catalog_all", "Hamısı"),
         icon: resolveCategoryIcon("grid"),
       };
 
@@ -1074,7 +1075,7 @@ export function CatalogPageClient({
 
       return [allCategory, ...apiCategories];
     },
-    [homeCategories]
+    [homeCategories, locale, t]
   );
 
   const selectedHomeCategory = useMemo(
