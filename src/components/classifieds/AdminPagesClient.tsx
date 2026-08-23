@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   BarChart3,
   Boxes,
@@ -725,6 +725,455 @@ export function AdminBannersPageClient() {
               ) : null}
             </div>
           </form>
+        </div>
+      </DashboardShell>
+    </RequireAdmin>
+  );
+}
+
+const LOCALES = ["az", "ru", "en", "tr"] as const;
+type Locale = (typeof LOCALES)[number];
+
+const TABS = [
+  {
+    id: "home",
+    label: "Ana Səhifə",
+    fields: [
+      { key: "home_hero_title", label: "Hero başlıq" },
+      { key: "home_hero_subtitle", label: "Hero alt başlıq" },
+      { key: "listings_title", label: "Son elanlar başlığı" },
+      { key: "categories_title", label: "Kateqoriyalar başlığı" },
+    ],
+  },
+  {
+    id: "nav",
+    label: "Naviqasiya",
+    fields: [
+      { key: "nav_home", label: "Ana səhifə" },
+      { key: "nav_loads", label: "Elanlar" },
+      { key: "nav_about", label: "Haqqımızda" },
+      { key: "nav_howitworks", label: "Necə işləyir" },
+      { key: "nav_contact", label: "Əlaqə" },
+      { key: "nav_active_loads", label: "Aktiv yüklər" },
+      { key: "nav_new_listing", label: "Yeni elan" },
+      { key: "nav_panel", label: "Panel" },
+      { key: "nav_welcome", label: "Xoş gəldiniz" },
+      { key: "nav_user", label: "İstifadəçi" },
+      { key: "nav_admin_panel", label: "Admin Paneli" },
+      { key: "nav_my_listings", label: "Mənim elanlarım" },
+      { key: "nav_logout", label: "Çıxış et" },
+    ],
+  },
+  {
+    id: "search",
+    label: "Axtarış & Kataloq",
+    fields: [
+      { key: "search_eyebrow", label: "Eyebrow mətni" },
+      { key: "search_title", label: "Əsas başlıq" },
+      { key: "search_route_label", label: "Marşrut bölməsi başlığı" },
+      { key: "search_pickup_city", label: "Yükləmə şəhəri" },
+      { key: "search_delivery_city", label: "Çatdırılma şəhəri" },
+      { key: "search_cargo_type", label: "Yük növü" },
+      { key: "search_vehicle_type", label: "Nəqliyyat növü" },
+      { key: "search_keyword", label: "Açar söz sahəsi" },
+      { key: "search_keyword_placeholder", label: "Açar söz placeholder" },
+      { key: "search_btn", label: "Axtar düyməsi" },
+      { key: "search_btn_loading", label: "Axtarılır... mətni" },
+      { key: "search_advanced_btn", label: "Ətraflı filter düyməsi" },
+      { key: "search_advanced_hint", label: "Ətraflı filter hint" },
+      { key: "search_select", label: "Seçin mətni" },
+    ],
+  },
+  {
+    id: "about",
+    label: "Haqqımızda",
+    fields: [
+      { key: "about_hero_title", label: "Hero başlıq" },
+      { key: "about_hero_description", label: "Hero təsvir" },
+      { key: "about_advantages_title", label: "Üstünlüklər başlığı" },
+      { key: "about_paragraphs", label: "Paraqraflar (hər sətir ayrı)", textarea: true, array: true },
+      { key: "about_advantages", label: "Üstünlüklər (hər sətir ayrı)", textarea: true, array: true },
+    ],
+  },
+  {
+    id: "howitworks",
+    label: "Necə işləyir",
+    fields: [
+      { key: "howitworks_title", label: "Başlıq" },
+      { key: "howitworks_description", label: "Təsvir", textarea: true },
+    ],
+    steps: true,
+  },
+  {
+    id: "footer",
+    label: "Footer",
+    fields: [
+      { key: "footer_phone", label: "Telefon" },
+      { key: "footer_work_hours", label: "İş saatları" },
+      { key: "footer_copyright", label: "Copyright" },
+      { key: "footer_tagline", label: "Tagline" },
+      { key: "footer_platform", label: "Platforma bölməsi başlığı" },
+      { key: "footer_legal", label: "Hüquqi bölməsi başlığı" },
+      { key: "footer_support", label: "Dəstək bölməsi başlığı" },
+    ],
+  },
+  {
+    id: "login",
+    label: "Giriş",
+    fields: [
+      { key: "login_eyebrow", label: "Eyebrow" },
+      { key: "login_title", label: "Başlıq" },
+      { key: "login_subtitle", label: "Alt başlıq" },
+      { key: "login_tab_owner", label: "Tab: Yük sahibi" },
+      { key: "login_tab_carrier", label: "Tab: Yük daşıyan" },
+      { key: "login_method_phone", label: "Metod: Telefon" },
+      { key: "login_method_email", label: "Metod: E-poçt" },
+      { key: "login_field_phone", label: "Telefon sahəsi" },
+      { key: "login_field_email", label: "Email sahəsi" },
+      { key: "login_field_email_placeholder", label: "Email placeholder" },
+      { key: "login_field_password", label: "Şifrə sahəsi" },
+      { key: "login_field_password_placeholder", label: "Şifrə placeholder" },
+      { key: "login_forgot_password", label: "Şifrəni unutmusan?" },
+      { key: "login_btn", label: "Giriş düyməsi" },
+      { key: "login_btn_loading", label: "Giriş (yüklənir)" },
+      { key: "login_btn_owner", label: "Giriş düyməsi (sahibi)" },
+      { key: "login_btn_carrier", label: "Giriş düyməsi (daşıyan)" },
+      { key: "login_no_account", label: "Hesab yoxdur?" },
+      { key: "login_register_owner", label: "Qeydiyyat linki (sahibi)" },
+      { key: "login_register_carrier", label: "Qeydiyyat linki (daşıyan)" },
+      { key: "login_sidebar_title", label: "Sidebar başlığı" },
+      { key: "login_sidebar_owner_title", label: "Sidebar: sahibi başlığı" },
+      { key: "login_sidebar_carrier_title", label: "Sidebar: daşıyan başlığı" },
+      { key: "login_sidebar_owner_desc", label: "Sidebar: sahibi təsviri" },
+      { key: "login_sidebar_carrier_desc", label: "Sidebar: daşıyan təsviri" },
+      { key: "login_error_invalid", label: "Xəta: yanlış məlumat" },
+      { key: "login_error_phone", label: "Xəta: telefon" },
+      { key: "login_error_email", label: "Xəta: email" },
+    ],
+  },
+  {
+    id: "register",
+    label: "Qeydiyyat",
+    fields: [
+      { key: "register_title", label: "Başlıq" },
+      { key: "register_eyebrow_owner", label: "Eyebrow (sahibi)" },
+      { key: "register_eyebrow_carrier", label: "Eyebrow (daşıyan)" },
+      { key: "register_subtitle_owner", label: "Alt başlıq (sahibi)" },
+      { key: "register_subtitle_carrier", label: "Alt başlıq (daşıyan)" },
+      { key: "register_field_firstname", label: "Ad sahəsi" },
+      { key: "register_field_lastname", label: "Soyad sahəsi" },
+      { key: "register_field_phone", label: "Telefon sahəsi" },
+      { key: "register_field_email", label: "Email sahəsi" },
+      { key: "register_field_password", label: "Şifrə sahəsi" },
+      { key: "register_field_company", label: "Şirkət sahəsi" },
+      { key: "register_field_voen", label: "VÖEN sahəsi" },
+      { key: "register_btn", label: "Hesab yarat düyməsi" },
+      { key: "register_btn_loading", label: "Hesab yarat (yüklənir)" },
+      { key: "register_terms_prefix", label: "Şərtlər (əvvəl)" },
+      { key: "register_terms_link", label: "İstifadə şərtləri linki" },
+      { key: "register_privacy_link", label: "Məxfilik siyasəti linki" },
+      { key: "register_terms_suffix", label: "Şərtlər (son)" },
+      { key: "register_success", label: "Uğur mesajı" },
+      { key: "register_error", label: "Xəta mesajı" },
+    ],
+  },
+  {
+    id: "forgot",
+    label: "Şifrə yenilə",
+    fields: [
+      { key: "forgot_title", label: "Başlıq" },
+      { key: "forgot_subtitle", label: "Alt başlıq" },
+      { key: "forgot_field_phone", label: "Telefon sahəsi" },
+      { key: "forgot_field_email", label: "Email sahəsi" },
+      { key: "forgot_field_email_placeholder", label: "Email placeholder" },
+      { key: "forgot_btn_send", label: "OTP göndər düyməsi" },
+      { key: "forgot_btn_sending", label: "OTP göndərilir..." },
+      { key: "forgot_otp_label", label: "OTP kodu sahəsi" },
+      { key: "forgot_otp_placeholder", label: "OTP placeholder" },
+      { key: "forgot_new_password", label: "Yeni şifrə" },
+      { key: "forgot_new_password_placeholder", label: "Yeni şifrə placeholder" },
+      { key: "forgot_confirm_password", label: "Şifrə təkrar" },
+      { key: "forgot_confirm_password_placeholder", label: "Şifrə təkrar placeholder" },
+      { key: "forgot_btn_reset", label: "Şifrəni yenilə düyməsi" },
+      { key: "forgot_btn_resetting", label: "Yenilənir..." },
+      { key: "forgot_btn_back", label: "Geri düyməsi" },
+      { key: "forgot_success_title", label: "Uğur başlığı" },
+      { key: "forgot_success_redirect", label: "Yönləndirmə mətni" },
+      { key: "forgot_success_login", label: "İndi daxil ol" },
+      { key: "forgot_back_to_login", label: "Giriş səhifəsinə qayıt" },
+      { key: "forgot_create_account", label: "Yeni hesab yarat" },
+      { key: "forgot_error_send", label: "Xəta: OTP göndərilmədi" },
+      { key: "forgot_error_reset", label: "Xəta: şifrə yenilənmədi" },
+    ],
+  },
+  {
+    id: "role",
+    label: "Rol seçimi & Daşıyıcı",
+    fields: [
+      { key: "role_select_eyebrow", label: "Eyebrow" },
+      { key: "role_select_title", label: "Başlıq" },
+      { key: "role_carrier_title", label: "Daşıyan kart başlığı" },
+      { key: "role_carrier_desc", label: "Daşıyan kart təsviri" },
+      { key: "role_owner_title", label: "Sahibi kart başlığı" },
+      { key: "role_owner_desc", label: "Sahibi kart təsviri" },
+      { key: "carrier_highlight_1", label: "Daşıyıcı highlight 1" },
+      { key: "carrier_highlight_2", label: "Daşıyıcı highlight 2" },
+      { key: "carrier_highlight_3", label: "Daşıyıcı highlight 3" },
+      { key: "carrier_field_contact_phone", label: "Əlaqə nömrəsi sahəsi" },
+      { key: "carrier_field_whatsapp", label: "WhatsApp sahəsi" },
+      { key: "carrier_company_placeholder", label: "Şirkət placeholder" },
+      { key: "carrier_vehicle_type", label: "Avtomobil növü sahəsi" },
+      { key: "carrier_location_address", label: "Ünvan sahəsi" },
+      { key: "carrier_location_placeholder", label: "Ünvan placeholder" },
+      { key: "carrier_cargo_volume", label: "Yük həcmi sahəsi" },
+      { key: "carrier_cargo_volume_placeholder", label: "Həcm placeholder" },
+      { key: "carrier_max_weight", label: "Maks. çəki sahəsi" },
+      { key: "carrier_max_weight_placeholder", label: "Çəki placeholder" },
+      { key: "carrier_cargo_types_title", label: "Yük növləri başlığı" },
+      { key: "carrier_map_title", label: "Xəritə bölməsi başlığı" },
+    ],
+  },
+] as const;
+
+type FieldDef = { key: string; label: string; textarea?: boolean; array?: boolean };
+type TabDef = { id: string; label: string; fields: readonly FieldDef[]; steps?: boolean };
+
+const STEP_ICONS = ["UploadCloud", "ShieldCheck", "ClipboardList", "PhoneCall"];
+
+function valueToDisplay(val: unknown, isArray?: boolean): string {
+  if (isArray) {
+    if (Array.isArray(val)) return val.map((v) => (typeof v === "string" ? v : JSON.stringify(v))).join("\n");
+    if (typeof val === "string") return val;
+    return "";
+  }
+  if (typeof val === "string") return val;
+  return "";
+}
+
+function displayToValue(display: string, isArray?: boolean): unknown {
+  if (isArray) return display.split("\n").filter(Boolean);
+  return display;
+}
+
+export function AdminPageContentPageClient() {
+  const [locale, setLocale] = useState<Locale>("az");
+  const [activeTab, setActiveTab] = useState<string>(TABS[0].id);
+  const [fields, setFields] = useState<Record<string, string>>({});
+  const [steps, setSteps] = useState<{ icon: string; title: string; text: string }[]>([
+    { icon: "UploadCloud", title: "", text: "" },
+    { icon: "ShieldCheck", title: "", text: "" },
+    { icon: "ClipboardList", title: "", text: "" },
+    { icon: "PhoneCall", title: "", text: "" },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
+
+  const cacheRef = useRef<Partial<Record<Locale, { fields: Record<string, string>; steps: typeof steps }>>>({});
+
+  async function fetchLocale(loc: Locale) {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/page-content?locale=${loc}`);
+      const json = await res.json() as { data: Record<string, unknown> };
+      const data = json.data ?? {};
+      const newFields: Record<string, string> = {};
+      for (const tab of TABS) {
+        for (const f of tab.fields as readonly FieldDef[]) {
+          newFields[f.key] = valueToDisplay(data[f.key], f.array);
+        }
+      }
+      const rawSteps = data["howitworks_steps"];
+      const newSteps: { icon: string; title: string; text: string }[] = [0, 1, 2, 3].map((i) => {
+        const s = Array.isArray(rawSteps) ? (rawSteps[i] as Record<string, string> | undefined) : undefined;
+        return { icon: s?.icon ?? STEP_ICONS[i], title: s?.title ?? "", text: s?.text ?? "" };
+      });
+      cacheRef.current[loc] = { fields: newFields, steps: newSteps };
+      setFields(newFields);
+      setSteps(newSteps);
+    } catch {
+      setError("Məlumatlar yüklənmədi");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void fetchLocale("az");
+  }, []);
+
+  function switchLocale(loc: Locale) {
+    if (loc === locale) return;
+    setLocale(loc);
+    if (cacheRef.current[loc]) {
+      const cached = cacheRef.current[loc]!;
+      setFields(cached.fields);
+      setSteps(cached.steps);
+    } else {
+      void fetchLocale(loc);
+    }
+  }
+
+  function setField(key: string, value: string) {
+    setFields((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function setStep(i: number, part: "icon" | "title" | "text", value: string) {
+    setSteps((prev) => prev.map((s, idx) => idx === i ? { ...s, [part]: value } : s));
+  }
+
+  async function handleSave() {
+    setSaved(false);
+    setError(null);
+    const data: Record<string, unknown> = {};
+    for (const tab of TABS) {
+      for (const f of tab.fields as readonly FieldDef[]) {
+        data[f.key] = displayToValue(fields[f.key] ?? "", f.array);
+      }
+    }
+    data["howitworks_steps"] = steps;
+    delete cacheRef.current[locale];
+    try {
+      const res = await fetch("/api/admin/page-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale, data }),
+      });
+      const json = await res.json() as { ok: boolean };
+      if (!json.ok) throw new Error();
+      setSaved(true);
+      setTimeout(() => startTransition(() => setSaved(false)), 3000);
+    } catch {
+      setError("Saxlama zamanı xəta baş verdi.");
+    }
+  }
+
+  const activeTabDef = TABS.find((t) => t.id === activeTab) as TabDef;
+
+  return (
+    <RequireAdmin>
+      <DashboardShell
+        section="admin"
+        title="Səhifə Məzmunu"
+        description="Saytın ön hissəsindəki bütün mətnləri dil üzrə idarə edin."
+      >
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          <span className="text-sm font-semibold text-slate-500 mr-1">Dil:</span>
+          {LOCALES.map((loc) => (
+            <button
+              key={loc}
+              type="button"
+              onClick={() => switchLocale(loc)}
+              className={`px-3 py-1.5 rounded-md text-sm font-semibold border transition ${
+                locale === loc
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-slate-600 border-slate-300 hover:border-slate-400"
+              }`}
+            >
+              {loc.toUpperCase()}
+            </button>
+          ))}
+          {loading && <span className="text-xs text-slate-400 ml-2">Yüklənir...</span>}
+        </div>
+
+        {saved && (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 mb-2">
+            Dəyişikliklər uğurla saxlandı.
+          </div>
+        )}
+        {error && (
+          <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 mb-2">
+            {error}
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-1 border-b border-slate-200 mb-4">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition -mb-px ${
+                activeTab === tab.id
+                  ? "border-blue-600 text-blue-700"
+                  : "border-transparent text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="surface-panel p-5 grid gap-4 sm:grid-cols-2">
+          {(activeTabDef.fields as readonly FieldDef[]).map((f) => (
+            <label key={f.key} className={`form-label${f.textarea ? " sm:col-span-2" : ""}`}>
+              {f.label}
+              {f.array ? (
+                <span className="text-xs text-slate-400 font-normal ml-2">(hər sətir ayrı maddə)</span>
+              ) : null}
+              {f.textarea ? (
+                <textarea
+                  className="form-field min-h-[80px] font-mono text-sm"
+                  value={fields[f.key] ?? ""}
+                  onChange={(e) => setField(f.key, e.target.value)}
+                />
+              ) : (
+                <input
+                  className="form-field"
+                  value={fields[f.key] ?? ""}
+                  onChange={(e) => setField(f.key, e.target.value)}
+                />
+              )}
+            </label>
+          ))}
+        </div>
+
+        {activeTabDef.steps ? (
+          <div className="surface-panel p-5 mt-4">
+            <h3 className="text-base font-semibold text-navy-900 mb-4">Addımlar</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {steps.map((step, i) => (
+                <div key={i} className="border border-slate-200 rounded-lg p-4 space-y-3">
+                  <div className="text-sm font-semibold text-slate-500">Addım {i + 1}</div>
+                  <label className="form-label">
+                    İkon
+                    <select
+                      className="form-field"
+                      value={step.icon}
+                      onChange={(e) => setStep(i, "icon", e.target.value)}
+                    >
+                      {STEP_ICONS.map((icon) => (
+                        <option key={icon} value={icon}>{icon}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="form-label">
+                    Başlıq
+                    <input
+                      className="form-field"
+                      value={step.title}
+                      onChange={(e) => setStep(i, "title", e.target.value)}
+                    />
+                  </label>
+                  <label className="form-label">
+                    Mətn
+                    <textarea
+                      className="form-field"
+                      rows={2}
+                      value={step.text}
+                      onChange={(e) => setStep(i, "text", e.target.value)}
+                    />
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mt-4 flex items-center gap-3">
+          <Button onClick={handleSave}>Saxla</Button>
+          <span className="text-sm text-slate-400">Seçilmiş dil ({locale.toUpperCase()}) üçün saxlanır</span>
         </div>
       </DashboardShell>
     </RequireAdmin>

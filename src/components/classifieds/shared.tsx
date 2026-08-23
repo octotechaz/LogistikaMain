@@ -644,7 +644,8 @@ export function DashboardShell({
             { href: "/admin/loads", label: t("dashboard_nav_listings", "Elanlar"), icon: "ri-article-line" },
             { href: "/admin/categories", label: t("dashboard_nav_categories", "Kateqoriyalar"), icon: "ri-function-line" },
             { href: "/admin/banners", label: t("dashboard_nav_banners", "Bannerlər"), icon: "ri-image-line" },
-            { href: "/admin/statistics", label: t("dashboard_nav_statistics", "Statistika"), icon: "ri-bar-chart-box-line" }
+            { href: "/admin/statistics", label: t("dashboard_nav_statistics", "Statistika"), icon: "ri-bar-chart-box-line" },
+            { href: "/admin/page-content", label: "Səhifə Məzmunu", icon: "ri-translate-2" }
           ];
 
   const sectionMeta =
