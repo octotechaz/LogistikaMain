@@ -223,11 +223,11 @@
   "catalog_filter_height": "Yükseklik (m)",
   "catalog_chip_all": "Tümü",
   "catalog_chip_general": "Genel yükler",
-  "catalog_chip_construction": "İnşaat malzemeleri",
-  "catalog_chip_food": "Gıda ürünleri",
+  "catalog_chip_construction": "Yapı",
+  "catalog_chip_food": "Yiyecek",
   "catalog_chip_agri": "Tarım",
-  "catalog_chip_liquid": "Sıvı yükler",
-  "catalog_chip_cold": "Soğutmalı (frigorifik)",
+  "catalog_chip_liquid": "Sıvı",
+  "catalog_chip_cold": "Buzdolabı",
   "catalog_chip_danger": "Tehlikeli yükler",
   "catalog_chip_other": "Diğer",
   "catalog_sort_newest": "Tarih: en yeni önce",
@@ -345,37 +345,77 @@
   "terms_title": "Kullanım koşulları",
   "terms_intro": "Tranzit.AZ platformunu kullanan her kullanıcı bu koşulları kabul etmiş sayılır. Kullanıcılar yayımladıkları ilan bilgilerinin doğruluğundan sorumludur.",
   "terms_s1_title": "İlan yayımlama ve onaylama",
-  "terms_s1_paras": ["Platformdaki yük ilanları yönetici tarafından incelendikten sonra aktif hale getirilir. İlan bilgilerinin doğruluğu, iletişim numarasının geçerliliği ve yük açıklamasının gerçeği yansıtması için sorumluluk ilanı yayımlayan kullanıcıya aittir."],
+  "terms_s1_paras": [
+    "Platformdaki yük ilanları yönetici tarafından incelendikten sonra aktif hale getirilir. İlan bilgilerinin doğruluğu, iletişim numarasının geçerliliği ve yük açıklamasının gerçeği yansıtması için sorumluluk ilanı yayımlayan kullanıcıya aittir."
+  ],
   "terms_s2_title": "Taraflar arasındaki anlaşma",
-  "terms_s2_paras": ["Tranzit.AZ, yük sahibi ile taşıyıcı arasında bilgi ve iletişim aracısı rolü üstlenir. Fiyat, teslim süresi, yükleme, taşıma, ödeme şekli ve diğer koşullar taraflarca doğrudan kararlaştırılır."],
+  "terms_s2_paras": [
+    "Tranzit.AZ, yük sahibi ile taşıyıcı arasında bilgi ve iletişim aracısı rolü üstlenir. Fiyat, teslim süresi, yükleme, taşıma, ödeme şekli ve diğer koşullar taraflarca doğrudan kararlaştırılır."
+  ],
   "terms_s3_title": "Platformun sorumluluğu",
-  "terms_s3_paras": ["Platform, gecikme, hasar veya yük kaybı, ödeme anlaşmazlığı, sürücü davranışı veya taraflar arasındaki diğer anlaşmazlıklar için doğrudan sorumluluk taşımaz. Kullanıcılar anlaşmadan önce karşı tarafın bilgilerini doğrulamalıdır."],
+  "terms_s3_paras": [
+    "Platform, gecikme, hasar veya yük kaybı, ödeme anlaşmazlığı, sürücü davranışı veya taraflar arasındaki diğer anlaşmazlıklar için doğrudan sorumluluk taşımaz. Kullanıcılar anlaşmadan önce karşı tarafın bilgilerini doğrulamalıdır."
+  ],
   "terms_s4_title": "Yasak ilanlar",
-  "terms_s4_paras": ["Yanlış, hakaret içeren, yanıltıcı, yasadışı veya üçüncü tarafların haklarını ihlal eden ilanlar yayımlamak yasaktır. Platform bu tür ilanları uyarı yapmaksızın silme, kullanıcıyı kısıtlama veya engelleme hakkını saklı tutar."],
+  "terms_s4_paras": [
+    "Yanlış, hakaret içeren, yanıltıcı, yasadışı veya üçüncü tarafların haklarını ihlal eden ilanlar yayımlamak yasaktır. Platform bu tür ilanları uyarı yapmaksızın silme, kullanıcıyı kısıtlama veya engelleme hakkını saklı tutar."
+  ],
   "terms_s5_title": "İlan süresi ve yenileme",
-  "terms_s5_paras": ["Yük ilanları kullanıcının seçtiği süre boyunca aktif kalır. Süre dolduktan sonra ilan otomatik olarak süresi dolmuş ilanlar bölümüne geçer. Kullanıcı isterse ilanı yenileyerek yönetici onayına gönderebilir."],
+  "terms_s5_paras": [
+    "Yük ilanları kullanıcının seçtiği süre boyunca aktif kalır. Süre dolduktan sonra ilan otomatik olarak süresi dolmuş ilanlar bölümüne geçer. Kullanıcı isterse ilanı yenileyerek yönetici onayına gönderebilir."
+  ],
   "priv_title": "Gizlilik politikası",
   "priv_s1_title": "Toplanan veriler",
-  "priv_s1_paras": ["Platform kullanımı sırasında ad, soyad, telefon numarası, e-posta adresi, şirket bilgileri, ilan bilgileri ile yükleme ve teslimat adresleri gibi veriler sunulabilir."],
+  "priv_s1_paras": [
+    "Platform kullanımı sırasında ad, soyad, telefon numarası, e-posta adresi, şirket bilgileri, ilan bilgileri ile yükleme ve teslimat adresleri gibi veriler sunulabilir."
+  ],
   "priv_s2_title": "İletişim bilgilerinin görünürlüğü",
-  "priv_s2_paras": ["Yük ilanlarında gösterilen iletişim numarası, taşıyıcıların yük sahibiyle doğrudan iletişim kurabilmesi için açıkça görünür."],
+  "priv_s2_paras": [
+    "Yük ilanlarında gösterilen iletişim numarası, taşıyıcıların yük sahibiyle doğrudan iletişim kurabilmesi için açıkça görünür."
+  ],
   "priv_s3_title": "Verilerin kullanımı",
-  "priv_s3_paras": ["Sağlanan veriler kayıt işlemleri, ilan yönetimi, yönetici onayı ve kullanıcı panelinin işleyişi amacıyla kullanılır."],
+  "priv_s3_paras": [
+    "Sağlanan veriler kayıt işlemleri, ilan yönetimi, yönetici onayı ve kullanıcı panelinin işleyişi amacıyla kullanılır."
+  ],
   "priv_s4_title": "Verilerin korunması",
-  "priv_s4_paras": ["Tranzit.AZ, kullanıcı verilerinin güvenli saklanması için gerekli teknik ve organizasyonel önlemleri almaya çalışır."],
+  "priv_s4_paras": [
+    "Tranzit.AZ, kullanıcı verilerinin güvenli saklanması için gerekli teknik ve organizasyonel önlemleri almaya çalışır."
+  ],
   "priv_s5_title": "Üçüncü taraflarla paylaşım",
-  "priv_s5_paras": ["Kullanıcı verileri izinsiz olarak üçüncü taraflara satılmaz veya aktarılmaz."],
+  "priv_s5_paras": [
+    "Kullanıcı verileri izinsiz olarak üçüncü taraflara satılmaz veya aktarılmaz."
+  ],
   "priv_s6_title": "Verilerin güncellenmesi ve silinmesi",
-  "priv_s6_paras": ["Kullanıcı, kişisel panelinde bazı bilgilerini düzenleyebilir. Veri silme talepleri platform yönetimi tarafından değerlendirilir."],
+  "priv_s6_paras": [
+    "Kullanıcı, kişisel panelinde bazı bilgilerini düzenleyebilir. Veri silme talepleri platform yönetimi tarafından değerlendirilir."
+  ],
   "priv_s7_title": "Çerezler ve teknik veriler",
-  "priv_s7_paras": ["Platform, kullanıcı deneyimini iyileştirmek için çerezler ve benzeri teknik verilerden yararlanabilir."],
+  "priv_s7_paras": [
+    "Platform, kullanıcı deneyimini iyileştirmek için çerezler ve benzeri teknik verilerden yararlanabilir."
+  ],
   "priv_s8_title": "Onay",
-  "priv_s8_paras": ["Platformu kullanan kullanıcı, bu gizlilik politikasının koşullarını kabul etmiş sayılır."],
+  "priv_s8_paras": [
+    "Platformu kullanan kullanıcı, bu gizlilik politikasının koşullarını kabul etmiş sayılır."
+  ],
   "rules_title": "Kurallar",
   "rules_desc": "İlanların kaliteli ve güvenilir görünmesi için bilgiler açık, net ve doğru şekilde paylaşılmalıdır.",
   "rules_p1": "Platformda ilan yayımlarken bilgiler açık ve doğru şekilde belirtilmelidir.",
   "rules_p2": "Yük sahibi aşağıdaki bilgileri mümkün olduğunca doğru girmelidir:",
-  "rules_required_items": ["Yükleme şehri","Teslimat şehri","Yük türü","Tahmini araç tipi","Yükün ağırlığı, hacmi ve boyutları","Taşıma tarihi","İletişim bilgileri"],
+  "rules_required_items": [
+    "Yükleme şehri",
+    "Teslimat şehri",
+    "Yük türü",
+    "Tahmini araç tipi",
+    "Yükün ağırlığı, hacmi ve boyutları",
+    "Taşıma tarihi",
+    "İletişim bilgileri"
+  ],
   "rules_prohibited_title": "Yasaktır",
-  "rules_prohibited_items": ["Yanlış ve yanıltıcı ilan yayımlamak","Yasadışı ve tehlikeli yüklerle ilgili ilan paylaşmak","Diğer kullanıcılara saygısızca davranmak","Platformu spam ve reklam amaçlı kullanmak"]
+  "rules_prohibited_items": [
+    "Yanlış ve yanıltıcı ilan yayımlamak",
+    "Yasadışı ve tehlikeli yüklerle ilgili ilan paylaşmak",
+    "Diğer kullanıcılara saygısızca davranmak",
+    "Platformu spam ve reklam amaçlı kullanmak"
+  ],
+  "catalog_chip_home": "Ev eşyaları"
 }

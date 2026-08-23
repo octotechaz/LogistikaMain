@@ -223,11 +223,11 @@
   "catalog_filter_height": "Height (m)",
   "catalog_chip_all": "All",
   "catalog_chip_general": "General cargo",
-  "catalog_chip_construction": "Construction materials",
-  "catalog_chip_food": "Food products",
+  "catalog_chip_construction": "Construction",
+  "catalog_chip_food": "Food",
   "catalog_chip_agri": "Agriculture",
-  "catalog_chip_liquid": "Liquid cargo",
-  "catalog_chip_cold": "Refrigerated",
+  "catalog_chip_liquid": "Liquid",
+  "catalog_chip_cold": "Refrigerator",
   "catalog_chip_danger": "Hazardous cargo",
   "catalog_chip_other": "Other",
   "catalog_sort_newest": "Date: newest first",
@@ -345,37 +345,77 @@
   "terms_title": "Terms of use",
   "terms_intro": "Every user who uses the Tranzit.AZ platform is considered to have agreed to these terms. Users are responsible for the accuracy of the listing information they post.",
   "terms_s1_title": "Listing placement and approval",
-  "terms_s1_paras": ["Cargo listings on the platform are activated after review by an administrator. The responsibility for the accuracy of the listing data, the validity of the contact number, and the accuracy of the cargo description rests with the user who placed the listing."],
+  "terms_s1_paras": [
+    "Cargo listings on the platform are activated after review by an administrator. The responsibility for the accuracy of the listing data, the validity of the contact number, and the accuracy of the cargo description rests with the user who placed the listing."
+  ],
   "terms_s2_title": "Agreement between parties",
-  "terms_s2_paras": ["Tranzit.AZ acts as an information and communication intermediary between cargo owners and carriers. Price, delivery time, loading, transportation, payment method and other terms are agreed directly between the parties."],
+  "terms_s2_paras": [
+    "Tranzit.AZ acts as an information and communication intermediary between cargo owners and carriers. Price, delivery time, loading, transportation, payment method and other terms are agreed directly between the parties."
+  ],
   "terms_s3_title": "Platform liability",
-  "terms_s3_paras": ["The platform is not directly liable for delays, damage or loss of cargo, payment disputes, driver behaviour or other misunderstandings between parties. Users should verify the counterparty's information before reaching an agreement."],
+  "terms_s3_paras": [
+    "The platform is not directly liable for delays, damage or loss of cargo, payment disputes, driver behaviour or other misunderstandings between parties. Users should verify the counterparty's information before reaching an agreement."
+  ],
   "terms_s4_title": "Prohibited listings",
-  "terms_s4_paras": ["It is prohibited to post false, offensive, misleading, illegal listings or those that violate the rights of third parties. The platform reserves the right to delete such listings, restrict or block users without warning."],
+  "terms_s4_paras": [
+    "It is prohibited to post false, offensive, misleading, illegal listings or those that violate the rights of third parties. The platform reserves the right to delete such listings, restrict or block users without warning."
+  ],
   "terms_s5_title": "Listing duration and restoration",
-  "terms_s5_paras": ["Cargo listings remain active for the period selected by the user. After the period expires, the listing automatically moves to the expired section. Users may restore it and send it for re-approval by an administrator."],
+  "terms_s5_paras": [
+    "Cargo listings remain active for the period selected by the user. After the period expires, the listing automatically moves to the expired section. Users may restore it and send it for re-approval by an administrator."
+  ],
   "priv_title": "Privacy policy",
   "priv_s1_title": "Data collected",
-  "priv_s1_paras": ["When using the platform, data such as name, surname, phone number, email address, company information, listing data, and pickup/delivery addresses may be provided."],
+  "priv_s1_paras": [
+    "When using the platform, data such as name, surname, phone number, email address, company information, listing data, and pickup/delivery addresses may be provided."
+  ],
   "priv_s2_title": "Visibility of contact data",
-  "priv_s2_paras": ["The contact number shown in cargo listings is publicly visible to allow carriers to contact cargo owners directly."],
+  "priv_s2_paras": [
+    "The contact number shown in cargo listings is publicly visible to allow carriers to contact cargo owners directly."
+  ],
   "priv_s3_title": "Use of data",
-  "priv_s3_paras": ["The provided data is used for registration, listing management, admin approval, and user account functionality."],
+  "priv_s3_paras": [
+    "The provided data is used for registration, listing management, admin approval, and user account functionality."
+  ],
   "priv_s4_title": "Data protection",
-  "priv_s4_paras": ["Tranzit.AZ takes necessary technical and organisational measures to store user data securely."],
+  "priv_s4_paras": [
+    "Tranzit.AZ takes necessary technical and organisational measures to store user data securely."
+  ],
   "priv_s5_title": "Sharing with third parties",
-  "priv_s5_paras": ["User data is not sold or transferred to third parties without permission."],
+  "priv_s5_paras": [
+    "User data is not sold or transferred to third parties without permission."
+  ],
   "priv_s6_title": "Data update and deletion",
-  "priv_s6_paras": ["Users can edit some data in their personal account. Requests for data deletion are reviewed by the platform administration."],
+  "priv_s6_paras": [
+    "Users can edit some data in their personal account. Requests for data deletion are reviewed by the platform administration."
+  ],
   "priv_s7_title": "Cookies and technical data",
-  "priv_s7_paras": ["The platform may use cookies and similar technical data to improve user experience."],
+  "priv_s7_paras": [
+    "The platform may use cookies and similar technical data to improve user experience."
+  ],
   "priv_s8_title": "Consent",
-  "priv_s8_paras": ["By using the platform, the user is considered to have accepted the terms of this privacy policy."],
+  "priv_s8_paras": [
+    "By using the platform, the user is considered to have accepted the terms of this privacy policy."
+  ],
   "rules_title": "Rules",
   "rules_desc": "For listings to appear clear and reliable, information must be shared in a clear, precise and accurate manner.",
   "rules_p1": "When placing a listing on the platform, information must be stated clearly and accurately.",
   "rules_p2": "The cargo owner must provide the following information as precisely as possible:",
-  "rules_required_items": ["Pickup city","Delivery city","Cargo type","Expected vehicle type","Cargo weight, volume and dimensions","Transportation date","Contact information"],
+  "rules_required_items": [
+    "Pickup city",
+    "Delivery city",
+    "Cargo type",
+    "Expected vehicle type",
+    "Cargo weight, volume and dimensions",
+    "Transportation date",
+    "Contact information"
+  ],
   "rules_prohibited_title": "Prohibited",
-  "rules_prohibited_items": ["Posting false and misleading listings","Sharing listings related to illegal and dangerous cargo","Showing disrespect to other users","Using the platform for spam and advertising purposes"]
+  "rules_prohibited_items": [
+    "Posting false and misleading listings",
+    "Sharing listings related to illegal and dangerous cargo",
+    "Showing disrespect to other users",
+    "Using the platform for spam and advertising purposes"
+  ],
+  "catalog_chip_home": "Household items"
 }
