@@ -1066,9 +1066,40 @@ function displayToValue(display: string, isArray?: boolean): unknown {
   return display;
 }
 
+type NavLink = { id: string; href: string };
+
+const DEFAULT_TOPBAR: NavLink[] = [
+  { id: "loads", href: "/" },
+  { id: "about", href: "/haqqimizda" },
+  { id: "help", href: "/how-it-works" },
+];
+
+const DEFAULT_FOOTER: NavLink[] = [
+  { id: "about", href: "/haqqimizda" },
+  { id: "terms", href: "/istifade-sertleri" },
+  { id: "privacy", href: "/mexfilik-siyaseti" },
+  { id: "rules", href: "/qaydalar" },
+  { id: "contact", href: "/elaqe" },
+];
+
+const TOPBAR_LABELS: Record<string, string> = {
+  loads: "Elanlar",
+  about: "Haqqımızda",
+  help: "Necə işləyir",
+};
+
+const FOOTER_LABELS: Record<string, string> = {
+  about: "Haqqımızda",
+  terms: "İstifadə şərtləri",
+  privacy: "Məxfilik siyasəti",
+  rules: "Qaydalar",
+  contact: "Əlaqə",
+};
+
 export function AdminPageContentPageClient() {
   const [locale, setLocale] = useState<Locale>("az");
   const [activeTab, setActiveTab] = useState<string>(TABS[0].id);
+  const [search, setSearch] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
   const [steps, setSteps] = useState<{ icon: string; title: string; text: string }[]>([
     { icon: "UploadCloud", title: "", text: "" },
@@ -1076,6 +1107,9 @@ export function AdminPageContentPageClient() {
     { icon: "ClipboardList", title: "", text: "" },
     { icon: "PhoneCall", title: "", text: "" },
   ]);
+  const [topbarNav, setTopbarNav] = useState<NavLink[]>(DEFAULT_TOPBAR);
+  const [footerNav, setFooterNav] = useState<NavLink[]>(DEFAULT_FOOTER);
+  const [navLoading, setNavLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1112,6 +1146,16 @@ export function AdminPageContentPageClient() {
 
   useEffect(() => {
     void fetchLocale("az");
+    void (async () => {
+      setNavLoading(true);
+      try {
+        const res = await fetch("/api/admin/topbar-nav");
+        const json = await res.json() as { topbar: NavLink[]; footer: NavLink[] };
+        if (json.topbar) setTopbarNav(json.topbar);
+        if (json.footer) setFooterNav(json.footer);
+      } catch {}
+      finally { setNavLoading(false); }
+    })();
   }, []);
 
   function switchLocale(loc: Locale) {
@@ -1160,7 +1204,36 @@ export function AdminPageContentPageClient() {
     }
   }
 
-  const activeTabDef = TABS.find((t) => t.id === activeTab) as TabDef;
+  const isNavTab = activeTab === "topbar_nav";
+
+  const filteredTabs = search.trim()
+    ? TABS.filter((tab) =>
+        tab.label.toLowerCase().includes(search.toLowerCase()) ||
+        (tab.fields as readonly FieldDef[]).some(
+          (f) => f.label.toLowerCase().includes(search.toLowerCase()) || f.key.toLowerCase().includes(search.toLowerCase())
+        )
+      )
+    : TABS;
+
+  const activeTabDef = TABS.find((t) => t.id === activeTab) as TabDef | undefined;
+
+  async function saveNav() {
+    setSaved(false);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/topbar-nav", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topbar: topbarNav, footer: footerNav }),
+      });
+      const json = await res.json() as { ok: boolean };
+      if (!json.ok) throw new Error();
+      setSaved(true);
+      setTimeout(() => startTransition(() => setSaved(false)), 3000);
+    } catch {
+      setError("Saxlama zamanı xəta baş verdi.");
+    }
+  }
 
   return (
     <RequireAdmin>
@@ -1169,15 +1242,16 @@ export function AdminPageContentPageClient() {
         title="Səhifə Məzmunu"
         description="Saytın ön hissəsindəki bütün mətnləri dil üzrə idarə edin."
       >
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="text-sm font-semibold text-slate-500 mr-1">Dil:</span>
-          {LOCALES.map((loc) => (
-            <button
-              key={loc}
-              type="button"
-              onClick={() => switchLocale(loc)}
-              className={`px-3 py-1.5 rounded-md text-sm font-semibold border transition ${
-                locale === loc
+        <div className="flex flex-wrap items-center gap-3 mb-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-slate-500 mr-1">Dil:</span>
+            {LOCALES.map((loc) => (
+              <button
+                key={loc}
+                type="button"
+                onClick={() => switchLocale(loc)}
+                className={`px-3 py-1.5 rounded-md text-sm font-semibold border transition ${
+                  locale === loc
                   ? "bg-blue-600 text-white border-blue-600"
                   : "bg-white text-slate-600 border-slate-300 hover:border-slate-400"
               }`}
@@ -1186,6 +1260,14 @@ export function AdminPageContentPageClient() {
             </button>
           ))}
           {loading && <span className="text-xs text-slate-400 ml-2">Yüklənir...</span>}
+          </div>
+          <input
+            type="search"
+            placeholder="Tab və ya sahə axtar..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="form-field h-9 w-64 rounded-lg px-3 text-sm"
+          />
         </div>
 
         {saved && (
@@ -1200,11 +1282,11 @@ export function AdminPageContentPageClient() {
         )}
 
         <div className="flex flex-wrap gap-1 border-b border-slate-200 mb-4">
-          {TABS.map((tab) => (
+          {(search ? filteredTabs : TABS).map((tab) => (
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => { setActiveTab(tab.id); setSearch(""); }}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition -mb-px ${
                 activeTab === tab.id
                   ? "border-blue-600 text-blue-700"
@@ -1214,8 +1296,63 @@ export function AdminPageContentPageClient() {
               {tab.label}
             </button>
           ))}
+          <button
+            key="topbar_nav"
+            type="button"
+            onClick={() => { setActiveTab("topbar_nav"); setSearch(""); }}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition -mb-px ${
+              activeTab === "topbar_nav"
+                ? "border-blue-600 text-blue-700"
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            Naviqasiya Linkləri
+          </button>
         </div>
 
+        {isNavTab ? (
+          <div className="space-y-6">
+            <div className="surface-panel p-5">
+              <h3 className="text-base font-semibold text-navy-900 mb-4">Topbar naviqasiyası</h3>
+              {navLoading ? <p className="text-sm text-slate-400">Yüklənir...</p> : (
+                <div className="grid gap-3">
+                  {topbarNav.map((item) => (
+                    <label key={item.id} className="form-label">
+                      {TOPBAR_LABELS[item.id] ?? item.id}
+                      <input
+                        className="form-field"
+                        value={item.href}
+                        onChange={(e) => setTopbarNav((prev) => prev.map((n) => n.id === item.id ? { ...n, href: e.target.value } : n))}
+                      />
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="surface-panel p-5">
+              <h3 className="text-base font-semibold text-navy-900 mb-4">Footer naviqasiyası</h3>
+              {navLoading ? <p className="text-sm text-slate-400">Yüklənir...</p> : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {footerNav.map((item) => (
+                    <label key={item.id} className="form-label">
+                      {FOOTER_LABELS[item.id] ?? item.id}
+                      <input
+                        className="form-field"
+                        value={item.href}
+                        onChange={(e) => setFooterNav((prev) => prev.map((n) => n.id === item.id ? { ...n, href: e.target.value } : n))}
+                      />
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="mt-4 flex items-center gap-3">
+              <Button onClick={saveNav}>Saxla</Button>
+              <span className="text-sm text-slate-400">Topbar və footer linklərini saxla</span>
+            </div>
+          </div>
+        ) : activeTabDef ? (
+          <>
         <div className="surface-panel p-5 grid gap-4 sm:grid-cols-2">
           {(activeTabDef.fields as readonly FieldDef[]).map((f) => (
             <label key={f.key} className={`form-label${f.textarea ? " sm:col-span-2" : ""}`}>
@@ -1286,6 +1423,8 @@ export function AdminPageContentPageClient() {
           <Button onClick={handleSave}>Saxla</Button>
           <span className="text-sm text-slate-400">Seçilmiş dil ({locale.toUpperCase()}) üçün saxlanır</span>
         </div>
+          </>
+        ) : null}
       </DashboardShell>
     </RequireAdmin>
   );
