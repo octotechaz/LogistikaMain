@@ -1,8 +1,59 @@
 "use strict";
 
+const fs = require("fs");
+const path = require("path");
+
+const CATEGORIES_JSON = path.join(process.cwd(), "public", "data", "categories.json");
+
+function loadJsonCategories() {
+  try {
+    const raw = fs.readFileSync(CATEGORIES_JSON, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+function saveJsonCategories(categories) {
+  try {
+    fs.writeFileSync(CATEGORIES_JSON, JSON.stringify(categories, null, 2) + "\n", "utf8");
+  } catch (err) {
+    console.error("saveJsonCategories failed:", err.message);
+  }
+}
+
+function syncUpsertToJson(dto, labelTranslations) {
+  const categories = loadJsonCategories();
+  const idx = categories.findIndex((c) => c.id === dto.id);
+  const entry = {
+    id: dto.id,
+    label: dto.label,
+    labelTranslations: Object.keys(labelTranslations).length > 0 ? labelTranslations : (idx >= 0 ? (categories[idx].labelTranslations || {}) : {}),
+    iconKey: dto.iconKey,
+    iconTone: dto.iconTone,
+    matchCargoType: dto.matchCargoType || null,
+    matchVehicleType: dto.matchVehicleType || null,
+    matchKeyword: dto.matchKeyword || null,
+    sortOrder: dto.sortOrder,
+    isActive: dto.isActive,
+  };
+  if (idx >= 0) {
+    categories[idx] = entry;
+  } else {
+    categories.push(entry);
+  }
+  categories.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  saveJsonCategories(categories);
+}
+
+function syncDeleteFromJson(id) {
+  const categories = loadJsonCategories().filter((c) => c.id !== id);
+  saveJsonCategories(categories);
+}
+
 /**
  * PostgreSQL-backed category repository for octo-admin.
- * Optionally dual-writes to public-site SQLite via categoryPublicSync.
+ * Dual-writes to public/data/categories.json so the public site reads fresh data.
  *
  * All public methods return Promises. DTOs use legacy snake_case field names
  * so EJS views and form handlers require no changes.
@@ -82,6 +133,18 @@ function makeCategoryRepository(prisma, sync = null) {
         create: { ...data, legacySqliteId: legacyId },
       });
 
+      syncUpsertToJson({
+        id: legacyId,
+        label: dto.label,
+        iconKey,
+        iconTone,
+        sortOrder,
+        isActive,
+        matchCargoType:   data.matchCargoType,
+        matchVehicleType: data.matchVehicleType,
+        matchKeyword:     data.matchKeyword,
+      }, labelTranslations);
+
       if (sync && typeof sync.upsertSqliteCategory === "function") {
         sync.upsertSqliteCategory({
           id: legacyId,
@@ -104,6 +167,7 @@ function makeCategoryRepository(prisma, sync = null) {
       await prisma.publicCategory.delete({
         where: { legacySqliteId: legacyId },
       });
+      syncDeleteFromJson(legacyId);
       if (sync && typeof sync.deleteSqliteCategory === "function") {
         sync.deleteSqliteCategory(legacyId);
       }
