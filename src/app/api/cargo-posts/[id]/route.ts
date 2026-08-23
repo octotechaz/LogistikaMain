@@ -196,7 +196,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
                 : {})
             }
           : {}),
-        ...(requestBody.translations ? { translations: requestBody.translations as object } : {}),
         images: imageUrls
           ? {
               deleteMany: {},

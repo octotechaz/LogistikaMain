@@ -103,7 +103,6 @@ export async function POST(request: Request) {
         legacyPickupTime: payload.legacyPickupTime || null,
         legacyNote: payload.legacyNote || null,
         categoryId: payload.categoryId || null,
-        ...(payload.translations ? { translations: payload.translations as object } : {}),
         // New listings stay off the public catalog until an admin approves.
         legacyAdminStatus: "PENDING",
         status: "CANCELLED",

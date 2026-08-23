@@ -315,7 +315,6 @@ model CargoPost {
   legacyPickupTime    String?
   legacyNote          String?
   categoryId          String?
-  translations        Json?
   lastEditedAt        DateTime?
   editSnapshot        Json?
   legacyViewCount     Int         @default(0)
