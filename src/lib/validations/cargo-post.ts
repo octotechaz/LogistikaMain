@@ -70,6 +70,10 @@ export const cargoPostSchema = z
     legacyPickupTime: z.string().trim().optional(),
     legacyNote: z.string().trim().optional(),
     categoryId: z.string().trim().optional(),
+    translations: z.record(z.object({
+      title: z.string().trim().optional(),
+      description: z.string().trim().optional(),
+    })).optional(),
     imageUrls: z
       .array(z.string().url().or(z.string().startsWith("/")))
       .max(listingImageMaxFiles, listingImageMaxFilesMessage)

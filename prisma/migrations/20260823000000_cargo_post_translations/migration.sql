@@ -1,0 +1,1 @@
+ALTER TABLE "CargoPost" ADD COLUMN IF NOT EXISTS "translations" JSONB;

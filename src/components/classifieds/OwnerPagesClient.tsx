@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ClipboardList,
@@ -236,11 +236,17 @@ export function OwnerDashboardPageClient({ sessionUser }: { sessionUser: Session
   );
 }
 
+const FORM_LOCALES = ["az", "ru", "en", "tr"] as const;
+type FormLocale = (typeof FORM_LOCALES)[number];
+const FORM_LOCALE_LABELS: Record<FormLocale, string> = { az: "AZ", ru: "RU", en: "EN", tr: "TR" };
+
 export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionUser }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { ready, listings, saveListing } = useClassifieds();
   const [error, setError] = useState<string | null>(null);
+  const [formLocale, setFormLocale] = useState<FormLocale>("az");
+  const translationsRef = useRef<Partial<Record<FormLocale, { title: string; description: string }>>>({});
   const [categories, setCategories] = useState<PublicCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
@@ -469,9 +475,23 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
       return;
     }
 
-    const title = String(formData.get("title") || "").trim();
     const cargoType = String(formData.get("cargoType") || "").trim();
-    const description = String(formData.get("description") || "").trim();
+
+    const form = event.currentTarget;
+    const allTranslations: Record<string, { title: string; description: string }> = {};
+    for (const loc of FORM_LOCALES) {
+      const titleEl = form.elements.namedItem(`title_${loc}`) as HTMLInputElement | null;
+      const descEl = form.elements.namedItem(`description_${loc}`) as HTMLTextAreaElement | null;
+      const t = (titleEl?.value ?? translationsRef.current[loc]?.title ?? "").trim();
+      const d = (descEl?.value ?? translationsRef.current[loc]?.description ?? "").trim();
+      if (t || d) {
+        allTranslations[loc] = { title: t, description: d };
+        translationsRef.current[loc] = { title: t, description: d };
+      }
+    }
+    const azData = allTranslations["az"] ?? {};
+    const finalTitle = azData.title || "";
+    const finalDescription = azData.description || "";
     const weight = String(formData.get("weight") || "").trim();
     const pickupCity = String(formData.get("pickupCity") || "").trim();
     const deliveryCity = String(formData.get("deliveryCity") || "").trim();
@@ -491,7 +511,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
 
     setFieldErrors((current) => ({ ...current, contactPhone: undefined }));
 
-    if (!title) {
+    if (!finalTitle) {
       showFormError("Elan başlığı mütləqdir.");
       return;
     }
@@ -499,7 +519,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
       showFormError("Yük növü mütləqdir.");
       return;
     }
-    if (description.length < 10) {
+    if (finalDescription.length < 10) {
       showFormError("Təsvir ən azı 10 simvol olmalıdır.");
       return;
     }
@@ -519,9 +539,9 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
     const resolvedVehicleType = vehicleType.trim() || "Fərq etməz";
 
     const draft: CargoListingDraft = {
-      title,
+      title: finalTitle,
       cargoType,
-      description,
+      description: finalDescription,
       weight,
       pickupCity,
       pickupAddress,
@@ -553,6 +573,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
       cargoName: draft.title,
       cargoType: draft.cargoType,
       description: draft.description,
+      translations: Object.keys(allTranslations).length > 0 ? allTranslations : undefined,
       weight: draft.weight,
       volume: draft.volume || undefined,
       length: draft.length || undefined,
@@ -687,22 +708,94 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
               Əsas məlumatlar
             </h4>
             <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
-              <div className="form-group mb-0">
-                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
-                  Elan başlığı <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i className="ri-text text-slate-400"></i>
-                  </div>
-                  <input
-                    name="title"
-                    className="form-control w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pl-10 text-[15px] py-2.5 h-auto transition-shadow"
-                    placeholder="Məs: Soyuduculu ərzaq yükü"
-                    defaultValue={editing?.title}
-                    required
-                  />
+
+              {/* Multi-locale title + description */}
+              <div className="md:col-span-2">
+                <div className="flex items-center gap-1 mb-3 border-b border-slate-100 pb-2">
+                  <span className="text-xs font-semibold text-slate-500 mr-2">Dillər:</span>
+                  {FORM_LOCALES.map((loc) => (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => {
+                        const form = document.getElementById("owner-load-form") as HTMLFormElement | null;
+                        if (form) {
+                          const titleEl = form.elements.namedItem(`title_${formLocale}`) as HTMLInputElement | null;
+                          const descEl = form.elements.namedItem(`description_${formLocale}`) as HTMLTextAreaElement | null;
+                          translationsRef.current[formLocale] = {
+                            title: titleEl?.value ?? translationsRef.current[formLocale]?.title ?? "",
+                            description: descEl?.value ?? translationsRef.current[formLocale]?.description ?? "",
+                          };
+                        }
+                        setFormLocale(loc);
+                      }}
+                      className={`px-3 py-1 rounded-md text-xs font-bold border transition ${
+                        formLocale === loc
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-slate-600 border-slate-300 hover:border-slate-400"
+                      }`}
+                    >
+                      {FORM_LOCALE_LABELS[loc]}
+                    </button>
+                  ))}
+                  <span className="ml-2 text-xs text-slate-400">AZ tələb olunur, digər dillər istəyə görə</span>
                 </div>
+
+                {FORM_LOCALES.map((loc) => (
+                  <div
+                    key={loc}
+                    className={cn("grid gap-x-6 gap-y-4 md:grid-cols-2", loc !== formLocale && "hidden")}
+                  >
+                    <div className="form-group mb-0">
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                        Elan başlığı {loc === "az" && <span className="text-red-500">*</span>}
+                        <span className="ml-1.5 text-xs font-normal text-slate-400">({FORM_LOCALE_LABELS[loc]})</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <i className="ri-text text-slate-400"></i>
+                        </div>
+                        <input
+                          name={`title_${loc}`}
+                          className="form-control w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pl-10 text-[15px] py-2.5 h-auto transition-shadow"
+                          placeholder={loc === "az" ? "Məs: Soyuduculu ərzaq yükü" : loc === "ru" ? "Напр: Рефрижераторный груз" : loc === "en" ? "E.g: Refrigerated food cargo" : "Örn: Soğutmalı gıda yükü"}
+                          defaultValue={
+                            loc === "az"
+                              ? editing?.title
+                              : ((editing as unknown as { translations?: Record<string, { title?: string }> })?.translations?.[loc]?.title ?? "")
+                          }
+                          onChange={(e) => {
+                            if (!translationsRef.current[loc]) translationsRef.current[loc] = { title: "", description: "" };
+                            translationsRef.current[loc]!.title = e.target.value;
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-group mb-0 md:col-span-2">
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                        Təsvir {loc === "az" && <span className="text-red-500">*</span>}
+                        <span className="ml-1.5 text-xs font-normal text-slate-400">({FORM_LOCALE_LABELS[loc]})</span>
+                      </label>
+                      <textarea
+                        name={`description_${loc}`}
+                        className="form-control w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-[15px] py-3 transition-shadow min-h-[100px]"
+                        placeholder={loc === "az" ? "Yükünüz haqqında ətraflı məlumat verin..." : loc === "ru" ? "Подробная информация о грузе..." : loc === "en" ? "Detailed information about your cargo..." : "Yükünüz hakkında detaylı bilgi..."}
+                        defaultValue={
+                          loc === "az"
+                            ? editing?.description
+                            : ((editing as unknown as { translations?: Record<string, { description?: string }> })?.translations?.[loc]?.description ?? "")
+                        }
+                        onChange={(e) => {
+                          if (!translationsRef.current[loc]) translationsRef.current[loc] = { title: "", description: "" };
+                          translationsRef.current[loc]!.description = e.target.value;
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                
               </div>
 
               <div className="form-group mb-0">
@@ -756,19 +849,6 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                     <i className="ri-arrow-down-s-line text-slate-400"></i>
                   </div>
                 </div>
-              </div>
-
-              <div className="form-group mb-0 md:col-span-2">
-                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
-                  Təsvir <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  name="description"
-                  className="form-control w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-[15px] py-3 transition-shadow min-h-[120px]"
-                  placeholder="Yükünüz haqqında ətraflı məlumat verin..."
-                  defaultValue={editing?.description}
-                  required
-                />
               </div>
             </div>
           </div>
