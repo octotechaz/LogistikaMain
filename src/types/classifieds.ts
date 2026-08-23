@@ -32,6 +32,7 @@ export interface CargoListing {
   title: string;
   cargoType: string;
   description: string;
+  translations?: Record<string, { title?: string; description?: string }>;
   weight: number;
   volume?: number | string;
   length?: number | string;

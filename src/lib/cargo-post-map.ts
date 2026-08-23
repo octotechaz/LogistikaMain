@@ -56,6 +56,7 @@ export function mapApiCargoPostToListing(
     title: String(item.cargoName || ""),
     cargoType: String(item.cargoType || ""),
     description: String(item.description || ""),
+    translations: item.translations as Record<string, { title?: string; description?: string }> | undefined,
     weight: Number(item.weight || 0),
     volume: item.volume == null ? undefined : Number(item.volume),
     length: item.length == null ? undefined : Number(item.length),

@@ -112,7 +112,7 @@ function DetailFactItem({
 }
 
 export function LoadDetailsPageClient({ id }: { id: string }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { user: currentApiUser, legacyUser, isLoading: isAuthLoading } = useApiAuthUser();
   const isAuthorized = !!(currentApiUser || legacyUser);
   const [sqliteListing, setSqliteListing] = useState<CargoListing | null | undefined>(undefined);
@@ -139,6 +139,9 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
   const listing =
     sqliteListing ??
     allListings.find((item) => item.id === id);
+
+  const localizedTitle = (locale !== "az" && listing?.translations?.[locale]?.title) || listing?.title || "";
+  const localizedDescription = (locale !== "az" && listing?.translations?.[locale]?.description) || listing?.description || "";
 
   const gallery = useMemo(() => listingImages(listing?.photo, listing?.photos || []), [listing?.photo, listing?.photos]);
   const listingPlaceholderTone = useMemo(
@@ -278,7 +281,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
         </div>
 
         <h1 className="mt-5 text-2xl font-bold tracking-tight text-navy-900 sm:text-3xl">
-          {listing.title} – {listing.pickupCity} → {listing.deliveryCity}
+          {localizedTitle} – {listing.pickupCity} → {listing.deliveryCity}
         </h1>
 
         <div className="mt-4 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -418,7 +421,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
             <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
               <h2 className="text-xl font-bold text-navy-900">{t("ld_desc_title", "Elanın təsviri")}</h2>
               <div className="mt-4 space-y-2 text-[0.95rem] leading-7 text-slate-600">
-                <p>{listing.description}</p>
+                <p>{localizedDescription}</p>
                 <p>
                   {t("ld_desc_cargo", "Yük")}{" "}
                   {quantityLabel ? quantityLabel.toLocaleLowerCase("az") : t("ld_desc_std_batch", "standart partiya")}{" "}
@@ -607,14 +610,14 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
               </div>
               
               <div className="flex flex-wrap justify-center gap-4">
-                <WhatsappShareButton url={window.location.href} title={`${listing.title} - ${listing.pickupCity} -> ${listing.deliveryCity}`}>
+                <WhatsappShareButton url={window.location.href} title={`${localizedTitle} - ${listing.pickupCity} -> ${listing.deliveryCity}`}>
                   <div className="flex flex-col items-center gap-2 transition hover:scale-110">
                     <WhatsappIcon size={48} round />
                     <span className="text-xs font-medium text-slate-600">WhatsApp</span>
                   </div>
                 </WhatsappShareButton>
 
-                <TelegramShareButton url={window.location.href} title={`${listing.title} - ${listing.pickupCity} -> ${listing.deliveryCity}`}>
+                <TelegramShareButton url={window.location.href} title={`${localizedTitle} - ${listing.pickupCity} -> ${listing.deliveryCity}`}>
                   <div className="flex flex-col items-center gap-2 transition hover:scale-110">
                     <TelegramIcon size={48} round />
                     <span className="text-xs font-medium text-slate-600">Telegram</span>
@@ -628,14 +631,14 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                   </div>
                 </FacebookShareButton>
 
-                <TwitterShareButton url={window.location.href} title={`${listing.title} - ${listing.pickupCity} -> ${listing.deliveryCity}`}>
+                <TwitterShareButton url={window.location.href} title={`${localizedTitle} - ${listing.pickupCity} -> ${listing.deliveryCity}`}>
                   <div className="flex flex-col items-center gap-2 transition hover:scale-110">
                     <XIcon size={48} round />
                     <span className="text-xs font-medium text-slate-600">X (Twitter)</span>
                   </div>
                 </TwitterShareButton>
 
-                <LinkedinShareButton url={window.location.href} title={listing.title}>
+                <LinkedinShareButton url={window.location.href} title={localizedTitle}>
                   <div className="flex flex-col items-center gap-2 transition hover:scale-110">
                     <LinkedinIcon size={48} round />
                     <span className="text-xs font-medium text-slate-600">LinkedIn</span>

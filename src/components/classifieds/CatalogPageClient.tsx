@@ -1596,7 +1596,7 @@ export function CatalogPageClient({
 
           <div className="mt-8 border-t border-slate-200 pt-5">
             <h2 className="text-base font-semibold text-navy-900">{t("categories_title", "Kateqoriyalara baxın")}</h2>
-            <div className="-mx-1 mt-3 flex max-w-full gap-3 overflow-x-auto px-1 py-2 pb-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:justify-start sm:gap-8 sm:px-0 sm:gap-4">
+            <div className="-mx-1 mt-3 flex max-w-full gap-3 overflow-x-auto px-1 py-2 pb-1 no-scrollbar sm:mx-0 sm:px-0 sm:gap-4">
               {homeCategoryViews.map((category) => (
                 <HomeCategoryButton
                   key={category.id}
