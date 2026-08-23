@@ -577,11 +577,11 @@ model AppSetting {
 }
 
 model PublicCategory {
-  id               String   @id @default(cuid())
-  legacySqliteId   String   @unique
-  label            String
+  id                String   @id @default(cuid())
+  legacySqliteId    String   @unique
+  label             String
   labelTranslations Json?
-  iconKey          String
+  iconKey           String
   iconTone         String   @default("text-slate-500")
   matchCargoType   String?
   matchVehicleType String?

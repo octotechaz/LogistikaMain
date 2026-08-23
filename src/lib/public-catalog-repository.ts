@@ -8,6 +8,7 @@ export type PublicCatalogCategory = {
   id: string;
   legacySqliteId: string;
   label: string;
+  labelTranslations?: Record<string, string>;
   iconKey: string;
   iconTone: string;
   matchCargoType: string | null;
@@ -20,6 +21,7 @@ export type PublicCatalogCategory = {
 function mapCategory(row: {
   id: string;
   label: string;
+  labelTranslations?: Record<string, string>;
   iconKey: string;
   iconTone: string;
   matchCargoType?: string;
@@ -32,6 +34,7 @@ function mapCategory(row: {
     id: row.id,
     legacySqliteId: row.id,
     label: row.label,
+    labelTranslations: row.labelTranslations,
     iconKey: row.iconKey,
     iconTone: row.iconTone,
     matchCargoType: row.matchCargoType ?? null,
@@ -49,6 +52,7 @@ export async function listPublicCategories(opts: { includeInactive?: boolean } =
 export async function upsertPublicCategory(input: {
   id: string;
   label: string;
+  labelTranslations?: Record<string, string>;
   iconKey: string;
   iconTone: string;
   matchCargoType: string | null;
@@ -60,6 +64,7 @@ export async function upsertPublicCategory(input: {
   upsertPublicSqliteCategory({
     id: input.id,
     label: input.label,
+    labelTranslations: input.labelTranslations,
     iconKey: input.iconKey,
     iconTone: input.iconTone,
     matchCargoType: input.matchCargoType ?? undefined,
@@ -72,6 +77,7 @@ export async function upsertPublicCategory(input: {
   return mapCategory({
     id: input.id,
     label: input.label,
+    labelTranslations: input.labelTranslations,
     iconKey: input.iconKey,
     iconTone: input.iconTone,
     matchCargoType: input.matchCargoType ?? undefined,

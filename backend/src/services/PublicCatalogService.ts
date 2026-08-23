@@ -4,6 +4,7 @@ import { prisma } from "../prisma";
 const categorySchema = z.object({
   id: z.string().trim().min(1),
   label: z.string().trim().min(1),
+  labelTranslations: z.record(z.string()).optional(),
   iconKey: z.string().trim().default("boxes"),
   iconTone: z.string().trim().default("text-slate-500"),
   matchCargoType: z.string().trim().optional().or(z.literal("")),
@@ -17,6 +18,7 @@ export interface CategoryDto {
   id: string;
   legacySqliteId: string;
   label: string;
+  labelTranslations?: Record<string, string>;
   iconKey: string;
   iconTone: string;
   matchCargoType: string | null;
@@ -31,6 +33,7 @@ export interface ICategoryRepository {
   upsert(input: {
     id: string;
     label: string;
+    labelTranslations?: Record<string, string>;
     iconKey: string;
     iconTone: string;
     matchCargoType: string | null;
@@ -114,6 +117,7 @@ export class PublicCatalogService {
     return this.categoryRepo.upsert({
       id: parsed.id,
       label: parsed.label,
+      labelTranslations: parsed.labelTranslations,
       iconKey: parsed.iconKey,
       iconTone: parsed.iconTone,
       matchCargoType: parsed.matchCargoType || null,
