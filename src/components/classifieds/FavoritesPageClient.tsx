@@ -6,10 +6,12 @@ import { EmptyAccessState, ListingSummaryCard, PageSection, PublicPage } from "@
 import { FavoriteToggleButton } from "@/components/classifieds/FavoriteToggleButton";
 import { ButtonLink } from "@/components/ui/Button";
 import { useFavoriteListings } from "@/hooks/useFavoriteListings";
+import { useLocale } from "@/hooks/useLocale";
 import type { CargoListing } from "@/types/classifieds";
 
 export function FavoritesPageClient() {
   const { favoriteIds, replaceFavorites, mounted } = useFavoriteListings();
+  const { t } = useLocale();
   const [listings, setListings] = useState<CargoListing[]>([]);
   const [ready, setReady] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -81,7 +83,7 @@ export function FavoritesPageClient() {
       <PublicPage emphasizeBackground>
         <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-4">
           <LoaderCircle className="h-10 w-10 animate-spin text-logistics-orange" />
-          <p className="text-lg font-medium text-slate-500">Məlumatlar yüklənir...</p>
+          <p className="text-lg font-medium text-slate-500">{t("fav_loading", "Məlumatlar yüklənir...")}</p>
         </div>
       </PublicPage>
     );
@@ -91,12 +93,12 @@ export function FavoritesPageClient() {
     <PublicPage emphasizeBackground>
       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <PageSection
-          title="Bəyəndiyiniz elanlar"
-          description="İstifadəçi hesabı olmadan da ürək işarəsi ilə elanları buraya əlavə edib sonra rahat baxa bilərsiniz."
+          title={t("fav_page_title", "Bəyəndiyiniz elanlar")}
+          description={t("fav_page_desc", "İstifadəçi hesabı olmadan da ürək işarəsi ilə elanları buraya əlavə edib sonra rahat baxa bilərsiniz.")}
           action={
             <ButtonLink href="/" variant="secondary">
               <ArrowLeft className="h-4 w-4" />
-              Ana səhifəyə qayıt
+              {t("fav_back_home", "Ana səhifəyə qayıt")}
             </ButtonLink>
           }
         />
@@ -106,18 +108,18 @@ export function FavoritesPageClient() {
             <Heart className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-sm font-semibold text-navy-900">{favoriteIds.length} elan saxlanılıb</p>
-            <p className="text-sm text-slate-500">Kartlardakı ürəyə yenidən toxunaraq siyahıdan çıxara bilərsiniz.</p>
+            <p className="text-sm font-semibold text-navy-900">{favoriteIds.length} {t("fav_saved", "elan saxlanılıb")}</p>
+            <p className="text-sm text-slate-500">{t("fav_hint", "Kartlardakı ürəyə yenidən toxunaraq siyahıdan çıxara bilərsiniz.")}</p>
           </div>
         </div>
 
         {loadFailed ? (
           <div className="mt-6">
             <EmptyAccessState
-              title="Elanlar yüklənmədi"
-              description="Seçilmişlər saxlanılıb, amma elan siyahısı indi açıla bilmədi. Bir az sonra yenidən yoxlayın."
+              title={t("fav_load_failed", "Elanlar yüklənmədi")}
+              description={t("fav_load_failed_desc", "Seçilmişlər saxlanılıb, amma elan siyahısı indi açıla bilmədi. Bir az sonra yenidən yoxlayın.")}
               actionHref="/favorites"
-              actionLabel="Yenidən yoxla"
+              actionLabel={t("fav_retry", "Yenidən yoxla")}
             />
           </div>
         ) : favoriteListings.length ? (
@@ -141,10 +143,10 @@ export function FavoritesPageClient() {
         ) : (
           <div className="mt-6">
             <EmptyAccessState
-              title="Seçilmiş elan yoxdur"
-              description="Ana səhifədə və ya elan detalında ürək işarəsinə toxunaraq bəyəndiyiniz elanları bu səhifədə toplaya bilərsiniz."
+              title={t("fav_empty_title", "Seçilmiş elan yoxdur")}
+              description={t("fav_empty_desc", "Ana səhifədə və ya elan detalında ürək işarəsinə toxunaraq bəyəndiyiniz elanları bu səhifədə toplaya bilərsiniz.")}
               actionHref="/"
-              actionLabel="Elanlara bax"
+              actionLabel={t("fav_view_listings", "Elanlara bax")}
             />
           </div>
         )}

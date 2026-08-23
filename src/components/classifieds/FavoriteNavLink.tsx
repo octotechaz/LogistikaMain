@@ -2,6 +2,7 @@
 
 import { Heart } from "lucide-react";
 import { useFavoriteListings } from "@/hooks/useFavoriteListings";
+import { useLocale } from "@/hooks/useLocale";
 import { FastLink } from "@/components/ui/FastLink";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ export function FavoriteNavLink({
   compact?: boolean;
 }) {
   const { favoriteCount, mounted } = useFavoriteListings();
+  const { t } = useLocale();
   const badgeCount = mounted ? favoriteCount : 0;
 
   return (
@@ -23,7 +25,7 @@ export function FavoriteNavLink({
         compact && "w-[36px] sm:w-11 px-0",
         className
       )}
-      aria-label={`Seçilmişlər, ${badgeCount} elan`}
+      aria-label={`${t("fav_label", "Seçilmişlər")}, ${badgeCount} ${t("fav_listing_unit", "elan")}`}
     >
       <span className="relative inline-flex items-center justify-center">
         <Heart
@@ -36,7 +38,7 @@ export function FavoriteNavLink({
           {badgeCount > 99 ? "99+" : badgeCount}
         </span>
       </span>
-      {!compact ? <span className="hidden sm:inline">Seçilmişlər</span> : null}
+      {!compact ? <span className="hidden sm:inline">{t("fav_label", "Seçilmişlər")}</span> : null}
     </FastLink>
   );
 }

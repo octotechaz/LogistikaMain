@@ -919,7 +919,7 @@ export function CatalogPageClient({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   const chipConfigs = useMemo<ChipConfig[]>(() => CHIP_KEYS.map((c) => ({
     key: c.key,
@@ -1068,6 +1068,7 @@ export function CatalogPageClient({
         .filter((category) => category.id !== "all")
         .map((category) => ({
           ...category,
+          label: (locale !== "az" && (category as unknown as { labelTranslations?: Record<string, string> }).labelTranslations?.[locale]) || category.label,
           icon: resolveCategoryIcon(category.iconKey),
         }));
 

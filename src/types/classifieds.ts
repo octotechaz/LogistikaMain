@@ -81,6 +81,7 @@ export interface Banner {
 export interface PublicListingCategory {
   id: string;
   label: string;
+  labelTranslations?: Record<string, string>;
   iconKey: string;
   iconTone: string;
   matchCargoType?: string;

@@ -2,6 +2,7 @@
 
 import { Heart } from "lucide-react";
 import { useFavoriteListings } from "@/hooks/useFavoriteListings";
+import { useLocale } from "@/hooks/useLocale";
 import { cn } from "@/lib/utils";
 
 export function FavoriteToggleButton({
@@ -10,8 +11,8 @@ export function FavoriteToggleButton({
   iconClassName,
   labelClassName,
   showLabel = false,
-  activeLabel = "Seçilmişlərdə",
-  inactiveLabel = "Seçilmişlərə əlavə et",
+  activeLabel,
+  inactiveLabel,
   onToggle
 }: {
   listingId: string;
@@ -23,8 +24,11 @@ export function FavoriteToggleButton({
   inactiveLabel?: string;
   onToggle?: () => void;
 }) {
+  const { t } = useLocale();
   const { isFavorite, toggleFavorite } = useFavoriteListings();
   const favorite = isFavorite(listingId);
+  const resolvedActiveLabel = activeLabel ?? t("fav_in_favorites", "Seçilmişlərdə");
+  const resolvedInactiveLabel = inactiveLabel ?? t("fav_add", "Seçilmişlərə əlavə et");
 
   return (
     <button
@@ -46,7 +50,7 @@ export function FavoriteToggleButton({
         )}
       />
       {showLabel ? (
-        <span className={cn(labelClassName)}>{favorite ? activeLabel : inactiveLabel}</span>
+        <span className={cn(labelClassName)}>{favorite ? resolvedActiveLabel : resolvedInactiveLabel}</span>
       ) : null}
     </button>
   );

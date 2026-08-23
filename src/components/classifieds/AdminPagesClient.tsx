@@ -112,10 +112,15 @@ const emptyCategory: PublicListingCategory = {
   isActive: true
 };
 
+const CAT_LOCALES = ["az", "ru", "en", "tr"] as const;
+type CatLocale = (typeof CAT_LOCALES)[number];
+const CAT_LOCALE_LABELS: Record<CatLocale, string> = { az: "AZ", ru: "RU", en: "EN", tr: "TR" };
+
 export function AdminCategoriesPageClient() {
   const [categories, setCategories] = useState<PublicListingCategory[]>([]);
   const [draft, setDraft] = useState<PublicListingCategory>(emptyCategory);
   const [loading, setLoading] = useState(true);
+  const [catLabelLocale, setCatLabelLocale] = useState<CatLocale>("az");
 
   async function loadCategories() {
     setLoading(true);
@@ -163,16 +168,37 @@ export function AdminCategoriesPageClient() {
               required
             />
           </label>
-          <label className="form-label">
-            Ad
+          <div className="form-label lg:col-span-2">
+            <span className="text-sm font-semibold text-navy-900 mb-2 block">Ad (dil üzrə)</span>
+            <div className="flex gap-1 mb-2">
+              {CAT_LOCALES.map((loc) => (
+                <button
+                  key={loc}
+                  type="button"
+                  onClick={() => setCatLabelLocale(loc)}
+                  className={`px-2.5 py-1 rounded text-xs font-bold border transition ${catLabelLocale === loc ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-300 hover:border-slate-400"}`}
+                >
+                  {CAT_LOCALE_LABELS[loc]}
+                </button>
+              ))}
+            </div>
             <input
               className="form-field"
-              value={draft.label}
-              onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))}
-              placeholder="Ev əşyaları"
-              required
+              value={catLabelLocale === "az" ? draft.label : (draft.labelTranslations?.[catLabelLocale] ?? "")}
+              onChange={(e) => {
+                if (catLabelLocale === "az") {
+                  setDraft((cur) => ({ ...cur, label: e.target.value }));
+                } else {
+                  setDraft((cur) => ({
+                    ...cur,
+                    labelTranslations: { ...cur.labelTranslations, [catLabelLocale]: e.target.value }
+                  }));
+                }
+              }}
+              placeholder={catLabelLocale === "az" ? "Ev əşyaları" : catLabelLocale === "ru" ? "Мебель" : catLabelLocale === "en" ? "Furniture" : "Mobilya"}
+              required={catLabelLocale === "az"}
             />
-          </label>
+          </div>
           <label className="form-label">
             Icon key
             <select
