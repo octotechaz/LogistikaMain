@@ -621,6 +621,8 @@ function CatalogChip({
 function CatalogListingRow({ listing }: { listing: CargoListing }) {
   const tone = listingVisualTone(listing);
   const Icon = tone.icon;
+  const { locale } = useLocale();
+  const localizedTitle = (locale !== "az" && (listing.translations as Record<string, { title?: string }>)?.[locale]?.title) || listing.title;
 
   return (
     <Link
@@ -632,7 +634,7 @@ function CatalogListingRow({ listing }: { listing: CargoListing }) {
       </div>
 
       <div className="min-w-0">
-        <h3 className="truncate text-[1.22rem] font-bold leading-tight text-navy-900">{listing.title}</h3>
+        <h3 className="truncate text-[1.22rem] font-bold leading-tight text-navy-900">{localizedTitle}</h3>
         <p className="mt-2 flex flex-wrap items-center gap-2 text-[1.02rem] font-medium text-slate-700">
           <span>{listing.pickupCity}</span>
           <ChevronRight className="h-4 w-4 text-slate-400" />
@@ -724,7 +726,8 @@ function HomeListingCard({ listing }: { listing: CargoListing }) {
   const quantityLabel = listingQuantity(listing);
   const volumeLabel = listingVolume(listing);
   const dimensionsLabel = listingDimensions(listing);
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const localizedTitle = (locale !== "az" && (listing.translations as Record<string, { title?: string }>)?.[locale]?.title) || listing.title;
 
   return (
     <Link
@@ -749,7 +752,7 @@ function HomeListingCard({ listing }: { listing: CargoListing }) {
       <div className="px-4 pb-4 pt-3.5">
         <p className="text-[17px] font-bold leading-none tracking-[-0.01em] text-logistics-orange">{formatPriceCompact(listing.price)}</p>
         <h3 className="mt-2 line-clamp-2 min-h-[2.5em] text-[16px] font-semibold leading-[1.24] text-[#171717]">
-          {listing.title}
+          {localizedTitle}
         </h3>
         <p className="mt-1 text-[12.5px] font-medium text-slate-400">{listing.cargoType}</p>
         <div className="mt-2 space-y-1 text-[12.5px] font-medium text-slate-500">
@@ -840,7 +843,8 @@ function HomeListingRow({ listing }: { listing: CargoListing }) {
   const quantityLabel = listingQuantity(listing);
   const volumeLabel = listingVolume(listing);
   const dimensionsLabel = listingDimensions(listing);
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const localizedTitle = (locale !== "az" && (listing.translations as Record<string, { title?: string }>)?.[locale]?.title) || listing.title;
 
   return (
     <Link
@@ -857,7 +861,7 @@ function HomeListingRow({ listing }: { listing: CargoListing }) {
       </div>
 
       <div className="min-w-0 py-0.5">
-        <h3 className="line-clamp-2 text-[1.03rem] font-semibold leading-[1.24] text-navy-900">{listing.title}</h3>
+        <h3 className="line-clamp-2 text-[1.03rem] font-semibold leading-[1.24] text-navy-900">{localizedTitle}</h3>
         <p className="mt-2 flex flex-wrap items-center gap-2 text-[0.93rem] font-medium text-slate-700">
           <span>{listing.pickupCity}</span>
           <ChevronRight className="h-4 w-4 text-slate-400" />
