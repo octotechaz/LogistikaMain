@@ -933,6 +933,31 @@ const TABS = [
       { key: "carrier_map_title", label: "Xəritə bölməsi başlığı" },
     ],
   },
+  {
+    id: "dashboard",
+    label: "Panel & Dashboard",
+    fields: [
+      { key: "dashboard_owner_panel", label: "Yük Sahibi Paneli adı" },
+      { key: "dashboard_carrier_panel", label: "Daşıyıcı Paneli adı" },
+      { key: "dashboard_admin_panel", label: "Admin Paneli adı" },
+      { key: "dashboard_owner_default_name", label: "Sahibi default adı" },
+      { key: "dashboard_carrier_default_name", label: "Daşıyıcı default adı" },
+      { key: "dashboard_nav_my_listings", label: "Nav: Mənim elanlarım" },
+      { key: "dashboard_nav_new_listing", label: "Nav: Yeni elan" },
+      { key: "dashboard_nav_dashboard", label: "Nav: Dashboard" },
+      { key: "dashboard_nav_active_loads", label: "Nav: Aktiv yüklər" },
+      { key: "dashboard_nav_applications", label: "Nav: Müraciətlərim" },
+      { key: "dashboard_nav_vehicles", label: "Nav: Avtomobillər" },
+      { key: "dashboard_nav_overview", label: "Nav: Ümumi görünüş" },
+      { key: "dashboard_nav_users", label: "Nav: İstifadəçilər" },
+      { key: "dashboard_nav_listings", label: "Nav: Elanlar" },
+      { key: "dashboard_nav_categories", label: "Nav: Kateqoriyalar" },
+      { key: "dashboard_nav_banners", label: "Nav: Bannerlər" },
+      { key: "dashboard_nav_statistics", label: "Nav: Statistika" },
+      { key: "dashboard_btn_view_site", label: "Düymə: Sayta bax" },
+      { key: "dashboard_btn_logout", label: "Düymə: Çıxış et" },
+    ],
+  },
 ] as const;
 
 type FieldDef = { key: string; label: string; textarea?: boolean; array?: boolean };
