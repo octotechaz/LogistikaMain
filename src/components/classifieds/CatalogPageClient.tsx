@@ -85,48 +85,29 @@ type InfiniteChunkOptions<T> = {
   loadingDelay?: number;
 };
 
-const chipConfigs: ChipConfig[] = [
-  { key: "all", label: "Hamısı", icon: Boxes },
-  { key: "general", label: "Ümumi yüklər", icon: Truck, keyword: "ümumi" },
-  { key: "construction", label: "Tikinti materialları", icon: Building2, cargoType: "Tikinti materialı" },
-  { key: "food", label: "Qida məhsulları", icon: Package2, cargoType: "Ərzaq" },
-  { key: "agri", label: "Kənd təsərrüfatı", icon: Wheat, keyword: "taxıl" },
-  { key: "liquid", label: "Maye yüklər", icon: Droplets, keyword: "maye" },
-  { key: "cold", label: "Soyuducu (refrijerator)", icon: Snowflake, vehicleType: "Soyuduculu maşın" },
-  { key: "danger", label: "Təhlükəli yüklər", icon: OctagonAlert, keyword: "təhlükəli" },
-  { key: "other", label: "Digər", icon: CircleEllipsis }
-];
+const CHIP_KEYS = [
+  { key: "all", tKey: "catalog_chip_all", icon: Boxes },
+  { key: "general", tKey: "catalog_chip_general", icon: Truck, keyword: "ümumi" },
+  { key: "construction", tKey: "catalog_chip_construction", icon: Building2, cargoType: "Tikinti materialı" },
+  { key: "food", tKey: "catalog_chip_food", icon: Package2, cargoType: "Ərzaq" },
+  { key: "agri", tKey: "catalog_chip_agri", icon: Wheat, keyword: "taxıl" },
+  { key: "liquid", tKey: "catalog_chip_liquid", icon: Droplets, keyword: "maye" },
+  { key: "cold", tKey: "catalog_chip_cold", icon: Snowflake, vehicleType: "Soyuduculu maşın" },
+  { key: "danger", tKey: "catalog_chip_danger", icon: OctagonAlert, keyword: "təhlükəli" },
+  { key: "other", tKey: "catalog_chip_other", icon: CircleEllipsis },
+] as const;
 
-const sortOptions: { value: SortMode; label: string }[] = [
-  { value: "newest", label: "Tarix: ən yeni əvvəl" },
-  { value: "price-desc", label: "Qiymət: yüksəkdən aşağı" },
-  { value: "price-asc", label: "Qiymət: aşağıdan yuxarı" },
-  { value: "weight-desc", label: "Çəki: böyükdən kiçiyə" }
-];
+const SORT_KEYS = [
+  { value: "newest" as SortMode, tKey: "catalog_sort_newest" },
+  { value: "price-desc" as SortMode, tKey: "catalog_sort_price_desc" },
+  { value: "price-asc" as SortMode, tKey: "catalog_sort_price_asc" },
+  { value: "weight-desc" as SortMode, tKey: "catalog_sort_weight_desc" },
+] as const;
 
-const howItWorksSteps = [
-  {
-    number: "1",
-    title: "Elan yerləşdirin",
-    text: "Yük məlumatlarınızı daxil edin və pulsuz elan yerləşdirin.",
-    icon: FilePlus2
-  },
-  {
-    number: "2",
-    title: "Təklifləri alın",
-    text: "Daşıyıcılar sizin elanınızı görəcək və əlaqə saxlayacaqlar.",
-    icon: Users
-  },
-  {
-    number: "3",
-    title: "Yükünüzü çatdırın",
-    text: "Ən uyğun daşıyıcını seçin və yükünüzü təhlükəsiz çatdırın.",
-    icon: Truck
-  }
-];
+const HOW_IT_WORKS_ICONS = [FilePlus2, Users, Truck] as const;
 
 const fallbackHomeCategories: PublicListingCategory[] = [
-  { id: "all", label: "Hamısı", iconKey: "grid", iconTone: "text-logistics-orange", sortOrder: 10, isActive: true }
+  { id: "all", label: "All", iconKey: "grid", iconTone: "text-logistics-orange", sortOrder: 10, isActive: true }
 ];
 
 const categoryToneClassNames: Record<string, { text: string; border: string; bg: string }> = {
@@ -412,17 +393,19 @@ function CatalogSelectCard({
   value,
   onChange,
   options,
-  className
+  className,
+  placeholder
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   options: string[];
   className?: string;
+  placeholder?: string;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const selectedLabel = value || "Seçin";
+  const selectedLabel = value || placeholder || "Seçin";
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -492,7 +475,7 @@ function CatalogSelectCard({
               value === "" ? "bg-orange-50 text-logistics-orange" : "text-slate-600"
             )}
           >
-            <span className="whitespace-normal break-words text-left">Seçin</span>
+            <span className="whitespace-normal break-words text-left">{placeholder || "Seçin"}</span>
             {value === "" ? <Check className="h-3.5 w-3.5" /> : null}
           </button>
           <div className="max-h-64 overflow-y-auto py-1">
@@ -741,6 +724,7 @@ function HomeListingCard({ listing }: { listing: CargoListing }) {
   const quantityLabel = listingQuantity(listing);
   const volumeLabel = listingVolume(listing);
   const dimensionsLabel = listingDimensions(listing);
+  const { t } = useLocale();
 
   return (
     <Link
@@ -781,23 +765,23 @@ function HomeListingCard({ listing }: { listing: CargoListing }) {
         <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-slate-100 pt-2.5 text-[12px] leading-[1.28]">
           {quantityLabel ? (
             <div>
-              <p className="text-slate-400">Say</p>
+              <p className="text-slate-400">{t("catalog_metric_qty", "Say")}</p>
               <p className="mt-0.5 font-semibold text-navy-900">{quantityLabel}</p>
             </div>
           ) : null}
           {volumeLabel ? (
             <div>
-              <p className="text-slate-400">Həcm</p>
+              <p className="text-slate-400">{t("catalog_metric_volume", "Həcm")}</p>
               <p className="mt-0.5 font-semibold text-navy-900">{volumeLabel}</p>
             </div>
           ) : null}
           <div>
-            <p className="text-slate-400">Çəki</p>
+            <p className="text-slate-400">{t("catalog_metric_weight", "Çəki")}</p>
             <p className="mt-0.5 font-semibold text-navy-900">{formatWeight(listing.weight)}</p>
           </div>
           {dimensionsLabel ? (
             <div className="col-span-2">
-              <p className="text-slate-400">Ölçü</p>
+              <p className="text-slate-400">{t("catalog_metric_dims", "Ölçü")}</p>
               <p className="mt-0.5 font-semibold text-navy-900">{dimensionsLabel}</p>
             </div>
           ) : null}
@@ -856,6 +840,7 @@ function HomeListingRow({ listing }: { listing: CargoListing }) {
   const quantityLabel = listingQuantity(listing);
   const volumeLabel = listingVolume(listing);
   const dimensionsLabel = listingDimensions(listing);
+  const { t } = useLocale();
 
   return (
     <Link
@@ -890,19 +875,19 @@ function HomeListingRow({ listing }: { listing: CargoListing }) {
           </span>
           {quantityLabel ? (
             <span>
-              <span className="text-slate-400">Say:</span>{" "}
+              <span className="text-slate-400">{t("catalog_metric_qty", "Say")}:</span>{" "}
               <span className="font-medium text-navy-900">{quantityLabel}</span>
             </span>
           ) : null}
           {volumeLabel ? (
             <span>
-              <span className="text-slate-400">Həcm:</span>{" "}
+              <span className="text-slate-400">{t("catalog_metric_volume", "Həcm")}:</span>{" "}
               <span className="font-medium text-navy-900">{volumeLabel}</span>
             </span>
           ) : null}
           {dimensionsLabel ? (
             <span className={cn(quantityLabel || volumeLabel ? "" : "sm:col-span-2")}>
-              <span className="text-slate-400">Ölçü:</span>{" "}
+              <span className="text-slate-400">{t("catalog_metric_dims", "Ölçü")}:</span>{" "}
               <span className="font-medium text-navy-900">{dimensionsLabel}</span>
             </span>
           ) : null}
@@ -935,6 +920,27 @@ export function CatalogPageClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useLocale();
+
+  const chipConfigs = useMemo<ChipConfig[]>(() => CHIP_KEYS.map((c) => ({
+    key: c.key,
+    label: t(c.tKey, c.tKey),
+    icon: c.icon,
+    cargoType: "cargoType" in c ? c.cargoType : undefined,
+    vehicleType: "vehicleType" in c ? c.vehicleType : undefined,
+    keyword: "keyword" in c ? c.keyword : undefined,
+  })), [t]);
+
+  const sortOptions = useMemo(() => SORT_KEYS.map((s) => ({
+    value: s.value,
+    label: t(s.tKey, s.tKey),
+  })), [t]);
+
+  const howItWorksSteps = useMemo(() => [
+    { number: "1", title: t("catalog_hiw_1_title", "Elan yerləşdirin"), text: t("catalog_hiw_1_text", "Yük məlumatlarınızı daxil edin və pulsuz elan yerləşdirin."), icon: HOW_IT_WORKS_ICONS[0] },
+    { number: "2", title: t("catalog_hiw_2_title", "Təklifləri alın"), text: t("catalog_hiw_2_text", "Daşıyıcılar sizin elanınızı görəcək və əlaqə saxlayacaqlar."), icon: HOW_IT_WORKS_ICONS[1] },
+    { number: "3", title: t("catalog_hiw_3_title", "Yükünüzü çatdırın"), text: t("catalog_hiw_3_text", "Ən uyğun daşıyıcını seçin və yükünüzü təhlükəsiz çatdırın."), icon: HOW_IT_WORKS_ICONS[2] },
+  ], [t]);
+
   const [sqliteListings, setSqliteListings] = useState<CargoListing[]>(initialListings);
   const [isDataLoaded, setIsDataLoaded] = useState(initialListings.length > 0);
   const [homeCategories, setHomeCategories] = useState<PublicListingCategory[]>(fallbackHomeCategories);
@@ -983,7 +989,7 @@ export function CatalogPageClient({
         setLoadError(null);
       } else {
         setSqliteListings([]);
-        setLoadError("Elanlar yüklənmədi. Zəhmət olmasa yenidən cəhd edin.");
+        setLoadError(t("catalog_load_error", "Elanlar yüklənmədi. Zəhmət olmasa yenidən cəhd edin."));
       }
 
       if (nextCategories && nextCategories.length > 0) {
@@ -1213,7 +1219,7 @@ export function CatalogPageClient({
         <PublicPage emphasizeBackground>
           <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-4">
             <LoaderCircle className="h-10 w-10 animate-spin text-logistics-orange" />
-            <p className="text-lg font-medium text-slate-500">Məlumatlar yüklənir...</p>
+            <p className="text-lg font-medium text-slate-500">{t("catalog_loading", "Məlumatlar yüklənir...")}</p>
           </div>
         </PublicPage>
       );
@@ -1236,7 +1242,7 @@ export function CatalogPageClient({
                 }}
                 className="shrink-0 rounded-[10px] border border-red-300 bg-white px-4 py-1.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
               >
-                Yenidən cəhd et
+                {t("catalog_retry", "Yenidən cəhd et")}
               </button>
             </div>
           ) : null}
@@ -1286,6 +1292,7 @@ export function CatalogPageClient({
                   onChange={(value) => updateFilter("pickupCity", value)}
                   options={dynCities}
                   className="w-full"
+                  placeholder={t("catalog_select_placeholder", "Seçin")}
                 />
                 <div className="hidden lg:flex lg:items-start">
                   <button
@@ -1309,6 +1316,7 @@ export function CatalogPageClient({
                   onChange={(value) => updateFilter("deliveryCity", value)}
                   options={dynCities}
                   className="w-full"
+                  placeholder={t("catalog_select_placeholder", "Seçin")}
                 />
               </div>
             </div>
@@ -1320,6 +1328,7 @@ export function CatalogPageClient({
                 onChange={(value) => updateFilter("cargoType", value)}
                 options={dynCargoTypes}
                 className="w-full"
+                placeholder={t("catalog_select_placeholder", "Seçin")}
               />
               <CatalogSelectCard
                 label={t("search_vehicle_type", "Nəqliyyat növü")}
@@ -1327,6 +1336,7 @@ export function CatalogPageClient({
                 onChange={(value) => updateFilter("vehicleType", value)}
                 options={dynVehicleTypes}
                 className="w-full"
+                placeholder={t("catalog_select_placeholder", "Seçin")}
               />
               <CatalogInputCard
                 label={t("search_keyword", "Açar söz")}
@@ -1371,7 +1381,7 @@ export function CatalogPageClient({
                     className="inline-flex min-h-11 items-center gap-2 rounded-[13px] border border-[var(--planner-outline)] bg-white px-4 text-sm font-semibold text-[var(--planner-text-muted)] transition-colors duration-200 hover:border-[var(--planner-primary)] hover:text-[var(--planner-primary)]"
                   >
                     <ArrowLeftRight className="h-4 w-4" />
-                    Sıfırla
+                    {t("catalog_reset", "Sıfırla")}
                   </button>
                 ) : null}
               </div>
@@ -1390,7 +1400,7 @@ export function CatalogPageClient({
               <div className="overflow-hidden">
                 <div className="grid gap-4 rounded-[18px] border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-2 xl:grid-cols-4">
                   <AdvancedFilterCell
-                    label="Min qiymət (AZN)"
+                    label={t("catalog_filter_min_price", "Min qiymət (AZN)")}
                     value={draftFilters.minPrice}
                     placeholder="100"
                     type="number"
@@ -1398,7 +1408,7 @@ export function CatalogPageClient({
                     onChange={(value) => updateFilter("minPrice", value)}
                   />
                   <AdvancedFilterCell
-                    label="Max qiymət (AZN)"
+                    label={t("catalog_filter_max_price", "Max qiymət (AZN)")}
                     value={draftFilters.maxPrice}
                     placeholder="5000"
                     type="number"
@@ -1406,7 +1416,7 @@ export function CatalogPageClient({
                     onChange={(value) => updateFilter("maxPrice", value)}
                   />
                   <AdvancedFilterCell
-                    label="Min çəki (kg)"
+                    label={t("catalog_filter_min_weight", "Min çəki (kg)")}
                     value={draftFilters.minWeight}
                     placeholder="1000"
                     type="number"
@@ -1414,7 +1424,7 @@ export function CatalogPageClient({
                     onChange={(value) => updateFilter("minWeight", value)}
                   />
                   <AdvancedFilterCell
-                    label="Max çəki (kg)"
+                    label={t("catalog_filter_max_weight", "Max çəki (kg)")}
                     value={draftFilters.maxWeight}
                     placeholder="25000"
                     type="number"
@@ -1422,21 +1432,21 @@ export function CatalogPageClient({
                     onChange={(value) => updateFilter("maxWeight", value)}
                   />
                   <AdvancedFilterCell
-                    label="Tarixdən"
+                    label={t("catalog_filter_date_from", "Tarixdən")}
                     value={draftFilters.dateFrom}
                     placeholder=""
                     type="date"
                     onChange={(value) => updateFilter("dateFrom", value)}
                   />
                   <AdvancedFilterCell
-                    label="Tarixədək"
+                    label={t("catalog_filter_date_to", "Tarixədək")}
                     value={draftFilters.dateTo}
                     placeholder=""
                     type="date"
                     onChange={(value) => updateFilter("dateTo", value)}
                   />
                   <AdvancedFilterCell
-                    label="Min həcm (m3)"
+                    label={t("catalog_filter_min_volume", "Min həcm (m3)")}
                     value={draftFilters.minVolume}
                     placeholder="12"
                     type="number"
@@ -1444,7 +1454,7 @@ export function CatalogPageClient({
                     onChange={(value) => updateFilter("minVolume", value)}
                   />
                   <AdvancedFilterCell
-                    label="Max həcm (m3)"
+                    label={t("catalog_filter_max_volume", "Max həcm (m3)")}
                     value={draftFilters.maxVolume}
                     placeholder="120"
                     type="number"
@@ -1452,7 +1462,7 @@ export function CatalogPageClient({
                     onChange={(value) => updateFilter("maxVolume", value)}
                   />
                   <AdvancedFilterCell
-                    label="Uzunluq (m)"
+                    label={t("catalog_filter_length", "Uzunluq (m)")}
                     value={draftFilters.length}
                     placeholder="12"
                     type="number"
@@ -1460,7 +1470,7 @@ export function CatalogPageClient({
                     onChange={(value) => updateFilter("length", value)}
                   />
                   <AdvancedFilterCell
-                    label="En (m)"
+                    label={t("catalog_filter_width", "En (m)")}
                     value={draftFilters.width}
                     placeholder="12"
                     type="number"
@@ -1468,7 +1478,7 @@ export function CatalogPageClient({
                     onChange={(value) => updateFilter("width", value)}
                   />
                   <AdvancedFilterCell
-                    label="Hündürlük (m)"
+                    label={t("catalog_filter_height", "Hündürlük (m)")}
                     value={draftFilters.height}
                     placeholder="50"
                     type="number"
@@ -1487,7 +1497,7 @@ export function CatalogPageClient({
               onClick={() => setShowAllHomeListings((current) => !current)}
               className="inline-flex items-center gap-1.5 text-[0.98rem] font-semibold text-logistics-orange transition hover:opacity-80"
             >
-              {showAllHomeListings ? "Bağla" : "Hamısına bax"}
+              {showAllHomeListings ? t("catalog_close", "Bağla") : t("catalog_view_all", "Hamısına bax")}
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
@@ -1508,9 +1518,9 @@ export function CatalogPageClient({
             ) : (
               <div className="flex min-h-[420px] items-center justify-center rounded-[22px] border border-slate-200 bg-white px-5 py-8 text-center">
                 <div>
-                  <h3 className="text-lg font-semibold text-navy-900">Bu kateqoriyada elan yoxdur</h3>
+                  <h3 className="text-lg font-semibold text-navy-900">{t("catalog_no_category", "Bu kateqoriyada elan yoxdur")}</h3>
                   <p className="mt-2 text-sm text-slate-500">
-                    {selectedHomeCategory?.label || "Seçilmiş kateqoriya"} üçün uyğun elan tapılmadı.
+                    {selectedHomeCategory?.label} {t("catalog_no_category_hint", "üçün uyğun elan tapılmadı.")}
                   </p>
                 </div>
               </div>
@@ -1521,10 +1531,10 @@ export function CatalogPageClient({
             <div className="mt-7 rounded-[24px] border border-slate-200/90 bg-white p-4 shadow-sm sm:p-5">
               <div className="flex flex-col gap-4 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="text-[1.25rem] font-bold text-navy-900">Bütün elanlar</h3>
+                  <h3 className="text-[1.25rem] font-bold text-navy-900">{t("catalog_all_listings", "Bütün elanlar")}</h3>
                   <p className="mt-1 text-sm text-slate-500">
                     {new Intl.NumberFormat("az-AZ").format(homeInfinite.loadedCount)} /{" "}
-                    {new Intl.NumberFormat("az-AZ").format(homeListings.length)} elan göstərilir
+                    {new Intl.NumberFormat("az-AZ").format(homeListings.length)} {t("catalog_listings_shown", "elan göstərilir")}
                   </p>
                 </div>
 
@@ -1538,7 +1548,7 @@ export function CatalogPageClient({
                     )}
                   >
                     <LayoutGrid className="h-4 w-4" />
-                    Kvadratlar
+                    {t("catalog_grid", "Kvadratlar")}
                   </button>
                   <button
                     type="button"
@@ -1549,7 +1559,7 @@ export function CatalogPageClient({
                     )}
                   >
                     <List className="h-4 w-4" />
-                    Siyahı
+                    {t("catalog_list", "Siyahı")}
                   </button>
                 </div>
               </div>
@@ -1607,7 +1617,7 @@ export function CatalogPageClient({
       <PublicPage emphasizeBackground>
         <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-4">
           <LoaderCircle className="h-10 w-10 animate-spin text-logistics-orange" />
-          <p className="text-lg font-medium text-slate-500">Elanlar yüklənir...</p>
+          <p className="text-lg font-medium text-slate-500">{t("catalog_listings_loading", "Elanlar yüklənir...")}</p>
         </div>
       </PublicPage>
     );
@@ -1625,6 +1635,7 @@ export function CatalogPageClient({
                 onChange={(value) => updateFilter("pickupCity", value)}
                 options={dynCities}
                 className="w-full"
+                placeholder={t("catalog_select_placeholder", "Seçin")}
               />
             </CatalogFilterField>
 
@@ -1653,6 +1664,7 @@ export function CatalogPageClient({
                 onChange={(value) => updateFilter("deliveryCity", value)}
                 options={dynCities}
                 className="w-full"
+                placeholder={t("catalog_select_placeholder", "Seçin")}
               />
             </CatalogFilterField>
 
@@ -1663,6 +1675,7 @@ export function CatalogPageClient({
                 onChange={(value) => updateFilter("cargoType", value)}
                 options={dynCargoTypes}
                 className="w-full"
+                placeholder={t("catalog_select_placeholder", "Seçin")}
               />
             </CatalogFilterField>
 
@@ -1673,6 +1686,7 @@ export function CatalogPageClient({
                 onChange={(value) => updateFilter("vehicleType", value)}
                 options={dynVehicleTypes}
                 className="w-full"
+                placeholder={t("catalog_select_placeholder", "Seçin")}
               />
             </CatalogFilterField>
 
@@ -1715,7 +1729,7 @@ export function CatalogPageClient({
             className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-navy-900"
           >
             <ArrowLeftRight className="h-4 w-4" />
-            Sıfırla
+            {t("catalog_reset", "Sıfırla")}
           </button>
         </div>
 
@@ -1723,7 +1737,7 @@ export function CatalogPageClient({
           <div className="overflow-hidden rounded-[18px] border border-slate-200/90 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
             <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-[1.1rem] font-semibold text-navy-900">
-                Tapıldı: {resultsHeadline} elan
+                {t("catalog_found", "Tapıldı")}: {resultsHeadline} {t("catalog_listings_unit", "elan")}
               </p>
 
               <div className="flex items-center gap-3">
@@ -1759,9 +1773,9 @@ export function CatalogPageClient({
               </div>
             ) : (
               <div className="px-6 py-14 text-center">
-                <h2 className="text-2xl font-bold text-navy-900">Uyğun elan tapılmadı</h2>
+                <h2 className="text-2xl font-bold text-navy-900">{t("catalog_no_results", "Uyğun elan tapılmadı")}</h2>
                 <p className="mt-3 text-sm leading-6 text-slate-500">
-                  Filtrləri yumşaldın və ya yeni elanlar üçün bir az sonra yenidən baxın.
+                  {t("catalog_no_results_hint", "Filtrləri yumşaldın və ya yeni elanlar üçün bir az sonra yenidən baxın.")}
                 </p>
               </div>
             )}
@@ -1769,23 +1783,23 @@ export function CatalogPageClient({
 
           <aside className="space-y-4">
             <div className="rounded-[18px] border border-slate-200/90 bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-              <h2 className="text-[1.52rem] font-bold leading-tight text-navy-900">Yükünüzü tez çatdırın</h2>
+              <h2 className="text-[1.52rem] font-bold leading-tight text-navy-900">{t("catalog_cta_title", "Yükünüzü tez çatdırın")}</h2>
               <p className="mt-3 text-[0.98rem] leading-8 text-slate-600">
-                Elan yerləşdirin, minlərlə daşıyıcı sizin yükünüzü görsün.
+                {t("catalog_cta_desc", "Elan yerləşdirin, minlərlə daşıyıcı sizin yükünüzü görsün.")}
               </p>
 
               <div className="mt-5 space-y-3 text-[0.98rem] text-slate-600">
                 <p className="flex items-center gap-3">
                   <ShieldCheck className="h-5 w-5 text-logistics-orange" />
-                  Pulsuz elan yerləşdirmə
+                  {t("catalog_cta_free", "Pulsuz elan yerləşdirmə")}
                 </p>
                 <p className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-logistics-orange" />
-                  Minlərlə aktiv daşıyıcı
+                  {t("catalog_cta_carriers", "Minlərlə aktiv daşıyıcı")}
                 </p>
                 <p className="flex items-center gap-3">
                   <MessageCircleMore className="h-5 w-5 text-logistics-orange" />
-                  Tez və etibarlı həll
+                  {t("catalog_cta_fast", "Tez və etibarlı həll")}
                 </p>
               </div>
 
@@ -1793,46 +1807,46 @@ export function CatalogPageClient({
                 href="/cargo-owner/cargo-posts/new"
                 className="mt-6 flex w-full justify-center rounded-[14px] py-3 text-[1.08rem]"
               >
-                Yük yerləşdir
+                {t("catalog_cta_btn", "Yük yerləşdir")}
               </ButtonLink>
             </div>
 
             <div className="rounded-[18px] border border-slate-200/90 bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-              <h2 className="text-[1.34rem] font-bold text-navy-900">Tranzit.AZ rəqəmlərlə</h2>
+              <h2 className="text-[1.34rem] font-bold text-navy-900">{t("catalog_stats_title", "Tranzit.AZ rəqəmlərlə")}</h2>
               <div className="mt-5 space-y-4 text-[1rem] text-slate-600">
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-[1.12rem] font-bold text-navy-900">12 450+</span>
-                  <span>Aktiv elan</span>
+                  <span>{t("catalog_stats_listings", "Aktiv elan")}</span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-[1.12rem] font-bold text-navy-900">8 230+</span>
-                  <span>Qeydiyyatdan keçmiş daşıyıcı</span>
+                  <span>{t("catalog_stats_carriers", "Qeydiyyatdan keçmiş daşıyıcı")}</span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-[1.12rem] font-bold text-navy-900">34 600+</span>
-                  <span>Uğurlu daşınma</span>
+                  <span>{t("catalog_stats_deliveries", "Uğurlu daşınma")}</span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-[1.12rem] font-bold text-navy-900">98%</span>
-                  <span>Müştəri məmnuniyyəti</span>
+                  <span>{t("catalog_stats_satisfaction", "Müştəri məmnuniyyəti")}</span>
                 </div>
               </div>
             </div>
 
             <div className="rounded-[18px] border border-slate-200/90 bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-              <h2 className="text-[1.34rem] font-bold text-navy-900">Etibarlı platforma</h2>
+              <h2 className="text-[1.34rem] font-bold text-navy-900">{t("catalog_trust_title", "Etibarlı platforma")}</h2>
               <div className="mt-5 grid gap-4 text-sm leading-6 text-slate-600 sm:grid-cols-3 xl:grid-cols-1">
                 <div className="flex items-start gap-3">
                   <ShieldCheck className="mt-0.5 h-5 w-5 text-navy-900" />
-                  <span>Təhlükəsiz əlaqə</span>
+                  <span>{t("catalog_trust_safe", "Təhlükəsiz əlaqə")}</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <Building2 className="mt-0.5 h-5 w-5 text-navy-900" />
-                  <span>Məlumatlarınız qorunur</span>
+                  <span>{t("catalog_trust_data", "Məlumatlarınız qorunur")}</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <Users className="mt-0.5 h-5 w-5 text-navy-900" />
-                  <span>Dəstək xidməti 24/7</span>
+                  <span>{t("catalog_trust_support", "Dəstək xidməti 24/7")}</span>
                 </div>
               </div>
             </div>
@@ -1842,7 +1856,7 @@ export function CatalogPageClient({
         <div className="mt-5 overflow-hidden rounded-[18px] border border-slate-200/90 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
           <div className="grid gap-0 lg:grid-cols-[240px,1fr]">
             <div className="border-b border-slate-200 px-6 py-7 lg:border-b-0 lg:border-r">
-              <h2 className="text-[1.7rem] font-bold leading-tight text-navy-900">Necə işləyir?</h2>
+              <h2 className="text-[1.7rem] font-bold leading-tight text-navy-900">{t("catalog_hiw_title", "Necə işləyir?")}</h2>
             </div>
             <div className="grid gap-0 md:grid-cols-3">
               {howItWorksSteps.map((step, index) => {

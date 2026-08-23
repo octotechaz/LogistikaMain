@@ -128,7 +128,7 @@ export function PublicNavbar() {
       : null;
 
   const userInitial = (user?.name || user?.email || "U").trim().charAt(0).toUpperCase();
-  const publishLabel = user?.role === "CARRIER" ? "Aktiv yüklər" : "Yeni elan";
+  const publishLabel = user?.role === "CARRIER" ? t("nav_active_loads", "Aktiv yüklər") : t("nav_new_listing", "Yeni elan");
 
   const handleLogout = async () => {
     await logout();
@@ -244,7 +244,7 @@ export function PublicNavbar() {
                       className="flex min-h-11 items-center gap-3 rounded-[14px] px-4 text-[0.98rem] font-semibold text-slate-600 transition-colors hover:bg-slate-50 hover:text-navy-900"
                     >
                       <List className="h-[18px] w-[18px] shrink-0" />
-                      <span>{user.role === "CARRIER" ? "Aktiv yüklər" : "Mənim elanlarım"}</span>
+<span>{user.role === "CARRIER" ? t("nav_active_loads", "Aktiv yüklər") : t("nav_my_listings", "Mənim elanlarım")}</span>
                     </Link>
 
                     <button
@@ -256,7 +256,7 @@ export function PublicNavbar() {
                       className="flex min-h-11 w-full items-center gap-3 rounded-[14px] px-4 text-left text-[0.98rem] font-semibold text-red-600 transition-colors hover:bg-red-50"
                     >
                       <LogOut className="h-[18px] w-[18px] shrink-0" />
-                      <span>Çıxış et</span>
+                      <span>{t("nav_logout", "Çıxış et")}</span>
                     </button>
                   </div>
                 ) : (
@@ -266,7 +266,7 @@ export function PublicNavbar() {
                     className="flex min-h-12 items-center gap-3 rounded-[14px] px-4 text-[1.05rem] font-semibold text-slate-600 transition-colors hover:bg-slate-50 hover:text-navy-900"
                   >
                     <UserRound className="h-[18px] w-[18px] shrink-0" />
-                    <span>Daxil ol / Qeydiyyat</span>
+                    <span>{t("nav_login_register", "Daxil ol / Qeydiyyat")}</span>
                   </Link>
                 )}
               </motion.nav>
@@ -350,9 +350,9 @@ export function PublicNavbar() {
                               {userInitial}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs font-medium text-slate-500">Xoş gəldiniz</p>
+                              <p className="text-xs font-medium text-slate-500">{t("nav_welcome_user", "Xoş gəldiniz")}</p>
                               <p className="truncate text-sm font-bold text-navy-900">
-                                {user?.name || "İstifadəçi"}
+                                {user?.name || t("nav_default_user", "İstifadəçi")}
                               </p>
                             </div>
                           </div>
@@ -362,7 +362,7 @@ export function PublicNavbar() {
                             className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-logistics-orange"
                           >
                             <List className="h-[18px] w-[18px]" />
-                            <span>{user.role === "CARRIER" ? "Aktiv yüklər" : "Mənim elanlarım"}</span>
+                            <span>{user.role === "CARRIER" ? t("nav_active_loads", "Aktiv yüklər") : t("nav_my_listings", "Mənim elanlarım")}</span>
                           </Link>
 
                           <div className="my-1 border-t border-slate-100" />
@@ -373,7 +373,7 @@ export function PublicNavbar() {
                             className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
                           >
                             <LogOut className="h-[18px] w-[18px]" />
-                            <span>Çıxış et</span>
+                            <span>{t("nav_logout", "Çıxış et")}</span>
                           </button>
                         </div>
                       </motion.div>
@@ -386,7 +386,7 @@ export function PublicNavbar() {
                   className="hidden h-11 min-h-11 items-center justify-center gap-2 rounded-[14px] border border-[#d9e4f4] bg-white px-[18px] py-2 text-sm font-semibold text-navy-900 transition duration-200 hover:-translate-y-px hover:bg-navy-50 md:inline-flex"
                 >
                   <UserRound className="h-[18px] w-[18px]" />
-                  Daxil ol
+                  {t("nav_login", "Daxil ol")}
                 </Link>
               )}
 
@@ -463,7 +463,7 @@ export function PublicFooter() {
               </span>
             </Link>
             <p className="mt-3 max-w-sm text-sm leading-6 text-slate-500">
-              Yük sahibləri və daşıyıcılar üçün sadə, şəffaf və birbaşa əlaqə yaradan elan platforması.
+              {t("footer_tagline_static", "Yük sahibləri və daşıyıcılar üçün sadə, şəffaf və birbaşa əlaqə yaradan elan platforması.")}
             </p>
           </div>
 
