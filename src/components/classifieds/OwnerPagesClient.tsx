@@ -246,7 +246,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
   const { ready, listings, saveListing } = useClassifieds();
   const [error, setError] = useState<string | null>(null);
   const [formLocale, setFormLocale] = useState<FormLocale>("az");
-  const translationsRef = useRef<Partial<Record<FormLocale, { title: string; description: string }>>>({});
+  const [translations, setTranslations] = useState<Partial<Record<FormLocale, { title: string; description: string }>>>({});
   const [categories, setCategories] = useState<PublicCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
@@ -325,6 +325,21 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
   useEffect(() => {
     if (editing) {
       setSelectedCategoryId((editing as unknown as { categoryId?: string }).categoryId || "");
+      const existingTranslations = (editing as unknown as { translations?: Record<string, { title?: string; description?: string }> }).translations ?? {};
+      const init: Partial<Record<FormLocale, { title: string; description: string }>> = {
+        az: { title: editing.title ?? "", description: editing.description ?? "" },
+      };
+      for (const loc of FORM_LOCALES) {
+        if (loc !== "az" && existingTranslations[loc]) {
+          init[loc] = {
+            title: existingTranslations[loc].title ?? "",
+            description: existingTranslations[loc].description ?? "",
+          };
+        }
+      }
+      setTranslations(init);
+    } else {
+      setTranslations({ az: { title: "", description: "" } });
     }
   }, [editing?.id]);
 
@@ -477,21 +492,17 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
 
     const cargoType = String(formData.get("cargoType") || "").trim();
 
-    const form = event.currentTarget;
     const allTranslations: Record<string, { title: string; description: string }> = {};
     for (const loc of FORM_LOCALES) {
-      const titleEl = form.elements.namedItem(`title_${loc}`) as HTMLInputElement | null;
-      const descEl = form.elements.namedItem(`description_${loc}`) as HTMLTextAreaElement | null;
-      const t = (titleEl?.value ?? translationsRef.current[loc]?.title ?? "").trim();
-      const d = (descEl?.value ?? translationsRef.current[loc]?.description ?? "").trim();
+      const t = (translations[loc]?.title ?? "").trim();
+      const d = (translations[loc]?.description ?? "").trim();
       if (t || d) {
         allTranslations[loc] = { title: t, description: d };
-        translationsRef.current[loc] = { title: t, description: d };
       }
     }
-    const azData = allTranslations["az"] ?? {};
-    const finalTitle = azData.title || "";
-    const finalDescription = azData.description || "";
+    const azData = translations["az"] ?? { title: "", description: "" };
+    const finalTitle = (azData.title ?? "").trim();
+    const finalDescription = (azData.description ?? "").trim();
     const weight = String(formData.get("weight") || "").trim();
     const pickupCity = String(formData.get("pickupCity") || "").trim();
     const deliveryCity = String(formData.get("deliveryCity") || "").trim();
@@ -717,18 +728,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                     <button
                       key={loc}
                       type="button"
-                      onClick={() => {
-                        const form = document.getElementById("owner-load-form") as HTMLFormElement | null;
-                        if (form) {
-                          const titleEl = form.elements.namedItem(`title_${formLocale}`) as HTMLInputElement | null;
-                          const descEl = form.elements.namedItem(`description_${formLocale}`) as HTMLTextAreaElement | null;
-                          translationsRef.current[formLocale] = {
-                            title: titleEl?.value ?? translationsRef.current[formLocale]?.title ?? "",
-                            description: descEl?.value ?? translationsRef.current[formLocale]?.description ?? "",
-                          };
-                        }
-                        setFormLocale(loc);
-                      }}
+                      onClick={() => setFormLocale(loc)}
                       className={`px-3 py-1 rounded-md text-xs font-bold border transition ${
                         formLocale === loc
                           ? "bg-blue-600 text-white border-blue-600"
@@ -759,15 +759,8 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                           name={`title_${loc}`}
                           className="form-control w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pl-10 text-[15px] py-2.5 h-auto transition-shadow"
                           placeholder={loc === "az" ? "Məs: Soyuduculu ərzaq yükü" : loc === "ru" ? "Напр: Рефрижераторный груз" : loc === "en" ? "E.g: Refrigerated food cargo" : "Örn: Soğutmalı gıda yükü"}
-                          defaultValue={
-                            loc === "az"
-                              ? editing?.title
-                              : ((editing as unknown as { translations?: Record<string, { title?: string }> })?.translations?.[loc]?.title ?? "")
-                          }
-                          onChange={(e) => {
-                            if (!translationsRef.current[loc]) translationsRef.current[loc] = { title: "", description: "" };
-                            translationsRef.current[loc]!.title = e.target.value;
-                          }}
+                          value={translations[loc]?.title ?? ""}
+                          onChange={(e) => setTranslations((prev) => ({ ...prev, [loc]: { ...prev[loc], title: e.target.value, description: prev[loc]?.description ?? "" } }))}
                         />
                       </div>
                     </div>
@@ -781,15 +774,8 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                         name={`description_${loc}`}
                         className="form-control w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-[15px] py-3 transition-shadow min-h-[100px]"
                         placeholder={loc === "az" ? "Yükünüz haqqında ətraflı məlumat verin..." : loc === "ru" ? "Подробная информация о грузе..." : loc === "en" ? "Detailed information about your cargo..." : "Yükünüz hakkında detaylı bilgi..."}
-                        defaultValue={
-                          loc === "az"
-                            ? editing?.description
-                            : ((editing as unknown as { translations?: Record<string, { description?: string }> })?.translations?.[loc]?.description ?? "")
-                        }
-                        onChange={(e) => {
-                          if (!translationsRef.current[loc]) translationsRef.current[loc] = { title: "", description: "" };
-                          translationsRef.current[loc]!.description = e.target.value;
-                        }}
+                        value={translations[loc]?.description ?? ""}
+                        onChange={(e) => setTranslations((prev) => ({ ...prev, [loc]: { title: prev[loc]?.title ?? "", description: e.target.value } }))}
                       />
                     </div>
                   </div>
