@@ -1069,7 +1069,7 @@ export function CatalogPageClient({
         .filter((category) => category.id !== "all")
         .map((category) => ({
           ...category,
-          label: (locale !== "az" && (category as unknown as { labelTranslations?: Record<string, string> }).labelTranslations?.[locale]) || category.label,
+          label: (locale !== "az" && (category as unknown as { labelTranslations?: Record<string, string> }).labelTranslations?.[locale]) || (locale !== "az" && t(`catalog_chip_${category.id}`, "")) || category.label,
           icon: resolveCategoryIcon(category.iconKey),
         }));
 
