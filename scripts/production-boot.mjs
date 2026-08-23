@@ -175,59 +175,7 @@ function ensureCargoPostEditTrackingColumns() {
 
 await ensureSqliteDatabases();
 
-async function translateText(text, to) {
-  try {
-    const { translate } = await import("@vitalets/google-translate-api");
-    const result = await translate(text, { from: "az", to });
-    return result.text;
-  } catch {
-    return null;
-  }
-}
 
-async function ensureCategoryTranslations() {
-  const prisma = new PrismaClient({ datasources: { db: { url: databaseUrl } } });
-  try {
-    const tableExists = await prisma.$queryRawUnsafe(`
-      SELECT to_regclass('public."PublicCategory"') IS NOT NULL AS "exists"
-    `);
-    if (!tableExists?.[0]?.exists) {
-      await prisma.$disconnect();
-      return;
-    }
-
-    const categories = await prisma.$queryRawUnsafe(`
-      SELECT id, label, "labelTranslations" FROM "PublicCategory" WHERE "isActive" = true
-    `);
-
-    for (const cat of categories) {
-      const existing = cat.labelTranslations || {};
-      const missing = ["ru", "en", "tr"].filter((l) => !existing[l]);
-      if (missing.length === 0) continue;
-
-      console.log(`  Translating "${cat.label}" → ${missing.join(", ")}`);
-      const updates = { ...existing };
-      for (const locale of missing) {
-        await new Promise((r) => setTimeout(r, 400));
-        const translated = await translateText(cat.label, locale);
-        if (translated) {
-          updates[locale] = translated;
-          console.log(`    ${locale}: "${translated}"`);
-        }
-      }
-
-      await prisma.$executeRawUnsafe(
-        `UPDATE "PublicCategory" SET "labelTranslations" = $1::jsonb WHERE id = $2`,
-        JSON.stringify(updates),
-        cat.id
-      );
-    }
-    await prisma.$disconnect();
-  } catch (err) {
-    await prisma.$disconnect().catch(() => {});
-    console.error("ensureCategoryTranslations failed:", err.message);
-  }
-}
 
 console.log(
   `DB target: ${process.env.POSTGRES_USER}@postgres:5432/${process.env.POSTGRES_DB}`
@@ -277,9 +225,6 @@ for (let attempt = 1; attempt <= 20; attempt++) {
 if (!migrated) {
   fail(lastHint || "prisma migrate deploy failed after retries");
 }
-
-console.log("Ensuring category translations...");
-await ensureCategoryTranslations();
 
 console.log("Ensuring PostgreSQL admin user (not from Portainer env)...");
 {

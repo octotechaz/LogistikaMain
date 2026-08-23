@@ -1,0 +1,98 @@
+[
+  {
+    "id": "home",
+    "label": "Ev əşyaları",
+    "labelTranslations": { "ru": "Предметы домашнего обихода", "en": "Household items", "tr": "Ev eşyaları" },
+    "iconKey": "home",
+    "iconTone": "text-slate-500",
+    "matchCargoType": null,
+    "matchVehicleType": null,
+    "matchKeyword": null,
+    "sortOrder": 1,
+    "isActive": true
+  },
+  {
+    "id": "construction",
+    "label": "Tikinti",
+    "labelTranslations": { "ru": "Строительство", "en": "Construction", "tr": "Yapı" },
+    "iconKey": "hammer",
+    "iconTone": "text-slate-500",
+    "matchCargoType": "Tikinti materialı",
+    "matchVehicleType": null,
+    "matchKeyword": null,
+    "sortOrder": 2,
+    "isActive": true
+  },
+  {
+    "id": "food",
+    "label": "Qida",
+    "labelTranslations": { "ru": "Продукты питания", "en": "Food", "tr": "Gıda" },
+    "iconKey": "food",
+    "iconTone": "text-slate-500",
+    "matchCargoType": "Ərzaq",
+    "matchVehicleType": null,
+    "matchKeyword": null,
+    "sortOrder": 3,
+    "isActive": true
+  },
+  {
+    "id": "liquid",
+    "label": "Maye",
+    "labelTranslations": { "ru": "Жидкость", "en": "Liquid", "tr": "Sıvı" },
+    "iconKey": "droplets",
+    "iconTone": "text-slate-500",
+    "matchCargoType": null,
+    "matchVehicleType": null,
+    "matchKeyword": "maye",
+    "sortOrder": 4,
+    "isActive": true
+  },
+  {
+    "id": "cold",
+    "label": "Soyuducu",
+    "labelTranslations": { "ru": "Рефрижератор", "en": "Refrigerator", "tr": "Soğutucu" },
+    "iconKey": "snowflake",
+    "iconTone": "text-slate-500",
+    "matchCargoType": null,
+    "matchVehicleType": "Soyuduculu maşın",
+    "matchKeyword": null,
+    "sortOrder": 5,
+    "isActive": true
+  },
+  {
+    "id": "agri",
+    "label": "Kənd təsərrüfatı",
+    "labelTranslations": { "ru": "Сельское хозяйство", "en": "Agriculture", "tr": "Tarım" },
+    "iconKey": "tractor",
+    "iconTone": "text-slate-500",
+    "matchCargoType": null,
+    "matchVehicleType": null,
+    "matchKeyword": "taxıl",
+    "sortOrder": 6,
+    "isActive": true
+  },
+  {
+    "id": "cat_mt4auhxgi3355",
+    "label": "Deneme",
+    "labelTranslations": { "ru": "Пробный", "en": "Test", "tr": "Deneme" },
+    "iconKey": "truck",
+    "iconTone": "text-green-500",
+    "matchCargoType": null,
+    "matchVehicleType": null,
+    "matchKeyword": null,
+    "sortOrder": 7,
+    "isActive": true
+  },
+  {
+    "id": "cat_mt64d62fdysn7",
+    "label": "Məhsul",
+    "labelTranslations": { "ru": "Товар", "en": "Product", "tr": "Ürün" },
+    "iconKey": "boxes",
+    "iconTone": "text-yellow-700",
+    "matchCargoType": null,
+    "matchVehicleType": null,
+    "matchKeyword": null,
+    "sortOrder": 8,
+    "isActive": true
+  }
+]

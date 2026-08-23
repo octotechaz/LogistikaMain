@@ -22,17 +22,15 @@ function fail(message: string): NextResponse {
 function normalizeCategory(input: Partial<PublicListingCategory>): PublicListingCategory {
   const id = String(input.id || "").trim();
   const label = String(input.label || "").trim();
-  const iconKey = String(input.iconKey || "boxes").trim();
-
-  if (!id || !label) {
-    throw new Error("Kateqoriya ID və ad tələb olunur.");
-  }
+  if (!id || !label) throw new Error("Kateqoriya ID və ad tələb olunur.");
 
   return {
     id,
     label,
-    labelTranslations: input.labelTranslations && typeof input.labelTranslations === "object" ? input.labelTranslations : undefined,
-    iconKey,
+    labelTranslations: input.labelTranslations && typeof input.labelTranslations === "object"
+      ? input.labelTranslations
+      : undefined,
+    iconKey: String(input.iconKey || "boxes").trim(),
     iconTone: String(input.iconTone || "text-slate-500").trim(),
     matchCargoType: input.matchCargoType ? String(input.matchCargoType).trim() : undefined,
     matchVehicleType: input.matchVehicleType ? String(input.matchVehicleType).trim() : undefined,
