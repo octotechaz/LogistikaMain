@@ -36,7 +36,8 @@ async function loadDynamicContent(locale: Locale): Promise<Messages> {
   try {
     const res = await fetch(`/api/public/page-content?locale=${locale}`, { cache: "no-store" });
     if (!res.ok) return {};
-    const data = await res.json();
+    const json = await res.json();
+    const data = (json?.data ?? json) as Messages;
     contentCache[locale] = data;
     return data;
   } catch { return {}; }
