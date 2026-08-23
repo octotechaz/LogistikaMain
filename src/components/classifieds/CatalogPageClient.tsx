@@ -704,7 +704,7 @@ function HomeCategoryButton({
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-[92px] shrink-0 flex-col items-center gap-2 text-center sm:w-auto sm:gap-2.5"
+      className="group flex w-[72px] shrink-0 flex-col items-center gap-1.5 text-center sm:w-[80px] sm:gap-2"
       aria-pressed={active}
     >
       <span
@@ -717,7 +717,7 @@ function HomeCategoryButton({
       >
         <Icon className={cn("h-6 w-6 transition-colors duration-200", active ? activeTone.text : "text-slate-500")} />
       </span>
-      <span className={cn("max-w-full text-[0.84rem] font-semibold leading-tight transition-colors duration-200 sm:text-[0.88rem]", active ? activeTone.text : "text-slate-500")}>{label}</span>
+      <span className={cn("w-full truncate text-[0.72rem] font-semibold leading-tight transition-colors duration-200 sm:text-[0.78rem]", active ? activeTone.text : "text-slate-500")} title={label}>{label}</span>
     </button>
   );
 }
@@ -1600,7 +1600,7 @@ export function CatalogPageClient({
 
           <div className="mt-8 border-t border-slate-200 pt-5">
             <h2 className="text-base font-semibold text-navy-900">{t("categories_title", "Kateqoriyalara baxın")}</h2>
-            <div className="-mx-1 mt-3 flex max-w-full gap-3 overflow-x-auto px-1 py-2 pb-1 no-scrollbar sm:mx-0 sm:px-0 sm:gap-4">
+            <div className="-mx-1 mt-3 flex max-w-full gap-2 overflow-x-auto px-1 py-2 pb-1 no-scrollbar sm:mx-0 sm:px-0 sm:gap-3">
               {homeCategoryViews.map((category) => (
                 <HomeCategoryButton
                   key={category.id}
