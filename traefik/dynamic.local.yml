@@ -1,0 +1,30 @@
+http:
+  routers:
+    local-public:
+      rule: Host(`lvh.me`) || Host(`localhost`) || Host(`127.0.0.1`)
+      entryPoints:
+        - web
+      service: local-next
+
+    local-portal:
+      rule: Host(`portal.lvh.me`)
+      entryPoints:
+        - web
+      service: local-next
+
+    local-admin:
+      rule: Host(`admin.lvh.me`)
+      entryPoints:
+        - web
+      service: local-admin
+
+  services:
+    local-next:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3001"
+
+    local-admin:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3005"

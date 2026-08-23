@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qeydiyyat - Kargo Panel</title>
+    <!-- Tailwind CSS (CDN for quick styling) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Toastify CSS & JS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafafa;
+        }
+        
+        .brand-text {
+            color: #0f172a;
+        }
+        .brand-highlight {
+            color: #f97316;
+        }
+        
+        .input-flat {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background-color: #fff;
+            color: #1f2937;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        
+        .input-flat:focus {
+            outline: none;
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        .input-flat[readonly] {
+            background-color: #f3f4f6;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .input-group-flat {
+            display: flex;
+            align-items: stretch;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background-color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .input-group-flat:focus-within {
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        .input-group-flat .prefix {
+            display: flex;
+            align-items: center;
+            padding: 0;
+            background-color: transparent;
+            border-right: 1px solid #e5e7eb;
+            position: relative;
+        }
+
+        .custom-select-wrapper {
+            position: relative;
+            width: 110px; /* Biraz daraltdık */
+        }
+
+        .custom-select-button {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0.85rem 10px;
+            background-color: transparent;
+            border: none;
+            border-right: 1px solid #e5e7eb;
+            color: #4b5563;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            outline: none;
+            height: 100%;
+        }
+
+        .custom-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: max-content; /* İçeriğe göre genişlesin, taşırmasın */
+            min-width: 160px;
+            margin-top: 4px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            max-height: 250px;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .custom-select-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .custom-select-option {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.1s;
+            font-size: 0.95rem;
+            color: #374151;
+            white-space: nowrap; /* Tek satırda kalmasını sağlar */
+        }
+
+        .custom-select-option:hover {
+            background-color: #f9fafb;
+        }
+
+        .custom-select-option.selected {
+            background-color: #fff7ed;
+            color: #ea580c;
+            font-weight: 600;
+        }
+
+        .country-flag-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .country-code-hint {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .input-group-flat input {
+            flex: 1;
+            padding: 0.85rem 1rem;
+            border: none;
+            outline: none;
+            font-size: 0.95rem;
+            background: transparent;
+            width: 100%;
+        }
+
+        .btn-primary-flat {
+            width: 100%;
+            padding: 0.85rem;
+            background-color: #f97316;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 10px;
+            border: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary-flat:hover {
+            background-color: #ea580c;
+        }
+
+        .btn-dark-flat {
+            width: 100%;
+            padding: 0.85rem;
+            background-color: #1f2937;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 10px;
+            border: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-dark-flat:hover {
+            background-color: #111827;
+        }
+
+        /* Role Selector */
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-option input[type="radio"] {
+            display: none;
+        }
+
+        .role-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #6b7280;
+            font-weight: 600;
+            background-color: #fff;
+        }
+
+        .role-option label svg {
+            width: 28px;
+            height: 28px;
+            transition: all 0.2s ease;
+        }
+
+        .role-option input[type="radio"]:checked + label {
+            border-color: #f97316;
+            background-color: rgba(249, 115, 22, 0.05);
+            color: #f97316;
+        }
+
+        .dynamic-field {
+            display: none;
+        }
+        .dynamic-field.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Info Section (Left) - Same as Login -->
+    <div class="hidden lg:flex w-1/2 bg-orange-50/50 p-12 flex-col justify-center border-r border-slate-200">
+        <div class="max-w-md mx-auto">
+            <h1 class="text-4xl font-bold text-slate-900 mb-4 tracking-tight">Hesabınıza daxil olun</h1>
+            <p class="text-lg text-slate-600 mb-12">Yük sahibi, yük daşıyan və admin hesabları üçün uyğun giriş növünü seçib davam edin.</p>
+
+            <h2 class="text-xl font-semibold text-orange-600 mb-6">Nə üçün giriş lazımdır?</h2>
+
+            <div class="grid gap-6">
+                <div class="flex gap-4 items-start">
+                    <div class="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-900 text-lg">Yük sahibi</h3>
+                        <p class="text-slate-500 mt-1 text-sm leading-relaxed">Elan yaradır, statusunu izləyir və lazım olduqda yenidən dərc edir.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 items-start">
+                    <div class="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-900 text-lg">Yük daşıyan</h3>
+                        <p class="text-slate-500 mt-1 text-sm leading-relaxed">Uyğun elanları izləyir, seçilmişlərə əlavə edir və öz profilini idarə edir.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Section (Right) -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-6 bg-white overflow-y-auto max-h-screen">
+        <div class="w-full max-w-md py-8">
+            
+            <div class="mb-8 text-center lg:text-left">
+                <a href="<%= typeof publicAppUrl !== 'undefined' ? publicAppUrl : 'https://tranzit.az' %>" class="text-3xl font-bold tracking-tight brand-text inline-block mb-2">
+                    Tranzit.<span class="brand-highlight">az</span>
+                </a>
+                <p class="text-slate-500">Sistemdə qeydiyyatdan keçin</p>
+            </div>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3">
+                    <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    <p class="text-sm text-red-800 font-medium"><%= error %></p>
+                </div>
+            <% } %>
+
+            <form action="/dashboard/qeydiyyat" method="POST" id="registerForm">
+
+                <div class="role-selector">
+                    <div class="role-option">
+                        <input type="radio" name="role" id="roleUser" value="USER" checked onchange="toggleFields()">
+                        <label for="roleUser">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                            Yük Sahibi
+                        </label>
+                    </div>
+                    <div class="role-option">
+                        <input type="radio" name="role" id="roleDriver" value="DRIVER" onchange="toggleFields()">
+                        <label for="roleDriver">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                            Yük Daşıyan
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Ad və Soyad *</label>
+                    <input type="text" name="name" class="input-flat" placeholder="Məsələn, Əli Məmmədov" required>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Mobil nömrə *</label>
+                    <div class="input-group-flat">
+                        <div class="prefix p-0">
+                            <!-- Custom Modern Dropdown -->
+                            <div class="custom-select-wrapper" id="countrySelectWrapper">
+                                <input type="hidden" id="countryCode" name="countryCode" value="994">
+                                <button type="button" class="custom-select-button" id="countrySelectBtn">
+                                    <span id="countrySelectLabel">🇦🇿 +994</span>
+                                    <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" id="countrySelectArrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                    <div class="custom-select-dropdown" id="countrySelectDropdown">
+                                        <div class="custom-select-option selected" data-value="994"><div class="country-flag-name">🇦🇿 <span>Azərbaycan</span></div><span class="country-code-hint">+994</span></div>
+                                        <div class="custom-select-option" data-value="90"><div class="country-flag-name">🇹🇷 <span>Türkiyə</span></div><span class="country-code-hint">+90</span></div>
+                                        <div class="custom-select-option" data-value="995"><div class="country-flag-name">🇬🇪 <span>Gürcüstan</span></div><span class="country-code-hint">+995</span></div>
+                                        <div class="custom-select-option" data-value="7"><div class="country-flag-name">🇷🇺 <span>Rusiya</span></div><span class="country-code-hint">+7</span></div>
+                                    </div>
+                            </div>
+                        </div>
+                        <input type="tel" name="phone" id="phoneInput" placeholder="50 123 45 67" required>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM17.21 17.21C16.89 17.53 16.4 17.65 16 17.5C14.07 16.76 12.38 15.65 11 14C9.35 12.62 8.24 10.93 7.5 9C7.35 8.6 7.47 8.11 7.79 7.79L9.5 6.08C9.89 5.69 10.53 5.69 10.92 6.08C11.31 6.47 11.31 7.11 10.92 7.5L9.63 8.79C10.22 10.28 11.13 11.62 12.38 12.38L11.09 11.09C10.7 10.7 10.7 10.06 11.09 9.67C11.48 9.28 12.12 9.28 12.5 9.67L14.21 11.38C14.6 11.77 14.6 12.41 14.21 12.8L12.92 14.09C14.41 14.68 15.75 15.59 16.5 16.84L15.21 15.55C14.82 15.16 14.18 15.16 13.79 15.55C13.4 15.94 13.4 16.58 13.79 16.97L15.5 18.68C15.89 19.07 16.53 19.07 16.92 18.68L17.21 17.21Z"></path><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.42c1.45.82 3.09 1.25 4.79 1.25 5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2zM12.05 20.25c-1.54 0-3.04-.42-4.36-1.21l-.31-.18-3.23.85.86-3.15-.2-.32c-.86-1.39-1.31-2.99-1.31-4.63 0-4.6 3.74-8.34 8.34-8.34 4.6 0 8.34 3.74 8.34 8.34s-3.74 8.34-8.34 8.34z"></path></svg>
+                        OTP kodu WhatsApp vasitəsilə göndəriləcək
+                    </p>
+                </div>
+
+                <!-- Step 1: Request OTP -->
+                <div id="step1">
+                    <button type="button" class="btn-dark-flat mb-4" onclick="requestOTP()">
+                        <svg class="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.88-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                        WhatsApp Kodu Göndər
+                    </button>
+                </div>
+
+                <!-- Step 2: Verify OTP and Register Details -->
+                <div id="step2" style="display: none;">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Təsdiq kodu (OTP) *</label>
+                        <input type="text" name="otp" id="otpInput" inputmode="numeric" pattern="\d{6}" maxlength="6" class="input-flat text-center font-bold tracking-[0.5em] text-lg" placeholder="• • • • • •">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">E-poçt *</label>
+                        <input type="email" name="email" class="input-flat" placeholder="nümunə@email.com" required>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Şifrə *</label>
+                        <input type="password" name="password" class="input-flat" placeholder="Minimum <%= passwordPolicy.minimumLength %> simvol" required minlength="<%= passwordPolicy.minimumLength %>">
+                        <p class="mt-1.5 text-xs leading-5 text-slate-500"><%= passwordPolicy.recommendation %></p>
+                    </div>
+
+                    <!-- DRIVER ONLY FIELDS -->
+                    <div class="dynamic-field driver-fields p-4 bg-orange-50/50 rounded-xl mb-6 border border-orange-100">
+                        <h6 class="font-bold text-slate-800 mb-4">Nəqliyyat məlumatları</h6>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Avtomobil növü *</label>
+                            <select name="vehicle_type" class="input-flat driver-input bg-white appearance-none">
+                                <option value="">Seçin...</option>
+                                <option value="Tentli">Tentli</option>
+                                <option value="Soyuducu">Soyuducu (Ref)</option>
+                                <option value="Açıq">Açıq (Bortlu)</option>
+                                <option value="Konteyner">Konteyner</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Yükgötürmə qabiliyyəti (ton) *</label>
+                            <input type="number" name="capacity" class="input-flat driver-input" step="0.1" placeholder="Misal: 5.5">
+                        </div>
+                    </div>
+
+                    <div class="mb-5 flex items-start gap-2">
+                        <input type="checkbox" id="termsCheck" required class="mt-1 w-4 h-4 text-orange-600 border-slate-300 rounded focus:ring-orange-500 cursor-pointer">
+                        <label for="termsCheck" class="text-sm text-slate-600 cursor-pointer leading-tight">
+                            Qeydiyyatdan keçməklə <a href="/istifade-sertleri" target="_blank" class="text-orange-600 font-medium hover:underline">İstifadə şərtləri</a> və <a href="/qaydalar" target="_blank" class="text-orange-600 font-medium hover:underline">Qaydalar</a>ı oxuduğumu və qəbul etdiyimi təsdiqləyirəm.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-primary-flat mb-4">Qeydiyyatı Tamamla</button>
+                </div>
+
+                <div class="text-center mt-6 pt-6 border-t border-slate-100">
+                    <p class="text-slate-500 text-sm mb-3">Artıq hesabınız var? <a href="/dashboard/login" class="text-orange-600 font-semibold hover:underline">Daxil ol</a></p>
+                    <a href="<%= typeof publicAppUrl !== 'undefined' ? publicAppUrl : 'https://tranzit.az' %>" class="text-sm font-medium text-slate-500 hover:text-slate-800 transition inline-flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Ana səhifəyə qayıt
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Custom Dropdown Logic
+        const countrySelectBtn = document.getElementById('countrySelectBtn');
+        const countrySelectDropdown = document.getElementById('countrySelectDropdown');
+        const countrySelectArrow = document.getElementById('countrySelectArrow');
+        const countrySelectLabel = document.getElementById('countrySelectLabel');
+        const countryCodeInput = document.getElementById('countryCode');
+        const countryOptions = document.querySelectorAll('.custom-select-option');
+
+        // Toggle dropdown
+        countrySelectBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            countrySelectDropdown.classList.toggle('open');
+            countrySelectArrow.style.transform = countrySelectDropdown.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0)';
+        });
+
+        // Select option
+        countryOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const val = option.getAttribute('data-value');
+                const flag = option.querySelector('.country-flag-name').innerText.split(' ')[0]; // Extract flag
+                const text = flag + ' +' + val; 
+                
+                // Update UI
+                countrySelectLabel.innerText = text;
+                countryCodeInput.value = val;
+                
+                // Update selected state
+                countryOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                
+                // Close dropdown
+                countrySelectDropdown.classList.remove('open');
+                countrySelectArrow.style.transform = 'rotate(0)';
+                
+                // Focus on phone input
+                document.getElementById('phoneInput').focus();
+            });
+        });
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('countrySelectWrapper').contains(e.target)) {
+                countrySelectDropdown.classList.remove('open');
+                countrySelectArrow.style.transform = 'rotate(0)';
+            }
+        });
+
+        function toggleFields() {
+            const role = document.querySelector('input[name="role"]:checked').value;
+            const driverFields = document.querySelector('.driver-fields');
+            const driverInputs = document.querySelectorAll('.driver-input');
+
+            if (role === 'DRIVER') {
+                driverFields.classList.add('active');
+                driverInputs.forEach(input => input.setAttribute('required', 'true'));
+            } else {
+                driverFields.classList.remove('active');
+                driverInputs.forEach(input => {
+                    input.removeAttribute('required');
+                    input.value = '';
+                });
+            }
+        }
+
+        function showToast(message, type = "success") {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top", // `top` or `bottom`
+                position: "right", // `left`, `center` or `right`
+                stopOnFocus: true, // Prevents dismissing of toast on hover
+                style: {
+                    background: type === "success" ? "#10b981" : "#ef4444", // Emerald-500 or Red-500
+                    borderRadius: "10px",
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: "0.95rem",
+                    fontWeight: "500",
+                    padding: "12px 20px",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                }
+            }).showToast();
+        }
+
+        async function requestOTP() {
+            const phoneVal = document.getElementById('phoneInput').value;
+            const countryCode = document.getElementById('countryCode').value;
+            let nationalNumber = phoneVal.replace(/\D/g, '');
+
+            if (nationalNumber.startsWith(countryCode)) {
+                nationalNumber = nationalNumber.slice(countryCode.length);
+            } else if (nationalNumber.startsWith('0')) {
+                nationalNumber = nationalNumber.slice(1);
+            }
+
+            if(nationalNumber.length < 8) {
+                showToast("Zəhmət olmasa düzgün nömrə daxil edin.", "error");
+                return;
+            }
+
+            const phone = countryCode + nationalNumber;
+
+            // Send full phone to hidden input for backend to catch
+            let fullPhoneInput = document.getElementById('fullPhoneInput');
+            if(!fullPhoneInput) {
+                fullPhoneInput = document.createElement('input');
+                fullPhoneInput.type = 'hidden';
+                fullPhoneInput.name = 'full_phone';
+                fullPhoneInput.id = 'fullPhoneInput';
+                document.getElementById('registerForm').appendChild(fullPhoneInput);
+            }
+            fullPhoneInput.value = phone;
+
+            try {
+                // Show loading toast
+                Toastify({
+                    text: "OTP göndərilir...",
+                    duration: 2000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "#f59e0b", borderRadius: "10px", padding: "12px 20px" }
+                }).showToast();
+
+                // We'll call a new endpoint in octo-admin that forwards to Baileys
+                const response = await fetch('/dashboard/api/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+
+                const data = await response.json();
+
+                if(data.success) {
+                    showToast("OTP WhatsApp nömrənizə göndərildi!", "success");
+                    document.getElementById('step1').style.display = 'none';
+                    document.getElementById('step2').style.display = 'block';
+                } else {
+                    showToast(data.message || "Xəta baş verdi. Yenidən cəhd edin.", "error");
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Server xətası baş verdi.", "error");
+            }
+        }
+
+        // Initialize state
+        toggleFields();
+
+        // Client-side OTP validation: exactly 6 digits before form submit
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const otpVal = document.getElementById('otpInput').value.trim();
+            if (!/^\d{6}$/.test(otpVal)) {
+                e.preventDefault();
+                showToast("Təsdiq kodu 6 rəqəmdən ibarət olmalıdır.", "error");
+                document.getElementById('otpInput').focus();
+            }
+        });
+    </script>
+</body>
+</html>

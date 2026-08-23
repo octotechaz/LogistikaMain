@@ -1,0 +1,323 @@
+<%- include('partials/header') %>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  .text-slate-500 { color: #64748b !important; }
+  .text-blue-500 { color: #3b82f6 !important; }
+  .text-green-500 { color: #22c55e !important; }
+  .text-orange-500 { color: #f97316 !important; }
+  .text-purple-500 { color: #a855f7 !important; }
+  .text-red-500 { color: #ef4444 !important; }
+  .text-logistics-orange { color: #f97316 !important; }
+  .text-amber-500 { color: #f59e0b !important; }
+  .text-cyan-500 { color: #06b6d4 !important; }
+  .text-lime-600 { color: #65a30d !important; }
+  .text-sky-600 { color: #0284c7 !important; }
+  .text-violet-600 { color: #7c3aed !important; }
+  .text-yellow-700 { color: #a16207 !important; }
+</style>
+
+<%
+  const categoryList = Array.isArray(categories) ? categories : [];
+  const activeCount = categoryList.filter(c => c.is_active === 1 || c.is_active === true).length;
+  const categoriesJson = JSON.stringify(categoryList).replace(/</g, '\\u003c');
+%>
+
+<div class="admin-page-header">
+  <div>
+    <h5>Kateqoriyalar</h5>
+    <p>Elan kateqoriyalarını əlavə edin, düzəliş edin və sıralayın</p>
+  </div>
+  <button type="button" class="btn btn-primary px-3 py-2" id="openNewCategoryBtn" style="border-radius: 10px; font-weight: 600;">
+    <i class="bi bi-plus-lg me-1"></i> Yeni Kateqoriya
+  </button>
+</div>
+
+<% if (flash) { %>
+  <div class="alert <%= flash.type === 'error' ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius: 12px;">
+    <i class="bi <%= flash.type === 'error' ? 'bi-exclamation-circle-fill' : 'bi-check-circle-fill' %> me-2"></i>
+    <%= flash.message %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <span class="badge rounded-pill text-bg-light border px-3 py-2"><%= categoryList.length %> ümum</span>
+  <span class="badge rounded-pill px-3 py-2" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;"><%= activeCount %> aktiv</span>
+</div>
+
+<div class="admin-shell">
+  <div class="admin-desktop-only">
+    <div class="table-responsive">
+      <table class="table table-hover w-100 mb-0">
+        <thead>
+          <tr>
+            <th class="border-0">İkon & Ad</th>
+            <th class="border-0">Sıra</th>
+            <th class="border-0">Status</th>
+            <th class="border-0 text-end">Əməliyyat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (categoryList.length === 0) { %>
+            <tr>
+              <td colspan="4" class="text-center text-muted py-5">Heç bir kateqoriya tapılmadı.</td>
+            </tr>
+          <% } %>
+          <% categoryList.forEach(function(cat) { %>
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <div class="d-inline-flex align-items-center justify-content-center rounded-3 <%= cat.icon_tone || 'text-slate-500' %>" style="width:2.5rem;height:2.5rem;background:#f8fafc;border:1px solid #e2e8f0;">
+                    <i class="fas fa-<%= cat.icon_key || 'box' %>"></i>
+                  </div>
+                  <strong class="text-dark"><%= cat.label %></strong>
+                </div>
+              </td>
+              <td class="text-muted fw-semibold"><%= cat.sort_order %></td>
+              <td>
+                <% if (cat.is_active === 1 || cat.is_active === true) { %>
+                  <span class="badge" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;">Aktiv</span>
+                <% } else { %>
+                  <span class="badge" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;">Deaktiv</span>
+                <% } %>
+              </td>
+              <td class="text-end">
+                <div class="admin-actions">
+                  <button type="button" class="admin-btn-icon edit-category-btn" data-category-id="<%= cat.id %>" title="Düzəliş et">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <form action="/dashboard/kategoriler/delete" method="POST" class="d-inline mb-0" onsubmit="return confirm('Bu kateqoriyanı silmək istədiyinizə əminsiniz?');">
+                    <input type="hidden" name="id" value="<%= cat.id %>">
+                    <button type="submit" class="admin-btn-icon danger" title="Sil"><i class="bi bi-trash"></i></button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="admin-cards admin-mobile-only">
+    <% if (categoryList.length === 0) { %>
+      <div class="text-center text-muted py-4">Heç bir kateqoriya tapılmadı.</div>
+    <% } %>
+    <% categoryList.forEach(function(cat) { %>
+      <article class="admin-card">
+        <div class="admin-card-top">
+          <div class="d-flex align-items-center gap-2">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-3 <%= cat.icon_tone || 'text-slate-500' %>" style="width:2.4rem;height:2.4rem;background:#f8fafc;border:1px solid #e2e8f0;">
+              <i class="fas fa-<%= cat.icon_key || 'box' %>"></i>
+            </div>
+            <h3 class="admin-card-title mb-0"><%= cat.label %></h3>
+          </div>
+          <% if (cat.is_active === 1 || cat.is_active === true) { %>
+            <span class="badge" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;">Aktiv</span>
+          <% } else { %>
+            <span class="badge" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;">Deaktiv</span>
+          <% } %>
+        </div>
+        <div class="admin-card-meta">
+          <div class="admin-card-meta-row"><span class="label">Sıra</span><span class="value"><%= cat.sort_order %></span></div>
+        </div>
+        <div class="admin-card-actions">
+          <button type="button" class="btn btn-sm btn-outline-primary flex-grow-1 edit-category-btn" data-category-id="<%= cat.id %>" style="border-radius:8px;">
+            <i class="bi bi-pencil me-1"></i> Düzəliş
+          </button>
+          <form action="/dashboard/kategoriler/delete" method="POST" class="mb-0" onsubmit="return confirm('Bu kateqoriyanı silmək istədiyinizə əminsiniz?');">
+            <input type="hidden" name="id" value="<%= cat.id %>">
+            <button type="submit" class="admin-btn-icon danger" title="Sil"><i class="bi bi-trash"></i></button>
+          </form>
+        </div>
+      </article>
+    <% }); %>
+  </div>
+</div>
+
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border:none;border-radius:16px;overflow:hidden;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="modalTitle">Yeni Kateqoriya</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bağla"></button>
+      </div>
+      <form action="/dashboard/kategoriler" method="POST">
+        <div class="modal-body pt-3">
+          <input type="hidden" id="cat_id" name="id" value="">
+          <div class="mb-3">
+            <label for="cat_label" class="form-label">Kateqoriya Adı *</label>
+            <input type="text" id="cat_label" name="label" required autocomplete="off" class="form-control" style="border-radius:10px;">
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label for="cat_icon" class="form-label">İkon</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white" id="iconPreviewContainer"><i id="iconPreview" class="fas fa-box"></i></span>
+                <select id="cat_icon" name="icon_key" class="form-select admin-select" style="max-width:none;min-width:0;appearance:auto;background-image:none;padding-right:0.75rem;">
+                                  <option value="home">Ev (Home)</option>
+                                  <option value="layer-group">Hamısı</option>
+                  <option value="grid-2">Grid</option>
+                  <option value="box">Qutu</option>
+                  <option value="boxes">Qutular</option>
+                  <option value="truck">Yük maşını</option>
+                  <option value="truck-fast">Sürətli Yük</option>
+                  <option value="truck-moving">Daşınan Yük</option>
+                  <option value="pallet">Palet</option>
+                  <option value="dolly">Araba</option>
+                  <option value="warehouse">Anbar</option>
+                  <option value="cubes">Kublar</option>
+                  <option value="ship">Gəmi</option>
+                  <option value="plane">Təyyarə</option>
+                  <option value="weight-hanging">Ağırlıq</option>
+                  <option value="temperature-arrow-down">Soyuducu</option>
+                  <option value="snowflake">Qar dənəsi</option>
+                  <option value="flask">Maye/Kimyəvi</option>
+                  <option value="droplet">Maye damlası</option>
+                  <option value="fire">Təhlükəli Yük</option>
+                  <option value="triangle-exclamation">Xəbərdarlıq</option>
+                  <option value="car">Avtomobil</option>
+                  <option value="couch">Mebel</option>
+                  <option value="building">İnşaat</option>
+                  <option value="hammer">Tikinti</option>
+                  <option value="apple-whole">Qida</option>
+                  <option value="utensils">Yemək</option>
+                  <option value="wheat-awn">Taxıl</option>
+                  <option value="tractor">Traktor</option>
+                  <option value="ellipsis">Digər</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <label for="cat_tone" class="form-label">İkon rəngi</label>
+              <select id="cat_tone" name="icon_tone" class="form-select" style="border-radius:10px;">
+                <option value="text-slate-500">Boz</option>
+                <option value="text-blue-500">Mavi</option>
+                <option value="text-green-500">Yaşıl</option>
+                <option value="text-orange-500">Narıncı</option>
+                <option value="text-purple-500">Bənövşəyi</option>
+                <option value="text-red-500">Qırmızı</option>
+                <option value="text-logistics-orange">Logistika narıncı</option>
+                <option value="text-amber-500">Kəhrəba</option>
+                <option value="text-cyan-500">Firuzəyi</option>
+              </select>
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label for="cat_sort" class="form-label">Sıralama</label>
+              <input type="number" id="cat_sort" name="sort_order" value="0" min="0" class="form-control" style="border-radius:10px;">
+            </div>
+            <div class="col-sm-6">
+              <label for="cat_active" class="form-label">Status</label>
+              <select id="cat_active" name="is_active" class="form-select" style="border-radius:10px;">
+                <option value="1">Aktiv</option>
+                <option value="0">Deaktiv</option>
+              </select>
+            </div>
+          </div>
+          <hr class="my-2">
+          <p class="text-muted small mb-2"><i class="bi bi-filter me-1"></i>Uyğunlaşdırma (isteğe bağlı)</p>
+          <div class="mb-2">
+            <label for="cat_match_cargo" class="form-label small">Yük növü uyğunlaşdırması</label>
+            <input type="text" id="cat_match_cargo" name="match_cargo_type" class="form-control form-control-sm" style="border-radius:8px;" placeholder="məs: Ərzaq, Mebel">
+          </div>
+          <div class="mb-2">
+            <label for="cat_match_vehicle" class="form-label small">Nəqliyyat növü uyğunlaşdırması</label>
+            <input type="text" id="cat_match_vehicle" name="match_vehicle_type" class="form-control form-control-sm" style="border-radius:8px;" placeholder="məs: Soyuducu, Tentli">
+          </div>
+          <div class="mb-0">
+            <label for="cat_match_keyword" class="form-label small">Açar söz uyğunlaşdırması</label>
+            <input type="text" id="cat_match_keyword" name="match_keyword" class="form-control form-control-sm" style="border-radius:8px;" placeholder="məs: soyuducu, tikinti">
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light border" data-bs-dismiss="modal" style="border-radius:8px;">Ləğv et</button>
+          <button type="submit" id="submitCategoryBtn" class="btn btn-primary" style="border-radius:8px;font-weight:600;">Yadda Saxla</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script id="categoriesData" type="application/json"><%- categoriesJson %></script>
+<script>
+window.addEventListener('load', function () {
+  const categories = JSON.parse(document.getElementById('categoriesData').textContent || '[]');
+  const modalEl = document.getElementById('categoryModal');
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  const iconSelect = document.getElementById('cat_icon');
+  const toneSelect = document.getElementById('cat_tone');
+  const iconPreview = document.getElementById('iconPreview');
+  const iconPreviewContainer = document.getElementById('iconPreviewContainer');
+  const labelInput = document.getElementById('cat_label');
+  const categoryMap = new Map(categories.map(function (cat) { return [String(cat.id), cat]; }));
+
+  function ensureOption(select, value, label) {
+    const key = value || '';
+    const exists = Array.from(select.options).some(function (opt) { return opt.value === key; });
+    if (!exists && key) {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = (label || key) + ' (mövcud)';
+      select.appendChild(opt);
+    }
+    return key;
+  }
+
+  function updatePreview() {
+    const icon = iconSelect.value || 'box';
+    const tone = toneSelect.value || 'text-slate-500';
+    iconPreview.className = 'fas fa-' + icon;
+    iconPreviewContainer.className = 'input-group-text bg-white ' + tone;
+  }
+
+  function openModal() {
+    document.getElementById('modalTitle').textContent = 'Yeni Kateqoriya';
+    document.getElementById('submitCategoryBtn').textContent = 'Yadda Saxla';
+    document.getElementById('cat_id').value = '';
+    labelInput.value = '';
+    iconSelect.value = ensureOption(iconSelect, 'box');
+    toneSelect.value = ensureOption(toneSelect, 'text-slate-500');
+    document.getElementById('cat_sort').value = String(categories.length + 1);
+    document.getElementById('cat_active').value = '1';
+    document.getElementById('cat_match_cargo').value = '';
+    document.getElementById('cat_match_vehicle').value = '';
+    document.getElementById('cat_match_keyword').value = '';
+    updatePreview();
+    modal.show();
+    setTimeout(function () { labelInput.focus(); }, 150);
+  }
+
+  function editCategory(id) {
+    const cat = categoryMap.get(String(id));
+    if (!cat) return;
+    document.getElementById('modalTitle').textContent = 'Kateqoriyanı Yenilə';
+    document.getElementById('submitCategoryBtn').textContent = 'Dəyişiklikləri Saxla';
+    document.getElementById('cat_id').value = cat.id;
+    labelInput.value = cat.label || '';
+    iconSelect.value = ensureOption(iconSelect, cat.icon_key || 'box');
+    toneSelect.value = ensureOption(toneSelect, cat.icon_tone || 'text-slate-500');
+    document.getElementById('cat_sort').value = String(cat.sort_order ?? 0);
+    document.getElementById('cat_active').value = (cat.is_active === 1 || cat.is_active === true) ? '1' : '0';
+    document.getElementById('cat_match_cargo').value = cat.match_cargo_type || '';
+    document.getElementById('cat_match_vehicle').value = cat.match_vehicle_type || '';
+    document.getElementById('cat_match_keyword').value = cat.match_keyword || '';
+    updatePreview();
+    modal.show();
+    setTimeout(function () { labelInput.focus(); labelInput.select(); }, 150);
+  }
+
+  iconSelect.addEventListener('change', updatePreview);
+  toneSelect.addEventListener('change', updatePreview);
+  document.getElementById('openNewCategoryBtn').addEventListener('click', openModal);
+  document.querySelectorAll('.edit-category-btn').forEach(function (button) {
+    button.addEventListener('click', function () {
+      editCategory(button.getAttribute('data-category-id'));
+    });
+  });
+  updatePreview();
+});
+</script>
+
+<%- include('partials/footer') %>

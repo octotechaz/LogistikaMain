@@ -1,0 +1,486 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-bold" style="color: #1e293b;">Səhifə Məzmunu</h4>
+</div>
+
+<% if (saved) { %>
+    <div class="alert alert-success mb-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>Dəyişikliklər uğurla saxlandı.
+    </div>
+<% } %>
+<% if (error) { %>
+    <div class="alert alert-danger mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>Saxlama zamanı xəta baş verdi.
+    </div>
+<% } %>
+
+<!-- Dil seçici -->
+<div class="d-flex align-items-center gap-2 mb-4">
+    <span class="text-muted small fw-semibold me-1">Dil:</span>
+    <% ['az','ru','en','tr'].forEach(function(lng) { %>
+    <button type="button" class="btn btn-sm lang-tab-btn <%= lng === currentLang ? 'btn-primary' : 'btn-outline-secondary' %>"
+        data-lang="<%= lng %>" style="min-width:48px;">
+        <%= lng.toUpperCase() %>
+    </button>
+    <% }); %>
+</div>
+
+<ul class="nav nav-tabs mb-4" id="contentTabs">
+    <li class="nav-item">
+        <a class="nav-link active" data-bs-toggle="tab" href="#tab-home">Ana Səhifə</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#tab-search">Axtarış & Kataloq</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#tab-about">Haqqımızda</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#tab-howitworks">Necə işləyir</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#tab-auth">Auth Mətnləri</a>
+    </li>
+</ul>
+
+<form method="POST" action="/dashboard/sehife-mezmunu" id="contentForm">
+    <input type="hidden" name="lang" id="currentLang" value="az">
+
+    <div class="tab-content">
+
+        <!-- Ana Səhifə -->
+        <div class="tab-pane fade show active" id="tab-home">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-house me-2 text-primary"></i>Ana Səhifə Hero</h6>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Başlıq</label>
+                        <input type="text" name="home_hero_title" class="form-control lang-field" data-key="home_hero_title"
+                            value="<%= settings.home_hero_title %>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Alt başlıq</label>
+                        <input type="text" name="home_hero_subtitle" class="form-control lang-field" data-key="home_hero_subtitle"
+                            value="<%= settings.home_hero_subtitle %>">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Axtarış & Kataloq -->
+        <div class="tab-pane fade" id="tab-search">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-search me-2 text-primary"></i>Axtarış paneli başlıqları</h6>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Eyebrow mətni (kiçik)</label>
+                        <input type="text" name="search_eyebrow" class="form-control lang-field" data-key="search_eyebrow" value="<%= settings.search_eyebrow %>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Əsas başlıq</label>
+                        <input type="text" name="search_title" class="form-control lang-field" data-key="search_title" value="<%= settings.search_title %>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Marşrut bölməsi başlığı</label>
+                        <input type="text" name="search_route_label" class="form-control lang-field" data-key="search_route_label" value="<%= settings.search_route_label %>">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-funnel me-2 text-warning"></i>Filter sahələri</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Yükləmə şəhəri</label>
+                            <input type="text" name="search_pickup_city" class="form-control lang-field" data-key="search_pickup_city" value="<%= settings.search_pickup_city %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Çatdırılma şəhəri</label>
+                            <input type="text" name="search_delivery_city" class="form-control lang-field" data-key="search_delivery_city" value="<%= settings.search_delivery_city %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Yük növü</label>
+                            <input type="text" name="search_cargo_type" class="form-control lang-field" data-key="search_cargo_type" value="<%= settings.search_cargo_type %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nəqliyyat növü</label>
+                            <input type="text" name="search_vehicle_type" class="form-control lang-field" data-key="search_vehicle_type" value="<%= settings.search_vehicle_type %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Açar söz sahəsi</label>
+                            <input type="text" name="search_keyword" class="form-control lang-field" data-key="search_keyword" value="<%= settings.search_keyword %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Açar söz placeholder</label>
+                            <input type="text" name="search_keyword_placeholder" class="form-control lang-field" data-key="search_keyword_placeholder" value="<%= settings.search_keyword_placeholder %>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-toggles me-2 text-success"></i>Düymə və mesajlar</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Axtar düyməsi</label>
+                            <input type="text" name="search_btn" class="form-control lang-field" data-key="search_btn" value="<%= settings.search_btn %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Axtarılır... mətni</label>
+                            <input type="text" name="search_btn_loading" class="form-control lang-field" data-key="search_btn_loading" value="<%= settings.search_btn_loading %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ətraflı filter düyməsi</label>
+                            <input type="text" name="search_advanced_btn" class="form-control lang-field" data-key="search_advanced_btn" value="<%= settings.search_advanced_btn %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ətraflı filter hint mətni</label>
+                            <input type="text" name="search_advanced_hint" class="form-control lang-field" data-key="search_advanced_hint" value="<%= settings.search_advanced_hint %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Son elanlar başlığı</label>
+                            <input type="text" name="listings_title" class="form-control lang-field" data-key="listings_title" value="<%= settings.listings_title %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Kateqoriyalar başlığı</label>
+                            <input type="text" name="categories_title" class="form-control lang-field" data-key="categories_title" value="<%= settings.categories_title %>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Haqqımızda -->
+        <div class="tab-pane fade" id="tab-about">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-info-circle me-2 text-success"></i>Hero bölmə</h6>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Başlıq</label>
+                        <input type="text" name="about_hero_title" class="form-control lang-field" data-key="about_hero_title"
+                            value="<%= settings.about_hero_title %>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Təsvir</label>
+                        <input type="text" name="about_hero_description" class="form-control lang-field" data-key="about_hero_description"
+                            value="<%= settings.about_hero_description %>">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-paragraph me-2 text-warning"></i>Paraqraflar <small class="text-muted fw-normal">(hər sətir ayrı paraqraf)</small></h6>
+                    <textarea name="about_paragraphs_raw" class="form-control lang-field" data-key="about_paragraphs_raw"
+                        rows="6"><%= settings.about_paragraphs_raw %></textarea>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-check2-all me-2 text-danger"></i>Əsas üstünlüklər <small class="text-muted fw-normal">(hər sətir ayrı maddə)</small></h6>
+                    <textarea name="about_advantages_raw" class="form-control lang-field" data-key="about_advantages_raw"
+                        rows="8"><%= settings.about_advantages_raw %></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Necə işləyir -->
+        <div class="tab-pane fade" id="tab-howitworks">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-signpost me-2 text-primary"></i>Hero bölmə</h6>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Başlıq</label>
+                        <input type="text" name="howitworks_title" class="form-control lang-field" data-key="howitworks_title"
+                            value="<%= settings.howitworks_title %>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Təsvir</label>
+                        <textarea name="howitworks_description" class="form-control lang-field" data-key="howitworks_description"
+                            rows="2"><%= settings.howitworks_description %></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e293b;"><i class="bi bi-grid me-2 text-success"></i>Addımlar</h6>
+                    <% for (let i = 0; i < 4; i++) { %>
+                    <div class="border rounded-3 p-3 mb-3">
+                        <div class="fw-semibold text-slate-600 mb-2">Addım <%= i + 1 %></div>
+                        <div class="mb-2">
+                            <label class="form-label small">İkon</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-warning bg-opacity-10 text-warning flex-shrink-0"
+                                    style="width:40px;height:40px;" id="icon-preview-<%= i %>"></div>
+                                <select name="step_icon_<%= i %>" class="form-select form-select-sm icon-select" data-preview="icon-preview-<%= i %>">
+                                    <% ['UploadCloud','ShieldCheck','ClipboardList','PhoneCall'].forEach(function(icon) { %>
+                                        <option value="<%= icon %>" <%= settings.steps[i] && settings.steps[i].icon === icon ? 'selected' : '' %>><%= icon %></option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small">Başlıq</label>
+                            <input type="text" name="step_title_<%= i %>" class="form-control form-control-sm lang-field"
+                                data-key="step_title_<%= i %>"
+                                value="<%= settings.steps[i] ? settings.steps[i].title : '' %>">
+                        </div>
+                        <div>
+                            <label class="form-label small">Mətn</label>
+                            <textarea name="step_text_<%= i %>" class="form-control form-control-sm lang-field"
+                                data-key="step_text_<%= i %>"
+                                rows="2"><%= settings.steps[i] ? settings.steps[i].text : '' %></textarea>
+                        </div>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+    <!-- Auth Mətnləri -->
+        <div class="tab-pane fade" id="tab-auth">
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius:12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i>Giriş səhifəsi</h6>
+                    <div class="row g-3">
+                        <div class="col-12"><label class="form-label fw-semibold">Eyebrow mətni</label><input type="text" name="login_eyebrow" class="form-control lang-field" data-key="login_eyebrow" value="<%= settings.login_eyebrow %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Başlıq</label><input type="text" name="login_title" class="form-control lang-field" data-key="login_title" value="<%= settings.login_title %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Alt başlıq</label><input type="text" name="login_subtitle" class="form-control lang-field" data-key="login_subtitle" value="<%= settings.login_subtitle %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Tab: Yük sahibi</label><input type="text" name="login_tab_owner" class="form-control lang-field" data-key="login_tab_owner" value="<%= settings.login_tab_owner %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Tab: Yük daşıyan</label><input type="text" name="login_tab_carrier" class="form-control lang-field" data-key="login_tab_carrier" value="<%= settings.login_tab_carrier %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Metod: Telefon</label><input type="text" name="login_method_phone" class="form-control lang-field" data-key="login_method_phone" value="<%= settings.login_method_phone %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Metod: E-poçt</label><input type="text" name="login_method_email" class="form-control lang-field" data-key="login_method_email" value="<%= settings.login_method_email %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Şifrə sahəsi</label><input type="text" name="login_field_password" class="form-control lang-field" data-key="login_field_password" value="<%= settings.login_field_password %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Şifrə placeholder</label><input type="text" name="login_field_password_placeholder" class="form-control lang-field" data-key="login_field_password_placeholder" value="<%= settings.login_field_password_placeholder %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Şifrəni unutmusan?</label><input type="text" name="login_forgot_password" class="form-control lang-field" data-key="login_forgot_password" value="<%= settings.login_forgot_password %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Giriş düyməsi</label><input type="text" name="login_btn" class="form-control lang-field" data-key="login_btn" value="<%= settings.login_btn %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Giriş düyməsi (yüklənir)</label><input type="text" name="login_btn_loading" class="form-control lang-field" data-key="login_btn_loading" value="<%= settings.login_btn_loading %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Giriş düyməsi (sahibi)</label><input type="text" name="login_btn_owner" class="form-control lang-field" data-key="login_btn_owner" value="<%= settings.login_btn_owner %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Giriş düyməsi (daşıyan)</label><input type="text" name="login_btn_carrier" class="form-control lang-field" data-key="login_btn_carrier" value="<%= settings.login_btn_carrier %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Hesab yoxdur?</label><input type="text" name="login_no_account" class="form-control lang-field" data-key="login_no_account" value="<%= settings.login_no_account %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Qeydiyyat linki (sahibi)</label><input type="text" name="login_register_owner" class="form-control lang-field" data-key="login_register_owner" value="<%= settings.login_register_owner %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Qeydiyyat linki (daşıyan)</label><input type="text" name="login_register_carrier" class="form-control lang-field" data-key="login_register_carrier" value="<%= settings.login_register_carrier %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Sidebar başlığı</label><input type="text" name="login_sidebar_title" class="form-control lang-field" data-key="login_sidebar_title" value="<%= settings.login_sidebar_title %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Sidebar: sahibi başlığı</label><input type="text" name="login_sidebar_owner_title" class="form-control lang-field" data-key="login_sidebar_owner_title" value="<%= settings.login_sidebar_owner_title %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Sidebar: daşıyan başlığı</label><input type="text" name="login_sidebar_carrier_title" class="form-control lang-field" data-key="login_sidebar_carrier_title" value="<%= settings.login_sidebar_carrier_title %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Sidebar: sahibi təsviri</label><input type="text" name="login_sidebar_owner_desc" class="form-control lang-field" data-key="login_sidebar_owner_desc" value="<%= settings.login_sidebar_owner_desc %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Sidebar: daşıyan təsviri</label><input type="text" name="login_sidebar_carrier_desc" class="form-control lang-field" data-key="login_sidebar_carrier_desc" value="<%= settings.login_sidebar_carrier_desc %>"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius:12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-person-plus me-2 text-success"></i>Qeydiyyat səhifəsi</h6>
+                    <div class="row g-3">
+                        <div class="col-12"><label class="form-label fw-semibold">Başlıq</label><input type="text" name="register_title" class="form-control lang-field" data-key="register_title" value="<%= settings.register_title %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Eyebrow (sahibi)</label><input type="text" name="register_eyebrow_owner" class="form-control lang-field" data-key="register_eyebrow_owner" value="<%= settings.register_eyebrow_owner %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Eyebrow (daşıyan)</label><input type="text" name="register_eyebrow_carrier" class="form-control lang-field" data-key="register_eyebrow_carrier" value="<%= settings.register_eyebrow_carrier %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Alt başlıq (sahibi)</label><input type="text" name="register_subtitle_owner" class="form-control lang-field" data-key="register_subtitle_owner" value="<%= settings.register_subtitle_owner %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Alt başlıq (daşıyan)</label><input type="text" name="register_subtitle_carrier" class="form-control lang-field" data-key="register_subtitle_carrier" value="<%= settings.register_subtitle_carrier %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Ad sahəsi</label><input type="text" name="register_field_firstname" class="form-control lang-field" data-key="register_field_firstname" value="<%= settings.register_field_firstname %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Soyad sahəsi</label><input type="text" name="register_field_lastname" class="form-control lang-field" data-key="register_field_lastname" value="<%= settings.register_field_lastname %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Telefon sahəsi</label><input type="text" name="register_field_phone" class="form-control lang-field" data-key="register_field_phone" value="<%= settings.register_field_phone %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Email sahəsi</label><input type="text" name="register_field_email" class="form-control lang-field" data-key="register_field_email" value="<%= settings.register_field_email %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Şifrə sahəsi</label><input type="text" name="register_field_password" class="form-control lang-field" data-key="register_field_password" value="<%= settings.register_field_password %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Şirkət sahəsi</label><input type="text" name="register_field_company" class="form-control lang-field" data-key="register_field_company" value="<%= settings.register_field_company %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">VÖEN sahəsi</label><input type="text" name="register_field_voen" class="form-control lang-field" data-key="register_field_voen" value="<%= settings.register_field_voen %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Hesab yarat düyməsi</label><input type="text" name="register_btn" class="form-control lang-field" data-key="register_btn" value="<%= settings.register_btn %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Hesab yarat (yüklənir)</label><input type="text" name="register_btn_loading" class="form-control lang-field" data-key="register_btn_loading" value="<%= settings.register_btn_loading %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Şərtlər mətni (əvvəl)</label><input type="text" name="register_terms_prefix" class="form-control lang-field" data-key="register_terms_prefix" value="<%= settings.register_terms_prefix %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">İstifadə şərtləri linki</label><input type="text" name="register_terms_link" class="form-control lang-field" data-key="register_terms_link" value="<%= settings.register_terms_link %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Məxfilik siyasəti linki</label><input type="text" name="register_privacy_link" class="form-control lang-field" data-key="register_privacy_link" value="<%= settings.register_privacy_link %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Şərtlər mətni (son)</label><input type="text" name="register_terms_suffix" class="form-control lang-field" data-key="register_terms_suffix" value="<%= settings.register_terms_suffix %>"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius:12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-key me-2 text-warning"></i>Şifrəni unutmusan</h6>
+                    <div class="row g-3">
+                        <div class="col-12"><label class="form-label fw-semibold">Başlıq</label><input type="text" name="forgot_title" class="form-control lang-field" data-key="forgot_title" value="<%= settings.forgot_title %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Alt başlıq</label><input type="text" name="forgot_subtitle" class="form-control lang-field" data-key="forgot_subtitle" value="<%= settings.forgot_subtitle %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">OTP göndər düyməsi</label><input type="text" name="forgot_btn_send" class="form-control lang-field" data-key="forgot_btn_send" value="<%= settings.forgot_btn_send %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">OTP göndərilir mətni</label><input type="text" name="forgot_btn_sending" class="form-control lang-field" data-key="forgot_btn_sending" value="<%= settings.forgot_btn_sending %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">OTP kodu sahəsi</label><input type="text" name="forgot_otp_label" class="form-control lang-field" data-key="forgot_otp_label" value="<%= settings.forgot_otp_label %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">OTP placeholder</label><input type="text" name="forgot_otp_placeholder" class="form-control lang-field" data-key="forgot_otp_placeholder" value="<%= settings.forgot_otp_placeholder %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Yeni şifrə</label><input type="text" name="forgot_new_password" class="form-control lang-field" data-key="forgot_new_password" value="<%= settings.forgot_new_password %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Yeni şifrə placeholder</label><input type="text" name="forgot_new_password_placeholder" class="form-control lang-field" data-key="forgot_new_password_placeholder" value="<%= settings.forgot_new_password_placeholder %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Şifrəni yenilə düyməsi</label><input type="text" name="forgot_btn_reset" class="form-control lang-field" data-key="forgot_btn_reset" value="<%= settings.forgot_btn_reset %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Geri düyməsi</label><input type="text" name="forgot_btn_back" class="form-control lang-field" data-key="forgot_btn_back" value="<%= settings.forgot_btn_back %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Uğur mesajı</label><input type="text" name="forgot_success_title" class="form-control lang-field" data-key="forgot_success_title" value="<%= settings.forgot_success_title %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Giriş səhifəsinə qayıt</label><input type="text" name="forgot_back_to_login" class="form-control lang-field" data-key="forgot_back_to_login" value="<%= settings.forgot_back_to_login %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Yeni hesab yarat</label><input type="text" name="forgot_create_account" class="form-control lang-field" data-key="forgot_create_account" value="<%= settings.forgot_create_account %>"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius:12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-truck me-2 text-danger"></i>Daşıyıcı qeydiyyat formu</h6>
+                    <div class="row g-3">
+                        <div class="col-12"><label class="form-label fw-semibold">Highlight 1</label><input type="text" name="carrier_highlight_1" class="form-control lang-field" data-key="carrier_highlight_1" value="<%= settings.carrier_highlight_1 %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Highlight 2</label><input type="text" name="carrier_highlight_2" class="form-control lang-field" data-key="carrier_highlight_2" value="<%= settings.carrier_highlight_2 %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Highlight 3</label><input type="text" name="carrier_highlight_3" class="form-control lang-field" data-key="carrier_highlight_3" value="<%= settings.carrier_highlight_3 %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Əlaqə nömrəsi sahəsi</label><input type="text" name="carrier_field_contact_phone" class="form-control lang-field" data-key="carrier_field_contact_phone" value="<%= settings.carrier_field_contact_phone %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">WhatsApp nömrəsi sahəsi</label><input type="text" name="carrier_field_whatsapp" class="form-control lang-field" data-key="carrier_field_whatsapp" value="<%= settings.carrier_field_whatsapp %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Şirkət placeholder</label><input type="text" name="carrier_company_placeholder" class="form-control lang-field" data-key="carrier_company_placeholder" value="<%= settings.carrier_company_placeholder %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Avtomobil növü sahəsi</label><input type="text" name="carrier_vehicle_type" class="form-control lang-field" data-key="carrier_vehicle_type" value="<%= settings.carrier_vehicle_type %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Yerləşmə ünvanı sahəsi</label><input type="text" name="carrier_location_address" class="form-control lang-field" data-key="carrier_location_address" value="<%= settings.carrier_location_address %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Ünvan placeholder</label><input type="text" name="carrier_location_placeholder" class="form-control lang-field" data-key="carrier_location_placeholder" value="<%= settings.carrier_location_placeholder %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Yük həcmi sahəsi</label><input type="text" name="carrier_cargo_volume" class="form-control lang-field" data-key="carrier_cargo_volume" value="<%= settings.carrier_cargo_volume %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Həcm placeholder</label><input type="text" name="carrier_cargo_volume_placeholder" class="form-control lang-field" data-key="carrier_cargo_volume_placeholder" value="<%= settings.carrier_cargo_volume_placeholder %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Maks. çəki sahəsi</label><input type="text" name="carrier_max_weight" class="form-control lang-field" data-key="carrier_max_weight" value="<%= settings.carrier_max_weight %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Çəki placeholder</label><input type="text" name="carrier_max_weight_placeholder" class="form-control lang-field" data-key="carrier_max_weight_placeholder" value="<%= settings.carrier_max_weight_placeholder %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Yük növləri başlığı</label><input type="text" name="carrier_cargo_types_title" class="form-control lang-field" data-key="carrier_cargo_types_title" value="<%= settings.carrier_cargo_types_title %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Xəritə bölməsi başlığı</label><input type="text" name="carrier_map_title" class="form-control lang-field" data-key="carrier_map_title" value="<%= settings.carrier_map_title %>"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius:12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-person-badge me-2 text-info"></i>Rol seçimi</h6>
+                    <div class="row g-3">
+                        <div class="col-12"><label class="form-label fw-semibold">Eyebrow</label><input type="text" name="role_select_eyebrow" class="form-control lang-field" data-key="role_select_eyebrow" value="<%= settings.role_select_eyebrow %>"></div>
+                        <div class="col-12"><label class="form-label fw-semibold">Başlıq</label><input type="text" name="role_select_title" class="form-control lang-field" data-key="role_select_title" value="<%= settings.role_select_title %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Daşıyan kart başlığı</label><input type="text" name="role_carrier_title" class="form-control lang-field" data-key="role_carrier_title" value="<%= settings.role_carrier_title %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Daşıyan kart təsviri</label><input type="text" name="role_carrier_desc" class="form-control lang-field" data-key="role_carrier_desc" value="<%= settings.role_carrier_desc %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Sahibi kart başlığı</label><input type="text" name="role_owner_title" class="form-control lang-field" data-key="role_owner_title" value="<%= settings.role_owner_title %>"></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Sahibi kart təsviri</label><input type="text" name="role_owner_desc" class="form-control lang-field" data-key="role_owner_desc" value="<%= settings.role_owner_desc %>"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="mt-3 d-flex align-items-center gap-3">
+        <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius: 8px;">
+            <i class="bi bi-save me-2"></i>Saxla
+        </button>
+        <span class="text-muted small">Saxlayarkən seçilmiş dil üçün yadda saxlanır</span>
+    </div>
+
+</form>
+
+<script>
+const ICON_SVGS = {
+  UploadCloud: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>`,
+  ShieldCheck: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>`,
+  ClipboardList: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="12" y1="11" x2="16" y2="11"/><line x1="12" y1="16" x2="16" y2="16"/><line x1="8" y1="11" x2="8.01" y2="11"/><line x1="8" y1="16" x2="8.01" y2="16"/></svg>`,
+  PhoneCall: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path d="M14.05 2a9 9 0 0 1 8 7.94"/><path d="M14.05 6A5 5 0 0 1 18 10"/></svg>`,
+};
+
+// İkon preview
+function updateIconPreview(select) {
+  const id = select.getAttribute('data-preview');
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = ICON_SVGS[select.value] || '';
+}
+document.querySelectorAll('.icon-select').forEach(s => {
+  updateIconPreview(s);
+  s.addEventListener('change', () => updateIconPreview(s));
+});
+
+// Dil cache - sahə dəyərlərini saxla
+const langCache = { az: {}, ru: {}, en: {}, tr: {} };
+let currentLang = '<%= currentLang %>';
+
+function collectCurrentFields() {
+  document.querySelectorAll('.lang-field').forEach(el => {
+    langCache[currentLang][el.getAttribute('data-key')] = el.value;
+  });
+}
+
+function applyFieldsFromData(data, lang) {
+  document.querySelectorAll('.lang-field').forEach(el => {
+    const key = el.getAttribute('data-key');
+    // Addım sahələri: step_title_0, step_text_0 -> howitworks_steps[i]
+    const stepTitleMatch = key.match(/^step_title_(\d+)$/);
+    const stepTextMatch = key.match(/^step_text_(\d+)$/);
+    const stepIconMatch = key.match(/^step_icon_(\d+)$/);
+    let val = '';
+    if (stepTitleMatch && Array.isArray(data.howitworks_steps)) {
+      val = (data.howitworks_steps[+stepTitleMatch[1]] || {}).title || '';
+    } else if (stepTextMatch && Array.isArray(data.howitworks_steps)) {
+      val = (data.howitworks_steps[+stepTextMatch[1]] || {}).text || '';
+    } else if (stepIconMatch) {
+      // select üçün ayrıca idarə et
+      const iconVal = Array.isArray(data.howitworks_steps)
+        ? (data.howitworks_steps[+stepIconMatch[1]] || {}).icon || 'UploadCloud'
+        : 'UploadCloud';
+      const select = document.querySelector(`[name="step_icon_${stepIconMatch[1]}"]`);
+      if (select) { select.value = iconVal; updateIconPreview(select); }
+      langCache[lang][key] = iconVal;
+      return;
+    } else {
+      const rawKey = key.endsWith('_raw') ? key.slice(0, -4) : key;
+      val = data[rawKey] ?? data[key] ?? '';
+      if (Array.isArray(val)) val = val.join('\n');
+    }
+    el.value = val;
+    langCache[lang][key] = val;
+  });
+}
+
+function applyLang(lang) {
+  if (Object.keys(langCache[lang]).length === 0) {
+    fetch('/dashboard/api/page-content?locale=' + lang)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) applyFieldsFromData(data, lang); });
+  } else {
+    document.querySelectorAll('.lang-field').forEach(el => {
+      const key = el.getAttribute('data-key');
+      if (langCache[lang][key] !== undefined) el.value = langCache[lang][key];
+    });
+    // Icon select-lər üçün
+    [0,1,2,3].forEach(i => {
+      const iconKey = `step_icon_${i}`;
+      const select = document.querySelector(`[name="${iconKey}"]`);
+      if (select && langCache[lang][iconKey]) {
+        select.value = langCache[lang][iconKey];
+        updateIconPreview(select);
+      }
+    });
+  }
+}
+
+document.querySelectorAll('.lang-tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    collectCurrentFields();
+    currentLang = this.getAttribute('data-lang');
+    document.getElementById('currentLang').value = currentLang;
+    document.querySelectorAll('.lang-tab-btn').forEach(b => {
+      b.classList.remove('btn-primary');
+      b.classList.add('btn-outline-secondary');
+    });
+    this.classList.add('btn-primary');
+    this.classList.remove('btn-outline-secondary');
+    const url = new URL(window.location.href);
+    url.searchParams.set('lang', currentLang);
+    history.replaceState(null, '', url.toString());
+    applyLang(currentLang);
+  });
+});
+
+// Cari dil sahələrini cache-ə yüklə
+document.querySelectorAll('.lang-field').forEach(el => {
+  langCache[currentLang][el.getAttribute('data-key')] = el.value;
+});
+// Icon select-ləri cari dil cache-inə əlavə et
+[0,1,2,3].forEach(i => {
+  const select = document.querySelector(`[name="step_icon_${i}"]`);
+  if (select) langCache[currentLang][`step_icon_${i}`] = select.value;
+});
+</script>
+
+<%- include('partials/footer') %>

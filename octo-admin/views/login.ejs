@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof pageTitle !== 'undefined' && pageTitle ? pageTitle : 'Admin Giriş — Tranzit' %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --bg: #f4f6f8;
+            --card: #ffffff;
+            --accent: #ea580c;
+            --accent-hover: #c2410c;
+            --danger: #b91c1c;
+            --danger-bg: #fef2f2;
+            --danger-line: #fecaca;
+            --ring: rgba(234, 88, 12, 0.18);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(1200px 420px at 50% -80px, rgba(234, 88, 12, 0.08), transparent 60%),
+                var(--bg);
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 16px;
+        }
+
+        .shell {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 28px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .mark {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--ink);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: -0.04em;
+        }
+
+        .wordmark {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+        }
+
+        .wordmark span { color: var(--accent); }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 32px 28px 28px;
+            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 22px;
+            font-weight: 650;
+            letter-spacing: -0.03em;
+            text-align: center;
+        }
+
+        .lede {
+            margin: 0 0 24px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .alert {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin: 0 0 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-line);
+            color: var(--danger);
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.45;
+        }
+
+        .alert svg {
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .field { margin-bottom: 16px; }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            height: 44px;
+            padding: 0 13px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--ink);
+            font: inherit;
+            font-size: 14px;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        input::placeholder { color: #94a3b8; }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--ring);
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 4px 0 20px;
+        }
+
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #475569;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remember input {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--accent);
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            height: 44px;
+            border: 0;
+            border-radius: 10px;
+            background: var(--ink);
+            color: #fff;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+
+        button[type="submit"]:hover { background: #1e293b; }
+        button[type="submit"]:active { transform: translateY(1px); }
+
+        .home {
+            display: block;
+            margin-top: 18px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .home:hover { color: var(--ink); }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <div class="brand">
+            <div class="mark">T</div>
+            <div class="wordmark">Tranzit<span>.az</span></div>
+        </div>
+
+        <section class="card">
+            <h1>Admin giriş</h1>
+            <p class="lede">İdarəetmə panelinə e-poçt ünvanınızla daxil olun.</p>
+
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert" role="alert">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span><%= error %></span>
+                </div>
+            <% } %>
+
+            <form action="<%= typeof formAction !== 'undefined' && formAction ? formAction : '/auth' %>" method="POST">
+                <div class="field">
+                    <label for="email">E-poçt</label>
+                    <input
+                        id="email"
+                        type="email"
+                        name="email"
+                        placeholder="admin@tranzit.az"
+                        autocomplete="username"
+                        inputmode="email"
+                        required
+                        autofocus
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="password">Şifrə</label>
+                    <input
+                        id="password"
+                        type="password"
+                        name="password"
+                        placeholder="••••••••"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <div class="row">
+                    <label class="remember">
+                        <input type="checkbox" name="remember">
+                        Məni xatırla
+                    </label>
+                </div>
+
+                <button type="submit">Daxil ol</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

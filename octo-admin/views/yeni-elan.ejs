@@ -1,0 +1,611 @@
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+            <!-- Tom Select üçün CSS -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<!-- Flatpickr üçün CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<!-- Flatpickr Azərbaycan dili -->
+<script src="https://npmcdn.com/flatpickr/dist/l10n/az.js"></script>
+
+<!-- Intl-tel-input üçün CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
+
+<style>
+    .autocomplete-items {
+        position: absolute;
+        border: 1px solid #d4d4d4;
+        border-bottom: none;
+        border-top: none;
+        z-index: 99;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #fff;
+        max-height: 250px;
+        overflow-y: auto;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        border-radius: 0 0 8px 8px;
+    }
+    .autocomplete-items div {
+        padding: 10px;
+        cursor: pointer;
+        background-color: #fff; 
+        border-bottom: 1px solid #d4d4d4; 
+        font-size: 0.9rem;
+    }
+    .autocomplete-items div:hover {
+        background-color: #f9fafb; 
+    }
+    .autocomplete-active {
+        background-color: #f97316 !important; 
+        color: #ffffff; 
+    }
+    .address-wrapper {
+        position: relative;
+    }
+</style>
+
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-bold" style="color: #1e293b;">Yeni yük elanı</h4>
+</div>
+
+<div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+    <div class="card-header bg-white border-bottom border-light pt-4 pb-3 px-4">
+        <p class="text-muted mb-0" style="font-size: 0.95rem;">
+            <i class="bi bi-info-circle text-primary me-1"></i> Formu saxladıqdan sonra elan yenidən <span class="badge bg-warning text-dark px-2">PENDING</span> statusuna düşəcək və admin təsdiqi gözləyəcək.
+        </p>
+    </div>
+    <div class="card-body p-4">
+        <form action="/dashboard/yeni-elan" method="POST" enctype="multipart/form-data">
+            
+            <h6 class="fw-bold mb-3 mt-2 text-dark" style="font-size: 1.1rem;">Əsas məlumatlar</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label text-muted fw-medium small mb-1">Elan başlığı <span class="text-danger">*</span></label>
+                    <input type="text" name="title" class="form-control form-control-lg focus-ring-orange" style="font-size: 0.95rem;" placeholder="Məs: Soyuduculu ərzaq yükü" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted fw-medium small mb-1">Yük növü <span class="text-danger">*</span></label>
+                    <select name="cargo_type" class="tom-select" style="font-size: 0.95rem;" required>
+                        <option value="">Növü seçin</option>
+                        <option value="Erzaq">Ərzaq</option>
+                        <option value="Tikinti">Tikinti materialı</option>
+                        <option value="Diger">Digər</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-muted fw-medium small mb-1">Təsvir <span class="text-danger">*</span></label>
+                    <textarea name="description" class="form-control focus-ring-orange" rows="3" placeholder="Yükünüz haqqında ətraflı məlumat verin..." required></textarea>
+                </div>
+            </div>
+
+            <hr class="border-light my-4">
+
+            <h6 class="fw-bold mb-3 text-dark" style="font-size: 1.1rem;">Çəki və Həcm</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">Çəki <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" name="weight" class="form-control focus-ring-orange" placeholder="Məs: 2000" required>
+                        <span class="input-group-text bg-light text-muted">kq</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">Say</label>
+                    <div class="input-group">
+                        <input type="number" name="quantity" class="form-control focus-ring-orange" placeholder="Məs: 20">
+                        <span class="input-group-text bg-light text-muted">ədəd</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">Həcm</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" name="volume_display" class="form-control bg-light focus-ring-orange" placeholder="Avtomatik" readonly>
+                        <span class="input-group-text bg-light text-muted">m³</span>
+                    </div>
+                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Uzunluq, en və hündürlük əsasında hesablanır.</small>
+                </div>
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">Uzunluq</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" name="length" id="calc_l" class="form-control calc-dim focus-ring-orange">
+                        <span class="input-group-text bg-light text-muted">m</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">En</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" name="width" id="calc_w" class="form-control calc-dim focus-ring-orange">
+                        <span class="input-group-text bg-light text-muted">m</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">Hündürlük</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" name="height" id="calc_h" class="form-control calc-dim focus-ring-orange">
+                        <span class="input-group-text bg-light text-muted">m</span>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-light my-4">
+
+            <h6 class="fw-bold mb-3 text-dark" style="font-size: 1.1rem;">Marşrut və Tarix</h6>
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3 border border-light h-100">
+                        <label class="form-label fw-bold text-primary mb-3"><i class="bi bi-geo-alt me-1"></i> Yükləmə yeri</label>
+                        <div class="row g-3">
+                            <div class="col-sm-5">
+                                <label class="form-label text-muted fw-medium small mb-1">Şəhər <span class="text-danger">*</span></label>
+                                <select name="loading_city" id="loading_city" class="tom-select" required>
+                                    <option value="">Şəhər seçin</option>
+                                    <option value="Bakı">Bakı</option>
+                                    <option value="Sumqayıt">Sumqayıt</option>
+                                    <option value="Gəncə">Gəncə</option>
+                                    <option value="Şirvan">Şirvan</option>
+                                    <option value="Mingəçevir">Mingəçevir</option>
+                                    <option value="Lənkəran">Lənkəran</option>
+                                    <option value="Xaçmaz">Xaçmaz</option>
+                                    <option value="Quba">Quba</option>
+                                    <option value="Qusar">Qusar</option>
+                                    <option value="Şəki">Şəki</option>
+                                    <option value="Qəbələ">Qəbələ</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-7">
+                                <label class="form-label text-muted fw-medium small mb-1">Ünvan <span class="text-danger">*</span></label>
+                                <div class="address-wrapper">
+                                    <input type="text" id="loading_address_input" name="loading_address" class="form-control focus-ring-orange" placeholder="Tam ünvanı daxil edin" required autocomplete="off">
+                                    <div id="loading_address_autocomplete" class="autocomplete-items" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3 border border-light h-100">
+                        <label class="form-label fw-bold text-danger mb-3"><i class="bi bi-geo-alt-fill me-1"></i> Boşaltma yeri</label>
+                        <div class="row g-3">
+                            <div class="col-sm-5">
+                                <label class="form-label text-muted fw-medium small mb-1">Şəhər <span class="text-danger">*</span></label>
+                                <select name="unloading_city" id="unloading_city" class="tom-select" required>
+                                    <option value="">Şəhər seçin</option>
+                                    <option value="Bakı">Bakı</option>
+                                    <option value="Sumqayıt">Sumqayıt</option>
+                                    <option value="Gəncə">Gəncə</option>
+                                    <option value="Şirvan">Şirvan</option>
+                                    <option value="Mingəçevir">Mingəçevir</option>
+                                    <option value="Lənkəran">Lənkəran</option>
+                                    <option value="Xaçmaz">Xaçmaz</option>
+                                    <option value="Quba">Quba</option>
+                                    <option value="Qusar">Qusar</option>
+                                    <option value="Şəki">Şəki</option>
+                                    <option value="Qəbələ">Qəbələ</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-7">
+                                <label class="form-label text-muted fw-medium small mb-1">Ünvan <span class="text-danger">*</span></label>
+                                <div class="address-wrapper">
+                                    <input type="text" id="unloading_address_input" name="unloading_address" class="form-control focus-ring-orange" placeholder="Tam ünvanı daxil edin" required autocomplete="off">
+                                    <div id="unloading_address_autocomplete" class="autocomplete-items" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">Yükləmə tarixi</label>
+                    <input type="date" name="loading_date" class="form-control flatpickr-date" placeholder="Tarix seçin">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">Ən gec götürülmə tarixi <span class="text-danger">*</span></label>
+                    <input type="date" name="latest_pickup_date" class="form-control flatpickr-date" required placeholder="Tarix seçin">
+                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Maksimum 30 gün</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">Yükləmə saatı</label>
+                    <input type="text" name="loading_time" class="form-control flatpickr-time" placeholder="Saat seçin">
+                </div>
+            </div>
+
+            <hr class="border-light my-4">
+
+            <h6 class="fw-bold mb-3 text-dark" style="font-size: 1.1rem;">Əlavə detallar</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">Tələb olunan nəqliyyat növü</label>
+                    <select name="transport_type" class="tom-select">
+                        <option value="">Fərq etməz</option>
+                        <option value="Tentli">Tentli</option>
+                        <option value="Soyuduculu">Soyuduculu</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">Təklif olunan qiymət</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" name="price" class="form-control focus-ring-orange" placeholder="Məbləğ">
+                        <span class="input-group-text bg-light text-muted">AZN</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-medium small mb-1">Əlaqə telefonu <span class="text-danger">*</span></label>
+                    <input type="tel" name="phone" id="phone_input" class="form-control focus-ring-orange" placeholder="Məs: +994505551020" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-muted fw-medium small mb-1">Əlavə qeydlər</label>
+                    <textarea name="notes" class="form-control focus-ring-orange" rows="2" placeholder="Sürücü üçün əlavə xüsusi qeydləriniz varsa yazın..."></textarea>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-light rounded-3 border border-light">
+                <h6 class="fw-bold mb-3 text-dark" style="font-size: 1rem;">Kömək və tələblər</h6>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label text-muted fw-medium small mb-1">Yükləmə ilə bağlı yardım</label>
+                        <select name="needs_loading_help" class="form-select focus-ring-orange">
+                            <option value="Xeyr">Xeyr</option>
+                            <option value="Bəli">Bəli</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted fw-medium small mb-1">Boşaltma ilə bağlı yardım</label>
+                        <select name="needs_unloading_help" class="form-select focus-ring-orange">
+                            <option value="Xeyr">Xeyr</option>
+                            <option value="Bəli">Bəli</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted fw-medium small mb-1">Faktura tələb olunur</label>
+                        <select name="requires_invoice" class="form-select focus-ring-orange">
+                            <option value="Xeyr">Xeyr</option>
+                            <option value="Bəli">Bəli</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted fw-medium small mb-1">Gediş-dönüş yük imkanı</label>
+                        <select name="round_trip" class="form-select focus-ring-orange">
+                            <option value="Xeyr">Xeyr</option>
+                            <option value="Bəli">Bəli</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-light my-4">
+
+            <h6 class="fw-bold mb-3 text-dark" style="font-size: 1.1rem;">Şəkillər</h6>
+            <div class="mb-5 bg-light p-4 rounded-3 border border-light border-dashed" id="dropZone" style="border-style: dashed !important; border-width: 2px !important; cursor: pointer; transition: all 0.2s ease;">
+                <p class="text-muted mb-3" style="font-size: 0.9rem;">Elanınıza şəkillər əlavə edin. İlk şəkil əsas cover kimi görünəcək. Şəkillər aydın və keyfiyyətli olmalıdır ki, sürücülər yükü daha yaxşı anlasın.</p>
+                
+                <div class="text-center p-4 mb-3 border bg-white rounded-3">
+                    <i class="bi bi-cloud-arrow-up text-primary" style="font-size: 2.5rem;"></i>
+                    <h6 class="mt-2 text-dark">Şəkilləri bura sürükləyin və ya klikləyin</h6>
+                    <small class="text-muted">Maksimum 10 şəkil, hər biri max 150 MB</small>
+                </div>
+
+                <input type="file" name="images" id="imageInput" multiple accept="image/*" style="display: none;">
+                
+                <!-- Seçilmiş şəkillərin siyahısı -->
+                <div id="previewContainer" class="d-flex flex-wrap gap-2 mt-3"></div>
+
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <div id="imageCount" class="badge bg-primary rounded-pill">0/10 şəkil</div>
+                    <button type="button" id="clearImagesBtn" class="btn btn-sm btn-outline-danger d-none">Hamısını sil</button>
+                </div>
+            </div>
+
+            <div class="d-flex gap-3 pt-2">
+                <button type="submit" class="btn btn-primary px-5 py-2" style="font-weight: 500; border-radius: 8px;">Yadda saxla</button>
+                <button type="reset" class="btn btn-light border px-4 py-2" style="font-weight: 500; border-radius: 8px;">Ləğv et</button>
+            </div>
+            
+            <style>
+                .focus-ring-orange:focus {
+                    border-color: var(--brand-orange) !important;
+                    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1) !important;
+                    outline: none;
+                }
+                .ts-control {
+                    padding: 0.375rem 0.75rem;
+                    border-radius: 0.375rem;
+                    border: 1px solid #dee2e6;
+                }
+                .ts-control.focus {
+                    border-color: var(--brand-orange) !important;
+                    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1) !important;
+                }
+                .iti {
+                    display: block;
+                }
+                .iti__flag-container {
+                    z-index: 10;
+                }
+            </style>
+
+        </form>
+    </div>
+</div>
+
+<!-- Tom Select JS -->
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<!-- Intl-tel-input JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Init Tom Select for Cities
+        document.querySelectorAll('.tom-select').forEach((el)=>{
+            let settings = {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            };
+            new TomSelect(el,settings);
+        });
+
+        // Init Flatpickr for Dates
+        flatpickr(".flatpickr-date", {
+            locale: "az",
+            dateFormat: "Y-m-d",
+        });
+
+        // Init Flatpickr for Time range
+        flatpickr(".flatpickr-time", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true
+        });
+
+        // Init Intl-Tel-Input
+        const phoneInputField = document.querySelector("#phone_input");
+        const phoneInput = window.intlTelInput(phoneInputField, {
+            initialCountry: "az",
+            preferredCountries: ["az", "tr", "ge", "ru"],
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+        });
+    });
+
+    // Həcm hesablama
+    document.querySelectorAll('.calc-dim').forEach(input => {
+        input.addEventListener('input', () => {
+            const l = parseFloat(document.getElementById('calc_l').value) || 0;
+            const w = parseFloat(document.getElementById('calc_w').value) || 0;
+            const h = parseFloat(document.getElementById('calc_h').value) || 0;
+            if(l > 0 && w > 0 && h > 0) {
+                document.querySelector('input[name="volume_display"]').value = (l * w * h).toFixed(2);
+            } else {
+                document.querySelector('input[name="volume_display"]').value = '';
+            }
+        });
+    });
+
+    // Drag and Drop & Şəkil sayı limiti
+    const dropZone = document.getElementById('dropZone');
+    const imageInput = document.getElementById('imageInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const imageCount = document.getElementById('imageCount');
+    const clearImagesBtn = document.getElementById('clearImagesBtn');
+
+    let selectedFiles = []; // Seçilmiş faylları tutacaq array
+
+    // Nominatim Address Autocomplete Logic
+    function setupAutocomplete(inputId, listId, citySelectId) {
+        const input = document.getElementById(inputId);
+        const list = document.getElementById(listId);
+        const citySelect = document.getElementById(citySelectId);
+        let currentFocus = -1;
+
+        input.addEventListener("input", function(e) {
+            const val = this.value;
+            const city = citySelect.value;
+            closeAllLists();
+            
+            if (!val || val.length < 3) return false;
+            if (!city) {
+                alert("Zəhmət olmasa əvvəlcə şəhəri seçin!");
+                return false;
+            }
+
+            currentFocus = -1;
+            
+            // OpenStreetMap Nominatim API request
+            const query = `${val}, ${city}, Azerbaijan`;
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        list.innerHTML = "";
+                        list.style.display = "block";
+                        
+                        data.forEach(item => {
+                            const div = document.createElement("div");
+                            // Highlight matching text roughly
+                            const regex = new RegExp(`(${val})`, "gi");
+                            let displayName = item.display_name.split(",").slice(0, 3).join(","); // Keep it short
+                            displayName = displayName.replace(regex, "<strong>$1</strong>");
+                            
+                            div.innerHTML = displayName;
+                            div.addEventListener("click", function(e) {
+                                // Extract road or suburb if available, otherwise just use the raw value
+                                let cleanAddress = item.address.road || item.address.suburb || item.address.neighbourhood || item.display_name.split(",")[0];
+                                input.value = cleanAddress;
+                                closeAllLists();
+                            });
+                            list.appendChild(div);
+                        });
+                    }
+                })
+                .catch(err => console.error("Autocomplete error:", err));
+        });
+
+        input.addEventListener("keydown", function(e) {
+            let x = document.getElementById(listId);
+            if (x) x = x.getElementsByTagName("div");
+            if (e.keyCode == 40) { // Down
+                currentFocus++;
+                addActive(x);
+            } else if (e.keyCode == 38) { // Up
+                currentFocus--;
+                addActive(x);
+            } else if (e.keyCode == 13) { // Enter
+                e.preventDefault();
+                if (currentFocus > -1) {
+                    if (x) x[currentFocus].click();
+                }
+            }
+        });
+
+        function addActive(x) {
+            if (!x) return false;
+            removeActive(x);
+            if (currentFocus >= x.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = (x.length - 1);
+            x[currentFocus].classList.add("autocomplete-active");
+        }
+
+        function removeActive(x) {
+            for (let i = 0; i < x.length; i++) {
+                x[i].classList.remove("autocomplete-active");
+            }
+        }
+
+        function closeAllLists(elmnt) {
+            if (elmnt != input) {
+                list.innerHTML = "";
+                list.style.display = "none";
+            }
+        }
+
+        document.addEventListener("click", function (e) {
+            closeAllLists(e.target);
+        });
+    }
+
+    // Initialize Autocomplete for both loading and unloading addresses
+    setupAutocomplete("loading_address_input", "loading_address_autocomplete", "loading_city");
+    setupAutocomplete("unloading_address_input", "unloading_address_autocomplete", "unloading_city");
+
+    // Klikləyəndə file input açılsın
+    dropZone.addEventListener('click', (e) => {
+        // Silme butonuna veya resimlere tiklaniyorsa inputu acma
+        if (e.target.closest('.remove-btn') || e.target.closest('img') || e.target.id === 'clearImagesBtn') return;
+        imageInput.click();
+    });
+
+    // Sürükləyib buraxmaq effektləri
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--brand-orange)';
+        dropZone.style.backgroundColor = 'rgba(249, 115, 22, 0.05)';
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#dee2e6'; // var(--bs-border-color)
+        dropZone.style.backgroundColor = '#f8f9fa'; // bg-light
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#dee2e6';
+        dropZone.style.backgroundColor = '#f8f9fa';
+        
+        if (e.dataTransfer.files.length > 0) {
+            handleFiles(Array.from(e.dataTransfer.files));
+        }
+    });
+
+    imageInput.addEventListener('change', function(e) {
+        if(this.files.length > 0) {
+            handleFiles(Array.from(this.files));
+        }
+    });
+
+    function handleFiles(files) {
+        // Sadece resimleri filtrele
+        const imageFiles = files.filter(file => file.type.startsWith('image/'));
+        
+        // Yeni secilenlerle beraber toplam sayiyi kontrol et
+        if (selectedFiles.length + imageFiles.length > 10) {
+            alert('Maksimum cəmi 10 şəkil əlavə edə bilərsiniz!');
+            // Sadece sigabilen kadarini al (opsiyonel, simdilik hepsini reddediyoruz)
+            return;
+        }
+
+        imageFiles.forEach(file => {
+            selectedFiles.push(file);
+        });
+
+        updateInputAndPreview();
+    }
+
+    function updateInputAndPreview() {
+        // Gorselleri goster
+        previewContainer.innerHTML = '';
+        
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                div.className = 'position-relative border rounded overflow-hidden shadow-sm';
+                div.style.width = '80px';
+                div.style.height = '80px';
+                
+                div.innerHTML = `
+                    <img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0 remove-btn" 
+                            style="width: 20px; height: 20px; border-radius: 0 0 0 4px; line-height: 1;"
+                            onclick="removeFile(${index})">
+                        &times;
+                    </button>
+                    ${index === 0 ? '<span class="badge bg-primary position-absolute bottom-0 start-0 w-100 rounded-0" style="font-size: 0.6rem;">Cover</span>' : ''}
+                `;
+                previewContainer.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Sayaci guncelle
+        imageCount.textContent = selectedFiles.length + '/10 şəkil';
+        
+        // Silme butonunu goster/gizle
+        if (selectedFiles.length > 0) {
+            clearImagesBtn.classList.remove('d-none');
+        } else {
+            clearImagesBtn.classList.add('d-none');
+        }
+
+        // Seçilen dosyaları input'a (DataTransfer yardımıyla) aktar ki forma submit edildiğinde gitsin
+        const dt = new DataTransfer();
+        selectedFiles.forEach(file => dt.items.add(file));
+        imageInput.files = dt.files;
+    }
+
+    // Global scope-a removeFile fonksiyonunu ekleyelim ki onClick çalisabilsin
+    window.removeFile = function(index) {
+        selectedFiles.splice(index, 1);
+        updateInputAndPreview();
+    };
+
+    clearImagesBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectedFiles = [];
+        updateInputAndPreview();
+    });
+</script>
+
+<%- include('partials/footer') %>

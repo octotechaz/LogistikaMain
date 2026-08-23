@@ -1,0 +1,6 @@
+export const PASSWORD_POLICY = {
+  minimumLength: 8,
+  minimumMessage: "Şifrə minimum 8 simvol olmalıdır.",
+  recommendation:
+    "Təhlükəsizlik üçün böyük və kiçik hərflər, rəqəmlər və simvollardan istifadə etməyiniz tövsiyə olunur."
+} as const;

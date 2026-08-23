@@ -1,0 +1,624 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CARRIER
+  CARGO_OWNER
+  DRIVER
+  DISPATCHER
+  OPERATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+  BLOCKED
+}
+
+enum DriverStatus {
+  ACTIVE
+  PENDING
+  BLOCKED
+}
+
+enum DispatcherStatus {
+  ACTIVE
+  PENDING
+  BLOCKED
+}
+
+enum VehicleStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CargoStatus {
+  ACTIVE
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+enum LoadStatus {
+  NEW
+  CHECKING
+  MATCHING
+  CONTACTING
+  WAITING_RESPONSE
+  DRIVER_ACCEPTED
+  DISPATCHER_ACCEPTED
+  PRICE_TOO_LOW
+  NEGOTIATION
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum ContactResponseStatus {
+  ACCEPTED
+  DECLINED
+  PRICE_TOO_LOW
+  NO_ANSWER
+  CALL_LATER
+}
+
+enum ContactChannel {
+  WHATSAPP
+  SMS
+  CALL
+}
+
+enum ImageCategory {
+  PROFILE
+  VEHICLE
+  VEHICLE_DOCUMENT
+  CARGO
+}
+
+enum NotificationType {
+  APPLICATION_CREATED
+  APPLICATION_ACCEPTED
+  APPLICATION_REJECTED
+  ADMIN_APPROVED
+  ADMIN_REJECTED
+  SYSTEM
+}
+
+enum ReviewTargetType {
+  CARRIER
+  CARGO_OWNER
+  DRIVER
+  DISPATCHER
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  REJECTED
+}
+
+model User {
+  id             String     @id @default(cuid())
+  legacySqliteId    Int?       @unique
+  firstName         String
+  lastName          String
+  phone             String     @unique
+  email             String     @unique
+  passwordHash      String
+  role              Role
+  companyName       String?
+  profileImage      String?
+  legacyVehicleType String?
+  legacyCapacity    Float?
+  status            UserStatus @default(ACTIVE)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  carrierProfile      CarrierProfile?
+  cargoOwnerProfile   CargoOwnerProfile?
+  driverProfile       DriverProfile?
+  dispatcherProfile   DispatcherProfile?
+  carrierVehicles     Vehicle[]            @relation("CarrierVehicles")
+  ownerCargoPosts     CargoPost[]          @relation("OwnerCargoPosts")
+  ownerLoads          Load[]               @relation("CargoOwnerLoads")
+  carrierApplications CargoApplication[]   @relation("CarrierApplications")
+  images              Image[]
+  notifications       Notification[]
+  reviewsWritten      Review[]             @relation("ReviewsWritten")
+  reviewsReceived     Review[]             @relation("ReviewsReceived")
+  complaintsFiled     Complaint[]          @relation("ComplaintsFiled")
+  complaintsReceived  Complaint[]          @relation("ComplaintsReceived")
+  adminLogs           AdminLog[]           @relation("AdminLogs")
+  operatorLogs        OperatorLog[]        @relation("OperatorLogs")
+  contactAttempts     LoadContactAttempt[] @relation("OperatorContactAttempts")
+  operatorLoads       Load[]               @relation("LoadOperator")
+
+  @@index([role])
+  @@index([status])
+}
+
+model CarrierProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  bio                 String?
+  rating              Float    @default(0)
+  whatsappPhone       String?
+  vehicleType         String?
+  supportedCargoTypes String[] @default([])
+  cargoSpaceVolumeM3  Float?
+  maxWeightTons       Float?
+  locationAddress     String?
+  locationLabel       String?
+  locationLat         Float?
+  locationLng         Float?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicles     Vehicle[]
+  applications CargoApplication[]
+
+  @@index([vehicleType])
+}
+
+model CargoOwnerProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  companyName String?
+  voen        String?
+  city        String?
+  rating      Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cargoPosts CargoPost[]
+  loads      Load[]
+  reviews    Review[]    @relation("CargoOwnerReviews")
+}
+
+model DriverProfile {
+  id                     String       @id @default(cuid())
+  userId                 String       @unique
+  whatsappPhone          String
+  city                   String
+  vehicleType            String
+  brand                  String
+  model                  String
+  plateNumber            String       @unique
+  capacityTons           Float
+  bodyLength             Float
+  bodyWidth              Float
+  bodyHeight             Float
+  workingDays            String[]
+  workingHours           String
+  routes                 String[]
+  notificationChannels   String[]
+  consentToReceiveOffers Boolean      @default(true)
+  activityScore          Int          @default(0)
+  status                 DriverStatus @default(ACTIVE)
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contactAttempts LoadContactAttempt[]
+  assignedLoads   Load[]               @relation("AssignedDriverLoads")
+  reviews         Review[]             @relation("DriverReviews")
+
+  @@index([vehicleType])
+  @@index([status])
+  @@index([activityScore])
+}
+
+model DispatcherProfile {
+  id            String           @id @default(cuid())
+  userId        String           @unique
+  whatsappPhone String
+  companyName   String
+  vehicleCount  Int
+  vehicleTypes  String[]
+  routes        String[]
+  note          String?
+  activityScore Int              @default(0)
+  status        DispatcherStatus @default(ACTIVE)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contactAttempts LoadContactAttempt[]
+  assignedLoads   Load[]               @relation("AssignedDispatcherLoads")
+  reviews         Review[]             @relation("DispatcherReviews")
+
+  @@index([status])
+  @@index([activityScore])
+}
+
+model Vehicle {
+  id                String        @id @default(cuid())
+  carrierId         String
+  carrierProfileId  String
+  vehicleType       String
+  brand             String
+  model             String
+  plateNumber       String        @unique
+  driverFirstName   String
+  driverLastName    String
+  driverPhone       String
+  capacityTons      Float
+  bodyLength        Float
+  bodyWidth         Float
+  bodyHeight        Float
+  overallDimensions String
+  workDays          String[]
+  workHours         String
+  serviceAreas      String[]
+  status            VehicleStatus @default(PENDING)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  carrier        User               @relation("CarrierVehicles", fields: [carrierId], references: [id], onDelete: Cascade)
+  carrierProfile CarrierProfile     @relation(fields: [carrierProfileId], references: [id], onDelete: Cascade)
+  images         Image[]
+  applications   CargoApplication[]
+
+  @@index([carrierId])
+  @@index([carrierProfileId])
+  @@index([status])
+  @@index([vehicleType])
+}
+
+model CargoPost {
+  id                  String      @id @default(cuid())
+  legacySqliteId      Int?        @unique
+  ownerId             String
+  cargoOwnerProfileId String
+  cargoName           String
+  cargoType           String
+  description         String
+  weight              Float
+  volume              Float?
+  length              Float?
+  width               Float?
+  height              Float?
+  quantity            String?
+  pickupAddress       String
+  deliveryAddress     String
+  pickupCity          String
+  deliveryCity        String
+  pickupDate          DateTime
+  requiredVehicleType String
+  proposedPrice       Decimal?    @db.Decimal(12, 2)
+  priceNegotiable     Boolean     @default(false)
+  contactPhone        String
+  needsLoadingHelp    String?
+  needsUnloadingHelp  String?
+  requiresInvoice     String?
+  roundTrip           String?
+  legacyPickupTime    String?
+  legacyNote          String?
+  categoryId          String?
+  lastEditedAt        DateTime?
+  editSnapshot        Json?
+  legacyViewCount     Int         @default(0)
+  legacyAdminStatus   String      @default("PENDING")
+  status              CargoStatus @default(CANCELLED)
+  pickupDeadlineDate  DateTime?
+  expiresAt           DateTime?
+  deactivatedAt       DateTime?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  owner             User               @relation("OwnerCargoPosts", fields: [ownerId], references: [id], onDelete: Cascade)
+  cargoOwnerProfile CargoOwnerProfile  @relation(fields: [cargoOwnerProfileId], references: [id], onDelete: Cascade)
+  applications      CargoApplication[]
+  images            Image[]
+
+  @@index([ownerId])
+  @@index([cargoOwnerProfileId])
+  @@index([status])
+  @@index([pickupCity])
+  @@index([deliveryCity])
+  @@index([requiredVehicleType])
+  @@index([expiresAt])
+}
+
+model CargoApplication {
+  id               String            @id @default(cuid())
+  cargoPostId      String
+  carrierId        String
+  carrierProfileId String
+  vehicleId        String
+  message          String?
+  offeredPrice     Decimal?          @db.Decimal(12, 2)
+  status           ApplicationStatus @default(PENDING)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  cargoPost      CargoPost      @relation(fields: [cargoPostId], references: [id], onDelete: Cascade)
+  carrier        User           @relation("CarrierApplications", fields: [carrierId], references: [id], onDelete: Cascade)
+  carrierProfile CarrierProfile @relation(fields: [carrierProfileId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+
+  @@unique([cargoPostId, carrierId])
+  @@index([carrierId])
+  @@index([status])
+  @@index([vehicleId])
+}
+
+model Image {
+  id             String        @id @default(cuid())
+  legacySqliteId Int?          @unique
+  url            String
+  alt            String?
+  mimeType       String?
+  size           Int?
+  category       ImageCategory
+  userId         String?
+  vehicleId      String?
+  cargoPostId    String?
+  loadId         String?
+  createdAt      DateTime      @default(now())
+
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle   Vehicle?   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  cargoPost CargoPost? @relation(fields: [cargoPostId], references: [id], onDelete: Cascade)
+  load      Load?      @relation(fields: [loadId], references: [id], onDelete: Cascade)
+
+  @@index([category])
+  @@index([userId])
+  @@index([vehicleId])
+  @@index([cargoPostId])
+  @@index([loadId])
+}
+
+model Load {
+  id                   String     @id @default(cuid())
+  cargoOwnerId         String
+  cargoOwnerProfileId  String
+  title                String
+  cargoType            String
+  description          String
+  weight               Float
+  volume               Float?
+  length               Float?
+  width                Float?
+  height               Float?
+  quantity             String?
+  pickupCity           String
+  deliveryCity         String
+  pickupAddress        String
+  deliveryAddress      String
+  pickupDate           DateTime
+  pickupTime           String?
+  requiredVehicleType  String
+  priceFrom            Decimal?   @db.Decimal(12, 2)
+  priceTo              Decimal?   @db.Decimal(12, 2)
+  isNegotiable         Boolean    @default(false)
+  contactPhone         String
+  note                 String?
+  status               LoadStatus @default(NEW)
+  operatorNote         String?
+  operatorId           String?
+  assignedDriverId     String?
+  assignedDispatcherId String?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  cargoOwner         User                 @relation("CargoOwnerLoads", fields: [cargoOwnerId], references: [id], onDelete: Cascade)
+  cargoOwnerProfile  CargoOwnerProfile    @relation(fields: [cargoOwnerProfileId], references: [id], onDelete: Cascade)
+  operator           User?                @relation("LoadOperator", fields: [operatorId], references: [id], onDelete: SetNull)
+  assignedDriver     DriverProfile?       @relation("AssignedDriverLoads", fields: [assignedDriverId], references: [id], onDelete: SetNull)
+  assignedDispatcher DispatcherProfile?   @relation("AssignedDispatcherLoads", fields: [assignedDispatcherId], references: [id], onDelete: SetNull)
+  contactAttempts    LoadContactAttempt[]
+  operatorLogs       OperatorLog[]
+  images             Image[]
+  reviews            Review[]
+
+  @@index([cargoOwnerId])
+  @@index([cargoOwnerProfileId])
+  @@index([status])
+  @@index([operatorId])
+  @@index([pickupCity])
+  @@index([deliveryCity])
+  @@index([requiredVehicleType])
+}
+
+model LoadContactAttempt {
+  id             String                 @id @default(cuid())
+  loadId         String
+  operatorId     String?
+  driverId       String?
+  dispatcherId   String?
+  channel        ContactChannel
+  responseStatus ContactResponseStatus?
+  messageText    String
+  note           String?
+  createdAt      DateTime               @default(now())
+
+  load       Load               @relation(fields: [loadId], references: [id], onDelete: Cascade)
+  operator   User?              @relation("OperatorContactAttempts", fields: [operatorId], references: [id], onDelete: SetNull)
+  driver     DriverProfile?     @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  dispatcher DispatcherProfile? @relation(fields: [dispatcherId], references: [id], onDelete: SetNull)
+
+  @@index([loadId])
+  @@index([operatorId])
+  @@index([driverId])
+  @@index([dispatcherId])
+  @@index([channel])
+}
+
+model OperatorLog {
+  id         String   @id @default(cuid())
+  operatorId String?
+  loadId     String?
+  action     String
+  note       String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  operator User? @relation("OperatorLogs", fields: [operatorId], references: [id], onDelete: SetNull)
+  load     Load? @relation(fields: [loadId], references: [id], onDelete: Cascade)
+
+  @@index([operatorId])
+  @@index([loadId])
+  @@index([action])
+}
+
+model NotificationTemplate {
+  id        String   @id @default(cuid())
+  type      String   @unique
+  title     String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType @default(SYSTEM)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model Review {
+  id           String            @id @default(cuid())
+  loadId       String?
+  cargoOwnerId String?
+  driverId     String?
+  dispatcherId String?
+  reviewerId   String?
+  revieweeId   String?
+  cargoPostId  String?
+  rating       Int
+  comment      String?
+  targetType   ReviewTargetType?
+  createdAt    DateTime          @default(now())
+
+  load       Load?              @relation(fields: [loadId], references: [id], onDelete: Cascade)
+  cargoOwner CargoOwnerProfile? @relation("CargoOwnerReviews", fields: [cargoOwnerId], references: [id], onDelete: SetNull)
+  driver     DriverProfile?     @relation("DriverReviews", fields: [driverId], references: [id], onDelete: SetNull)
+  dispatcher DispatcherProfile? @relation("DispatcherReviews", fields: [dispatcherId], references: [id], onDelete: SetNull)
+  reviewer   User?              @relation("ReviewsWritten", fields: [reviewerId], references: [id], onDelete: SetNull)
+  reviewee   User?              @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: SetNull)
+
+  @@index([loadId])
+  @@index([cargoOwnerId])
+  @@index([driverId])
+  @@index([dispatcherId])
+  @@index([revieweeId])
+  @@index([targetType])
+}
+
+model Complaint {
+  id          String          @id @default(cuid())
+  reporterId  String
+  accusedId   String?
+  cargoPostId String?
+  reason      String
+  description String
+  status      ComplaintStatus @default(OPEN)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  reporter User  @relation("ComplaintsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  accused  User? @relation("ComplaintsReceived", fields: [accusedId], references: [id], onDelete: SetNull)
+
+  @@index([reporterId])
+  @@index([accusedId])
+  @@index([status])
+}
+
+model AdminLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  admin User @relation("AdminLogs", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([entityType])
+}
+
+model AppSetting {
+  key       String   @id
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PublicCategory {
+  id               String   @id @default(cuid())
+  legacySqliteId   String   @unique
+  label            String
+  iconKey          String
+  iconTone         String   @default("text-slate-500")
+  matchCargoType   String?
+  matchVehicleType String?
+  matchKeyword     String?
+  sortOrder        Int      @default(0)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+enum MatchNotificationStatus {
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum MatchNotificationChannel {
+  WHATSAPP
+}
+
+/// A single WhatsApp notification sent to a driver for a matching cargo post.
+/// Helps deduplicate (unique cargoPostId+driverId) and log send status/failures.
+model CargoMatchNotification {
+  id          String                  @id @default(cuid())
+  cargoPostId String
+  driverId    String
+  score       Int
+  channel     MatchNotificationChannel @default(WHATSAPP)
+  status      MatchNotificationStatus  @default(SENT)
+  messageText String?
+  error       String?
+  sentAt      DateTime?
+  createdAt   DateTime                @default(now())
+
+  @@unique([cargoPostId, driverId])
+  @@index([cargoPostId])
+  @@index([driverId])
+  @@index([status])
+  @@index([sentAt])
+}

@@ -1,0 +1,189 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-bold" style="color: #1e293b;">Filter Ayarları</h4>
+</div>
+
+<% if (saved) { %>
+    <div class="alert alert-success mb-4"><i class="bi bi-check-circle-fill me-2"></i>Dəyişikliklər uğurla saxlandı.</div>
+<% } %>
+<% if (error) { %>
+    <div class="alert alert-danger mb-4"><i class="bi bi-exclamation-triangle-fill me-2"></i>Saxlama zamanı xəta baş verdi.</div>
+<% } %>
+
+<ul class="nav nav-tabs mb-4" id="filterTabs">
+    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-cities">Şəhərlər</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-cargo">Yük növləri</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-vehicle">Nəqliyyat növləri</a></li>
+</ul>
+
+<form method="POST" action="/dashboard/filter-ayarlari" id="filterForm">
+    <input type="hidden" name="cities_json" id="cities_json" value="<%= JSON.stringify(filters.cities) %>">
+    <input type="hidden" name="cargo_types_json" id="cargo_types_json" value="<%= JSON.stringify(filters.cargoTypes) %>">
+    <input type="hidden" name="vehicle_types_json" id="vehicle_types_json" value="<%= JSON.stringify(filters.vehicleTypes) %>">
+
+    <div class="tab-content">
+
+        <!-- Şəhərlər -->
+        <div class="tab-pane fade show active" id="tab-cities">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius:12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-geo-alt me-2 text-primary"></i>Şəhər siyahısı</h6>
+                    <div id="cities-list" class="mb-3"></div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="addItem('cities')">
+                        <i class="bi bi-plus-circle me-1"></i>Şəhər əlavə et
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yük növləri -->
+        <div class="tab-pane fade" id="tab-cargo">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius:12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-box me-2 text-warning"></i>Yük növü siyahısı</h6>
+                    <div id="cargo-list" class="mb-3"></div>
+                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="addItem('cargo')">
+                        <i class="bi bi-plus-circle me-1"></i>Yük növü əlavə et
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nəqliyyat növləri -->
+        <div class="tab-pane fade" id="tab-vehicle">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius:12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-truck me-2 text-success"></i>Nəqliyyat növü siyahısı</h6>
+                    <div id="vehicle-list" class="mb-3"></div>
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="addItem('vehicle')">
+                        <i class="bi bi-plus-circle me-1"></i>Nəqliyyat növü əlavə et
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-3 d-flex gap-3 align-items-center">
+        <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius:8px;">
+            <i class="bi bi-save me-2"></i>Saxla
+        </button>
+        <span class="text-muted small">Dəyişikliklər dərhal sayta tətbiq olunur</span>
+    </div>
+</form>
+
+<style>
+.filter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    animation: fadeIn 0.15s ease;
+}
+.filter-item input {
+    flex: 1;
+    border-radius: 8px;
+}
+.filter-item .drag-handle {
+    cursor: grab;
+    color: #94a3b8;
+    font-size: 18px;
+    padding: 0 4px;
+}
+.filter-item .drag-handle:active { cursor: grabbing; }
+.filter-item.dragging { opacity: 0.4; }
+.filter-item.drag-over { border-top: 2px solid #f97316; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+const DATA = {
+    cities: <%- JSON.stringify(filters.cities) %>,
+    cargo: <%- JSON.stringify(filters.cargoTypes) %>,
+    vehicle: <%- JSON.stringify(filters.vehicleTypes) %>
+};
+
+const CONTAINERS = { cities: 'cities-list', cargo: 'cargo-list', vehicle: 'vehicle-list' };
+const HIDDEN = { cities: 'cities_json', cargo: 'cargo_types_json', vehicle: 'vehicle_types_json' };
+
+function getItems(type) {
+    return Array.from(document.querySelectorAll(`#${CONTAINERS[type]} .filter-item input`)).map(i => i.value.trim()).filter(Boolean);
+}
+
+function syncHidden(type) {
+    document.getElementById(HIDDEN[type]).value = JSON.stringify(getItems(type));
+}
+
+function renderItem(type, value, idx) {
+    const div = document.createElement('div');
+    div.className = 'filter-item';
+    div.draggable = true;
+    div.dataset.idx = idx;
+
+    div.innerHTML = `
+        <span class="drag-handle bi bi-grip-vertical"></span>
+        <input type="text" class="form-control form-control-sm" value="${escHtml(value)}" placeholder="Dəyər daxil edin...">
+        <button type="button" class="btn btn-outline-danger btn-sm" style="border-radius:8px;min-width:36px;" onclick="removeItem(this)">
+            <i class="bi bi-trash"></i>
+        </button>
+    `;
+
+    div.querySelector('input').addEventListener('input', () => syncHidden(type));
+
+    // Drag & drop
+    div.addEventListener('dragstart', e => { e.dataTransfer.effectAllowed = 'move'; div.classList.add('dragging'); window._dragSrc = div; window._dragType = type; });
+    div.addEventListener('dragend', () => { div.classList.remove('dragging'); document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('drag-over')); });
+    div.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; div.classList.add('drag-over'); });
+    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+    div.addEventListener('drop', e => {
+        e.preventDefault();
+        div.classList.remove('drag-over');
+        if (window._dragSrc && window._dragSrc !== div && window._dragType === type) {
+            const container = document.getElementById(CONTAINERS[type]);
+            const items = Array.from(container.children);
+            const srcIdx = items.indexOf(window._dragSrc);
+            const tgtIdx = items.indexOf(div);
+            if (srcIdx < tgtIdx) container.insertBefore(window._dragSrc, div.nextSibling);
+            else container.insertBefore(window._dragSrc, div);
+            syncHidden(type);
+        }
+    });
+
+    return div;
+}
+
+function renderAll(type, items) {
+    const container = document.getElementById(CONTAINERS[type]);
+    container.innerHTML = '';
+    items.forEach((v, i) => container.appendChild(renderItem(type, v, i)));
+    syncHidden(type);
+}
+
+function addItem(type) {
+    const container = document.getElementById(CONTAINERS[type]);
+    const div = renderItem(type, '', container.children.length);
+    container.appendChild(div);
+    div.querySelector('input').focus();
+    syncHidden(type);
+}
+
+function removeItem(btn) {
+    const item = btn.closest('.filter-item');
+    const container = item.parentElement;
+    const type = Object.keys(CONTAINERS).find(k => CONTAINERS[k] === container.id);
+    item.remove();
+    syncHidden(type);
+}
+
+function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Init
+renderAll('cities', DATA.cities);
+renderAll('cargo', DATA.cargo);
+renderAll('vehicle', DATA.vehicle);
+</script>
+
+<%- include('partials/footer') %>

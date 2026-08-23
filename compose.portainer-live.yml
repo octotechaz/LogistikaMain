@@ -1,0 +1,126 @@
+services:
+  postgres:
+    image: postgres:16.6
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_DB: ${POSTGRES_DB:?required}
+    volumes:
+      - /datastore/logistika/postgres-16-v2:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - logistika-internal
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Do NOT set a public image name like logistika-app:latest — Portainer
+    # "Pull and redeploy" would try Docker Hub and fail with pull access denied.
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    command: ["node", "scripts/production-boot.mjs"]
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      PORT: "3001"
+      POSTGRES_USER: ${POSTGRES_USER:?required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_DB: ${POSTGRES_DB:?required}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?required}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?required}
+      SESSION_SECRET: ${SESSION_SECRET:?required}
+      PUBLIC_SITE_HOST: ${PUBLIC_SITE_HOST:?required}
+      PORTAL_HOST: ${PORTAL_HOST:?required}
+      ADMIN_HOST: ${ADMIN_HOST:?required}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:?required}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:?required}
+      CORS_ORIGIN: ${CORS_ORIGIN:?required}
+      INTERNAL_ADMIN_URL: http://127.0.0.1:3005
+      INTERNAL_BACKEND_URL: http://127.0.0.1:4001
+      OCTO_ADMIN_HOST: 127.0.0.1
+      OCTO_ADMIN_PORT: "3005"
+      BACKEND_HOST: 127.0.0.1
+      BACKEND_PORT: "4001"
+      UPLOAD_DIR: /app/public/uploads
+      PUBLIC_LISTINGS_SQLITE_PATH: /app/data/public-listings.sqlite
+      OCTO_ADMIN_SQLITE_PATH: /app/octo-admin/data/cargo.db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - /datastore/logistika/uploads:/app/octo-admin/uploads
+      - /datastore/logistika/uploads:/app/public/uploads
+      - /datastore/logistika/data:/app/octo-admin/data
+      - /datastore/logistika/data:/app/data
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+      - /home/node
+    healthcheck:
+      test: ["CMD", "node", "scripts/container-healthcheck.mjs"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - octobot-net
+      - logistika-internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=octobot-net
+      # Cloudflare must use Full/Full (strict) so the origin redirect does not loop.
+      - traefik.http.middlewares.tranzit-force-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.tranzit-force-https.redirectscheme.permanent=true
+      # All public hosts hit Next (:3001). Admin UI is proxied to octo-admin
+      # on 127.0.0.1:3005 via next.config rewrites (/dashboard, /octo-admin).
+      # Routing admin Host directly to :3005 caused Cloudflare 502 when
+      # octo-admin was still starting or briefly unavailable.
+      - traefik.http.services.tranzit-next.loadbalancer.server.port=3001
+
+      # HTTP :80 — redirect to HTTPS before reaching the application.
+      - traefik.http.routers.tranzit-main-http.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
+      - traefik.http.routers.tranzit-main-http.entrypoints=web
+      - traefik.http.routers.tranzit-main-http.middlewares=tranzit-force-https
+      - traefik.http.routers.tranzit-main-http.service=noop@internal
+      - traefik.http.routers.tranzit-portal-http.rule=Host(`portal.tranzit.az`)
+      - traefik.http.routers.tranzit-portal-http.entrypoints=web
+      - traefik.http.routers.tranzit-portal-http.middlewares=tranzit-force-https
+      - traefik.http.routers.tranzit-portal-http.service=noop@internal
+      - traefik.http.routers.tranzit-admin-http.rule=Host(`admin.tranzit.az`)
+      - traefik.http.routers.tranzit-admin-http.entrypoints=web
+      - traefik.http.routers.tranzit-admin-http.middlewares=tranzit-force-https
+      - traefik.http.routers.tranzit-admin-http.service=noop@internal
+
+      # HTTPS :443 — Cloudflare Full / direct TLS
+      - traefik.http.routers.tranzit-main-https.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
+      - traefik.http.routers.tranzit-main-https.entrypoints=websecure
+      - traefik.http.routers.tranzit-main-https.tls=true
+      - traefik.http.routers.tranzit-main-https.tls.certresolver=letsencrypt
+      - traefik.http.routers.tranzit-main-https.service=tranzit-next
+      - traefik.http.routers.tranzit-portal-https.rule=Host(`portal.tranzit.az`)
+      - traefik.http.routers.tranzit-portal-https.entrypoints=websecure
+      - traefik.http.routers.tranzit-portal-https.tls=true
+      - traefik.http.routers.tranzit-portal-https.tls.certresolver=letsencrypt
+      - traefik.http.routers.tranzit-portal-https.service=tranzit-next
+      - traefik.http.routers.tranzit-admin-https.rule=Host(`admin.tranzit.az`)
+      - traefik.http.routers.tranzit-admin-https.entrypoints=websecure
+      - traefik.http.routers.tranzit-admin-https.tls=true
+      - traefik.http.routers.tranzit-admin-https.tls.certresolver=letsencrypt
+      - traefik.http.routers.tranzit-admin-https.service=tranzit-next
+
+networks:
+  octobot-net:
+    external: true
+    name: octobot-net
+  logistika-internal:
+    name: logistika-internal
+    internal: true
