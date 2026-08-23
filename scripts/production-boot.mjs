@@ -4,7 +4,8 @@
  * Avoids empty DATABASE_URL when shell $(...) swallows a failed command.
  */
 import { spawnSync } from "node:child_process";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, existsSync } from "node:fs";
+import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 
 function fail(message) {
@@ -65,6 +66,80 @@ for (const dir of [
   }
 }
 
+async function ensureSqliteDatabases() {
+  const sqlitePath = process.env.PUBLIC_LISTINGS_SQLITE_PATH ||
+    path.join(process.cwd(), "data", "public-listings.sqlite");
+
+  console.log(`Ensuring SQLite database at: ${sqlitePath}`);
+
+  try {
+    const { DatabaseSync } = await import("node:sqlite");
+    const db = new DatabaseSync(sqlitePath);
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS public_listings (
+        id TEXT PRIMARY KEY,
+        owner_id TEXT NOT NULL,
+        owner_name TEXT NOT NULL,
+        owner_phone TEXT NOT NULL,
+        title TEXT NOT NULL,
+        cargo_type TEXT NOT NULL,
+        description TEXT NOT NULL,
+        weight REAL NOT NULL,
+        volume REAL,
+        length REAL,
+        width REAL,
+        height REAL,
+        quantity TEXT,
+        pickup_city TEXT NOT NULL,
+        pickup_address TEXT NOT NULL,
+        delivery_city TEXT NOT NULL,
+        delivery_address TEXT NOT NULL,
+        pickup_date TEXT,
+        pickup_deadline_date TEXT,
+        pickup_time TEXT,
+        vehicle_type TEXT,
+        price REAL,
+        note TEXT,
+        created_at TEXT NOT NULL,
+        approved_at TEXT,
+        expires_at TEXT,
+        status TEXT NOT NULL DEFAULT 'ACTIVE',
+        image_url TEXT,
+        image_urls TEXT
+      )
+    `);
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS public_categories (
+        id TEXT PRIMARY KEY,
+        label TEXT NOT NULL,
+        label_translations TEXT,
+        icon_key TEXT NOT NULL,
+        icon_tone TEXT NOT NULL DEFAULT 'text-slate-500',
+        match_cargo_type TEXT,
+        match_vehicle_type TEXT,
+        match_keyword TEXT,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        is_active INTEGER NOT NULL DEFAULT 1
+      )
+    `);
+
+    const cols = db.prepare("PRAGMA table_info(public_categories)").all();
+    const hasLabelTranslations = cols.some((c) => c.name === "label_translations");
+    if (!hasLabelTranslations) {
+      console.log("Adding label_translations column to public_categories...");
+      db.exec(`ALTER TABLE public_categories ADD COLUMN label_translations TEXT`);
+    }
+
+    db.close();
+    console.log("SQLite databases ready.");
+  } catch (err) {
+    console.error("SQLite ensure failed:", err);
+    process.exit(1);
+  }
+}
+
 const databaseUrl = buildDatabaseUrl();
 const env = { ...process.env, DATABASE_URL: databaseUrl };
 
@@ -97,6 +172,8 @@ function ensureCargoPostEditTrackingColumns() {
       process.exit(1);
     });
 }
+
+await ensureSqliteDatabases();
 
 console.log(
   `DB target: ${process.env.POSTGRES_USER}@postgres:5432/${process.env.POSTGRES_DB}`
