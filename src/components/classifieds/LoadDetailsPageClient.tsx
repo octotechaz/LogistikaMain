@@ -57,6 +57,7 @@ import {
 import { effectiveStatus } from "@/lib/status/classifieds";
 import { cn } from "@/lib/utils";
 import type { CargoListing } from "@/types/classifieds";
+import { useLocale } from "@/hooks/useLocale";
 
 function numericIdFromListingId(id: string) {
   // Eğer id direkt sqlite ID'si ise (örn: '1', '2' gibi sayılar) başa 56 koyup 6 haneli yapalım
@@ -111,6 +112,7 @@ function DetailFactItem({
 }
 
 export function LoadDetailsPageClient({ id }: { id: string }) {
+  const { t } = useLocale();
   const { user: currentApiUser, legacyUser, isLoading: isAuthLoading } = useApiAuthUser();
   const isAuthorized = !!(currentApiUser || legacyUser);
   const [sqliteListing, setSqliteListing] = useState<CargoListing | null | undefined>(undefined);
@@ -189,7 +191,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
       <PublicPage emphasizeBackground>
         <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-4">
           <LoaderCircle className="h-10 w-10 animate-spin text-logistics-orange" />
-          <p className="text-lg font-medium text-slate-500">Məlumatlar yüklənir...</p>
+          <p className="text-lg font-medium text-slate-500">{t("ld_loading", "Məlumatlar yüklənir...")}</p>
         </div>
       </PublicPage>
     );
@@ -200,9 +202,9 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
       <PublicPage emphasizeBackground>
         <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="surface-panel p-10 text-center">
-            <h1 className="text-2xl font-bold text-navy-900">Elan tapılmadı</h1>
+            <h1 className="text-2xl font-bold text-navy-900">{t("ld_not_found", "Elan tapılmadı")}</h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Elan silinmiş ola bilər və ya public görünüşdən çıxarılıb.
+              {t("ld_not_found_desc", "Elan silinmiş ola bilər və ya public görünüşdən çıxarılıb.")}
             </p>
           </div>
         </section>
@@ -212,32 +214,22 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
 
     const detailId = numericIdFromListingId(listing.id);
   const ownerDisplayName =
-    (listing.ownerName && listing.ownerName !== "Kargo Yük Sahibi" ? listing.ownerName : "İstifadəçi");
+    (listing.ownerName && listing.ownerName !== "Kargo Yük Sahibi" ? listing.ownerName : t("ld_default_user", "İstifadəçi"));
   const ownerListingHref = `/?search=${encodeURIComponent(listing.ownerPhone || '')}`;
 
   const getMembershipDuration = (createdAt?: string) => {
-    if (!createdAt) return "Yeni istifadəçi";
+    if (!createdAt) return t("ld_new_user", "Yeni istifadəçi");
     try {
       const createdDate = new Date(createdAt);
       const now = new Date();
-      
       let years = now.getFullYear() - createdDate.getFullYear();
       let months = now.getMonth() - createdDate.getMonth();
-      
-      if (months < 0) {
-        years--;
-        months += 12;
-      }
-      
-      if (years > 0) {
-        return `İstifadəçi ${years} ildən çoxdur platformadadır`;
-      } else if (months > 0) {
-        return `İstifadəçi ${months} aydır platformadadır`;
-      } else {
-        return "Yeni istifadəçi";
-      }
+      if (months < 0) { years--; months += 12; }
+      if (years > 0) return t("ld_member_years", `İstifadəçi ${years} ildən çoxdur platformadadır`).replace("{n}", String(years));
+      if (months > 0) return t("ld_member_months", `İstifadəçi ${months} aydır platformadadır`).replace("{n}", String(months));
+      return t("ld_new_user", "Yeni istifadəçi");
     } catch {
-      return "Yeni istifadəçi";
+      return t("ld_new_user", "Yeni istifadəçi");
     }
   };
   
@@ -269,16 +261,16 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
       <section className="mx-auto max-w-[1680px] px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center gap-2 text-[0.95rem] text-slate-500">
           <Link href="/" className="transition hover:text-navy-900">
-            Ana səhifə
+            {t("ld_breadcrumb_home", "Ana səhifə")}
           </Link>
           <span>›</span>
           <Link href="/loads" className="transition hover:text-navy-900">
-            Elanlar
+            {t("ld_breadcrumb_listings", "Elanlar")}
           </Link>
           <span>›</span>
-          <span>Yüklər</span>
+          <span>{t("ld_breadcrumb_loads", "Yüklər")}</span>
           <span>›</span>
-          <span>Quru yük</span>
+          <span>{t("ld_breadcrumb_dry", "Quru yük")}</span>
           <span>›</span>
           <span className="text-navy-900">
             {listing.pickupCity} → {listing.deliveryCity}
@@ -320,7 +312,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
             <div className="grow rounded-[14px] border border-slate-200 bg-white px-4 py-2.5 text-[0.96rem] font-semibold text-slate-600 sm:grow-0">
               <span className="inline-flex items-center gap-2">
                 <Eye className="h-4 w-4" />
-                {views} baxış
+                {views} {t("ld_views", "baxış")}
               </span>
             </div>
             <FavoriteToggleButton
@@ -387,7 +379,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                                 {index === 2 && extraCount > 0 ? (
                                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-center text-white">
                                     <span className="text-3xl font-bold">+{extraCount}</span>
-                                    <span className="mt-1 text-sm font-semibold">daha çox</span>
+                                    <span className="mt-1 text-sm font-semibold">{t("ld_more", "daha çox")}</span>
                                   </div>
                                 ) : null}
                               </button>
@@ -414,7 +406,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
             </div>
 
             <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)] mb-6">
-              <h2 className="text-xl font-bold text-navy-900 mb-4">Xəritədə marşrut</h2>
+              <h2 className="text-xl font-bold text-navy-900 mb-4">{t("ld_map_title", "Xəritədə marşrut")}</h2>
               <RouteMap 
                 fromCity={listing.pickupCity} 
                 fromAddress={listing.pickupAddress} 
@@ -424,87 +416,72 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
             </div>
 
             <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-              <h2 className="text-xl font-bold text-navy-900">Elanın təsviri</h2>
+              <h2 className="text-xl font-bold text-navy-900">{t("ld_desc_title", "Elanın təsviri")}</h2>
               <div className="mt-4 space-y-2 text-[0.95rem] leading-7 text-slate-600">
                 <p>{listing.description}</p>
                 <p>
-                  Yük{" "}
-                  {quantityLabel ? quantityLabel.toLocaleLowerCase("az") : "standart partiya"}{" "}
-                  şəklində daşınmaya hazırdır. Etibarlı, vaxtında çatdırılma təmin edən daşıyıcılarla əməkdaşlıq etmək
-                  istərdik.
+                  {t("ld_desc_cargo", "Yük")}{" "}
+                  {quantityLabel ? quantityLabel.toLocaleLowerCase("az") : t("ld_desc_std_batch", "standart partiya")}{" "}
+                  {t("ld_desc_ready", "şəklində daşınmaya hazırdır. Etibarlı, vaxtında çatdırılma təmin edən daşıyıcılarla əməkdaşlıq etmək istərdik.")}
                 </p>
               </div>
             </div>
 
             <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-              <h2 className="text-xl font-bold text-navy-900">Yük məlumatları</h2>
+              <h2 className="text-xl font-bold text-navy-900">{t("ld_info_title", "Yük məlumatları")}</h2>
               <div className="mt-6 grid gap-5 lg:grid-cols-2">
-                <DetailFactItem icon={<Package2 className="h-5 w-5" />} label="Yük növü" value={listing.cargoType} />
-                <DetailFactItem icon={<MapPin className="h-5 w-5" />} label="Yükləmə yeri" value={listing.pickupAddress || listing.pickupCity} />
-                <DetailFactItem icon={<Scale className="h-5 w-5" />} label="Çəki" value={formatWeightKg(listing.weight)} />
-                <DetailFactItem icon={<MapPin className="h-5 w-5" />} label="Çatdırılma yeri" value={listing.deliveryAddress || listing.deliveryCity} />
+                <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_cargo_type", "Yük növü")} value={listing.cargoType} />
+                <DetailFactItem icon={<MapPin className="h-5 w-5" />} label={t("ld_pickup", "Yükləmə yeri")} value={listing.pickupAddress || listing.pickupCity} />
+                <DetailFactItem icon={<Scale className="h-5 w-5" />} label={t("ld_weight", "Çəki")} value={formatWeightKg(listing.weight)} />
+                <DetailFactItem icon={<MapPin className="h-5 w-5" />} label={t("ld_delivery", "Çatdırılma yeri")} value={listing.deliveryAddress || listing.deliveryCity} />
                 <DetailFactItem
                   icon={<Truck className="h-5 w-5" />}
-                  label="Ehtimal olunan nəqliyyat növü"
-                  value={listing.vehicleType || "Fərq etmir"}
+                  label={t("ld_vehicle_type", "Ehtimal olunan nəqliyyat növü")}
+                  value={listing.vehicleType || t("ld_any_vehicle", "Fərq etmir")}
                 />
                 <DetailFactItem
                   icon={<CalendarDays className="h-5 w-5" />}
-                  label="Ən gec götürülmə tarixi"
-                  value={formatDateNumeric(
-                    listing.pickupDeadlineDate || listing.pickupDate || listing.createdAt
-                  )}
+                  label={t("ld_deadline", "Ən gec götürülmə tarixi")}
+                  value={formatDateNumeric(listing.pickupDeadlineDate || listing.pickupDate || listing.createdAt)}
                 />
                 <DetailFactItem
                   icon={<Phone className="h-5 w-5" />}
-                  label="Əlaqə nömrəsi"
+                  label={t("ld_contact", "Əlaqə nömrəsi")}
                   value={listing.ownerPhone}
                 />
                 {quantityLabel ? (
-                  <DetailFactItem
-                    icon={<Package2 className="h-5 w-5" />}
-                    label="Say"
-                    value={quantityLabel}
-                  />
+                  <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_qty", "Say")} value={quantityLabel} />
                 ) : null}
                 {volumeLabel ? (
-                  <DetailFactItem
-                    icon={<Package2 className="h-5 w-5" />}
-                    label="Həcm"
-                    value={volumeLabel}
-                  />
+                  <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_volume", "Həcm")} value={volumeLabel} />
                 ) : null}
                 {dimensionsLabel ? (
-                  <DetailFactItem
-                    icon={<Package2 className="h-5 w-5" />}
-                    label="Ölçülər"
-                    value={dimensionsLabel}
-                  />
+                  <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_dims", "Ölçülər")} value={dimensionsLabel} />
                 ) : null}
               </div>
 
               <div className="mt-6 border-t border-slate-200 pt-5">
-                <h3 className="text-lg font-bold text-navy-900">Əlavə məlumat</h3>
+                <h3 className="text-lg font-bold text-navy-900">{t("ld_extra_info", "Əlavə məlumat")}</h3>
                 <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   <div>
-                    <p className="text-sm text-slate-500">Yükləmə ilə bağlı yardım</p>
-                    <p className="mt-1 font-semibold text-navy-900">{listing.needsLoadingHelp || "Məlumat yoxdur"}</p>
+                    <p className="text-sm text-slate-500">{t("ld_loading_help", "Yükləmə ilə bağlı yardım")}</p>
+                    <p className="mt-1 font-semibold text-navy-900">{listing.needsLoadingHelp || t("ld_no_data", "Məlumat yoxdur")}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Boşaltma ilə bağlı yardım</p>
-                    <p className="mt-1 font-semibold text-navy-900">{listing.needsUnloadingHelp || "Məlumat yoxdur"}</p>
+                    <p className="text-sm text-slate-500">{t("ld_unloading_help", "Boşaltma ilə bağlı yardım")}</p>
+                    <p className="mt-1 font-semibold text-navy-900">{listing.needsUnloadingHelp || t("ld_no_data", "Məlumat yoxdur")}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Faktura tələb olunur</p>
-                    <p className="mt-1 font-semibold text-navy-900">{listing.requiresInvoice || "Xeyr"}</p>
+                    <p className="text-sm text-slate-500">{t("ld_invoice", "Faktura tələb olunur")}</p>
+                    <p className="mt-1 font-semibold text-navy-900">{listing.requiresInvoice || t("ld_no", "Xeyr")}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Gediş-dönüş yük imkanı</p>
-                    <p className="mt-1 font-semibold text-navy-900">{listing.roundTrip || "Xeyr"}</p>
+                    <p className="text-sm text-slate-500">{t("ld_roundtrip", "Gediş-dönüş yük imkanı")}</p>
+                    <p className="mt-1 font-semibold text-navy-900">{listing.roundTrip || t("ld_no", "Xeyr")}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Xüsusi tələblər</p>
-                    <p className="mt-1 font-semibold text-navy-900">{listing.note || "Yoxdur"}</p>
+                    <p className="text-sm text-slate-500">{t("ld_special_req", "Xüsusi tələblər")}</p>
+                    <p className="mt-1 font-semibold text-navy-900">{listing.note || t("ld_none", "Yoxdur")}</p>
                   </div>
                 </div>
               </div>
@@ -513,7 +490,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
 
           <aside className="space-y-4">
             <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-              <h2 className="text-[1.3rem] font-bold text-navy-900">Satıcı / Elanı yerləşdirən</h2>
+              <h2 className="text-[1.3rem] font-bold text-navy-900">{t("ld_seller_title", "Satıcı / Elanı yerləşdirən")}</h2>
 
               <div className="mt-5 flex items-start gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 overflow-hidden">
@@ -528,7 +505,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                     <p className="text-lg font-bold text-navy-900">{ownerDisplayName}</p>
                     <ShieldCheck className="h-4 w-4 text-emerald-500" />
                   </div>
-                  <p className="mt-1 text-[0.95rem] text-slate-600">İstifadəçi</p>
+                  <p className="mt-1 text-[0.95rem] text-slate-600">{t("ld_user_role", "İstifadəçi")}</p>
                   {isAuthorized && listing.ownerEmail ? (
                     <p className="mt-1 text-sm text-slate-500">{listing.ownerEmail}</p>
                   ) : null}
@@ -552,65 +529,65 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                     className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-slate-300 bg-white py-3 text-[1.02rem] font-semibold text-navy-900 shadow-sm transition hover:-translate-y-1 hover:bg-slate-50"
                   >
                     <MessageCircleMore className="h-5 w-5" />
-                    WhatsApp ilə yaz
+                    {t("ld_whatsapp", "WhatsApp ilə yaz")}
                   </a>
                 </div>
 
                 <div className="mt-3 text-center">
                   <p className="text-[0.85rem] text-slate-500">
-                    Zəng edərkən <b>Tranzit.AZ</b>-dan gəldiyinizi qeyd etməyi unutmayın.
+                    {t("ld_call_hint_pre", "Zəng edərkən")} <b>Tranzit.AZ</b>{t("ld_call_hint_post", "-dan gəldiyinizi qeyd etməyi unutmayın.")}
                   </p>
                   
                   <Link
                     href={ownerListingHref}
                     className="mt-4 inline-block text-[0.95rem] font-medium text-logistics-orange transition hover:text-orange-600 hover:underline"
                   >
-                    İstifadəçinin bütün elanları
+                    {t("ld_all_listings", "İstifadəçinin bütün elanları")}
                   </Link>
                 </div>
               </div>
             </div>
 
             <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-              <DetailInfoRow label="Elan tarixi" value={formatListingDate(listing.createdAt)} />
-              <DetailInfoRow label="Yenilənmə tarixi" value={formatListingDate(listing.createdAt)} />
-              <DetailInfoRow label="Elan növü" value="Yük" />
-              <DetailInfoRow label="Yük kateqoriyası" value={listing.cargoType} />
+              <DetailInfoRow label={t("ld_post_date", "Elan tarixi")} value={formatListingDate(listing.createdAt)} />
+              <DetailInfoRow label={t("ld_updated_date", "Yenilənmə tarixi")} value={formatListingDate(listing.createdAt)} />
+              <DetailInfoRow label={t("ld_listing_type", "Elan növü")} value={t("ld_listing_type_cargo", "Yük")} />
+              <DetailInfoRow label={t("ld_cargo_category", "Yük kateqoriyası")} value={listing.cargoType} />
               <DetailInfoRow
-                label="Təklif olunan qiymət"
-                value={listing.price ? `${listing.price} AZN` : "Razılaşma ilə"}
+                label={t("ld_price", "Təklif olunan qiymət")}
+                value={listing.price ? `${listing.price} AZN` : t("ld_negotiable", "Razılaşma ilə")}
               />
-              <DetailInfoRow label="Elan ID" value={detailId} />
-              <DetailInfoRow label="Status" value={<StatusBadge status={effectiveStatus(listing)} />} />
+              <DetailInfoRow label={t("ld_listing_id", "Elan ID")} value={detailId} />
+              <DetailInfoRow label={t("ld_status", "Status")} value={<StatusBadge status={effectiveStatus(listing)} />} />
             </div>
 
             <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
               <div className="flex items-center gap-3 text-navy-900">
                 <ShieldCheck className="h-6 w-6" />
-                <h3 className="text-lg font-bold">Təhlükəsizlik tövsiyələri</h3>
+                <h3 className="text-lg font-bold">{t("ld_safety_title", "Təhlükəsizlik tövsiyələri")}</h3>
               </div>
               <div className="mt-4 space-y-3 text-sm leading-7 text-slate-600">
-                <p>Ödənişləri yalnız rəsmi qaydada edin.</p>
-                <p>Şəxsi məlumatlarınızı paylaşmayın.</p>
-                <p>Şübhəli hallarda dəstək xidmətimizlə əlaqə saxlayın.</p>
+                <p>{t("ld_safety_1", "Ödənişləri yalnız rəsmi qaydada edin.")}</p>
+                <p>{t("ld_safety_2", "Şəxsi məlumatlarınızı paylaşmayın.")}</p>
+                <p>{t("ld_safety_3", "Şübhəli hallarda dəstək xidmətimizlə əlaqə saxlayın.")}</p>
               </div>
               <Link href="/how-it-works" className="mt-4 inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700">
-                Daha ətraflı
+                {t("ld_more_info", "Daha ətraflı")}
               </Link>
             </div>
 
             <div className="grid grid-cols-3 gap-0 overflow-hidden rounded-[16px] border border-slate-200 bg-white text-sm font-semibold text-slate-600 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-              <button type="button" onClick={() => alert('Şikayətiniz uğurla qeydə alındı. Təşəkkür edirik!')} className="flex min-h-14 items-center justify-center gap-2 border-r border-slate-200 transition hover:bg-slate-50">
+              <button type="button" onClick={() => alert(t("ld_report_success", "Şikayətiniz uğurla qeydə alındı. Təşəkkür edirik!"))} className="flex min-h-14 items-center justify-center gap-2 border-r border-slate-200 transition hover:bg-slate-50">
                 <Flag className="h-4 w-4" />
-                Şikayət et
+                {t("ld_report", "Şikayət et")}
               </button>
               <button type="button" onClick={() => setIsShareModalOpen(true)} className="flex min-h-14 items-center justify-center gap-2 border-r border-slate-200 transition hover:bg-slate-50">
                 <Share2 className="h-4 w-4" />
-                Paylaş
+                {t("ld_share", "Paylaş")}
               </button>
               <button type="button" onClick={() => window.print()} className="flex min-h-14 items-center justify-center gap-2 transition hover:bg-slate-50">
                 <Printer className="h-4 w-4" />
-                Çap et
+                {t("ld_print", "Çap et")}
               </button>
             </div>
           </aside>
@@ -620,7 +597,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 transition-opacity" onClick={() => setIsShareModalOpen(false)}>
             <div className="w-full max-w-sm rounded-[20px] bg-white p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-bold text-navy-900">Elanı paylaş</h3>
+                <h3 className="text-lg font-bold text-navy-900">{t("ld_share_title", "Elanı paylaş")}</h3>
                 <button 
                   onClick={() => setIsShareModalOpen(false)}
                   className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
@@ -676,7 +653,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                 <button 
                   onClick={() => {
                     navigator.clipboard.writeText(window.location.href);
-                    alert("Link kopyalandı!");
+                    alert(t("ld_link_copied", "Link kopyalandı!"));
                   }}
                   className="rounded-[8px] bg-white px-3 py-1.5 text-sm font-semibold text-logistics-orange shadow-sm border border-slate-200 hover:bg-orange-50 transition"
                 >
