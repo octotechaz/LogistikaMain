@@ -22,7 +22,7 @@ const {
   makeRequireAuth,
 } = require('./authHandlers');
 const { PrismaClient } = require('@prisma/client');
-const { makeCategoryRepository } = require('./postgresCategoryRepository');
+const { makeJsonCategoryRepository } = require('./jsonCategoryRepository');
 const { makeCargoRepository } = require('./postgresCargoRepository');
 const { makeUserRepository } = require('./postgresUserRepository');
 const { makeSettingsRepository } = require('./postgresSettingsRepository');
@@ -31,7 +31,7 @@ const { notifyAdminsPendingCargo } = require('./cargoApprovalNotify');
 const passwordPolicy = require('../config/password-policy.json');
 
 const prisma = new PrismaClient();
-const categoryRepository = makeCategoryRepository(prisma);
+const categoryRepository = makeJsonCategoryRepository();
 const cargoRepository = makeCargoRepository(prisma);
 const userRepository = makeUserRepository(prisma);
 const settingsRepository = makeSettingsRepository(prisma);
@@ -742,12 +742,12 @@ app.get('/dashboard/kategoriler', requireAuth, requireAdmin, async (req, res) =>
 
 app.post('/dashboard/kategoriler', requireAuth, requireAdmin, async (req, res) => {
     try {
-        const { id, label, icon_key, icon_tone, sort_order, is_active, match_cargo_type, match_vehicle_type, match_keyword } = req.body;
+        const { id, label, icon_key, icon_tone, sort_order, is_active, match_cargo_type, match_vehicle_type, match_keyword, label_ru, label_en, label_tr } = req.body;
         const trimmedLabel = String(label || '').trim();
         if (!trimmedLabel) {
             return res.redirect('/dashboard/kategoriler?error=save');
         }
-        await categoryRepository.upsert({ id, label: trimmedLabel, icon_key, icon_tone, sort_order, is_active, match_cargo_type, match_vehicle_type, match_keyword });
+        await categoryRepository.upsert({ id, label: trimmedLabel, icon_key, icon_tone, sort_order, is_active, match_cargo_type, match_vehicle_type, match_keyword, label_ru, label_en, label_tr });
         res.redirect('/dashboard/kategoriler?saved=1');
     } catch (error) {
         console.error(error);
