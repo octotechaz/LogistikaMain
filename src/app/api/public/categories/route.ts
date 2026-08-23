@@ -16,17 +16,28 @@ export async function OPTIONS() {
 }
 
 function formatSqliteCategories(categories: unknown[]) {
-  return (categories as Record<string, unknown>[]).map((cat) => ({
-    id: cat.id,
-    label: cat.label,
-    iconKey: cat.icon_key,
-    iconTone: cat.icon_tone,
-    matchCargoType: cat.match_cargo_type ?? null,
-    matchVehicleType: cat.match_vehicle_type ?? null,
-    matchKeyword: cat.match_keyword ?? null,
-    sortOrder: cat.sort_order,
-    isActive: cat.is_active === 1,
-  }));
+  return (categories as Record<string, unknown>[]).map((cat) => {
+    let labelTranslations: Record<string, string> | undefined;
+    if (cat.label_translations) {
+      try {
+        labelTranslations = typeof cat.label_translations === "string"
+          ? JSON.parse(cat.label_translations)
+          : (cat.label_translations as Record<string, string>);
+      } catch { labelTranslations = undefined; }
+    }
+    return {
+      id: cat.id,
+      label: cat.label,
+      labelTranslations,
+      iconKey: cat.icon_key,
+      iconTone: cat.icon_tone,
+      matchCargoType: cat.match_cargo_type ?? null,
+      matchVehicleType: cat.match_vehicle_type ?? null,
+      matchKeyword: cat.match_keyword ?? null,
+      sortOrder: cat.sort_order,
+      isActive: cat.is_active === 1,
+    };
+  });
 }
 
 async function loadFromPrisma() {
@@ -37,6 +48,7 @@ async function loadFromPrisma() {
   return rows.map((row) => ({
     id: row.legacySqliteId || row.id,
     label: row.label,
+    labelTranslations: (row as unknown as { labelTranslations?: Record<string, string> }).labelTranslations,
     iconKey: row.iconKey,
     iconTone: row.iconTone,
     matchCargoType: row.matchCargoType ?? null,

@@ -14,6 +14,7 @@ function makeCategoryRepository(prisma, sync = null) {
     return {
       id:               row.legacySqliteId || row.id,
       label:            row.label,
+      label_translations: row.labelTranslations || {},
       icon_key:         row.iconKey,
       icon_tone:        row.iconTone,
       match_cargo_type: row.matchCargoType,
@@ -57,8 +58,15 @@ function makeCategoryRepository(prisma, sync = null) {
       const sortOrder = parseInt(dto.sort_order, 10) || 0;
       const isActive  = dto.is_active === "1" || dto.is_active === 1 || dto.is_active === true;
 
+      const labelTranslations = {};
+      for (const loc of ["ru", "en", "tr"]) {
+        const val = dto[`label_${loc}`] ? String(dto[`label_${loc}`]).trim() : null;
+        if (val) labelTranslations[loc] = val;
+      }
+
       const data = {
         label:           dto.label,
+        labelTranslations: Object.keys(labelTranslations).length > 0 ? labelTranslations : undefined,
         iconKey,
         iconTone,
         sortOrder,

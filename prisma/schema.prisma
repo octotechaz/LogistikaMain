@@ -580,6 +580,7 @@ model PublicCategory {
   id               String   @id @default(cuid())
   legacySqliteId   String   @unique
   label            String
+  labelTranslations Json?
   iconKey          String
   iconTone         String   @default("text-slate-500")
   matchCargoType   String?
