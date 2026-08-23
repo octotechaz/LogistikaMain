@@ -1100,6 +1100,7 @@ export function AdminPageContentPageClient() {
   const [locale, setLocale] = useState<Locale>("az");
   const [activeTab, setActiveTab] = useState<string>(TABS[0].id);
   const [search, setSearch] = useState("");
+  const [fieldSearch, setFieldSearch] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
   const [steps, setSteps] = useState<{ icon: string; title: string; text: string }[]>([
     { icon: "UploadCloud", title: "", text: "" },
@@ -1286,7 +1287,7 @@ export function AdminPageContentPageClient() {
             <button
               key={tab.id}
               type="button"
-              onClick={() => { setActiveTab(tab.id); setSearch(""); }}
+              onClick={() => { setActiveTab(tab.id); setSearch(""); setFieldSearch(""); }}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition -mb-px ${
                 activeTab === tab.id
                   ? "border-blue-600 text-blue-700"
@@ -1299,7 +1300,7 @@ export function AdminPageContentPageClient() {
           <button
             key="topbar_nav"
             type="button"
-            onClick={() => { setActiveTab("topbar_nav"); setSearch(""); }}
+            onClick={() => { setActiveTab("topbar_nav"); setSearch(""); setFieldSearch(""); }}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition -mb-px ${
               activeTab === "topbar_nav"
                 ? "border-blue-600 text-blue-700"
@@ -1353,8 +1354,31 @@ export function AdminPageContentPageClient() {
           </div>
         ) : activeTabDef ? (
           <>
+        <div className="mb-3">
+          <input
+            type="search"
+            placeholder="Sahə axtar... (ad, açar)"
+            value={fieldSearch}
+            onChange={(e) => setFieldSearch(e.target.value)}
+            className="form-field h-9 w-full max-w-sm rounded-lg px-3 text-sm"
+          />
+          {fieldSearch && (
+            <p className="mt-1 text-xs text-slate-400">
+              {(activeTabDef.fields as readonly FieldDef[]).filter((f) =>
+                f.label.toLowerCase().includes(fieldSearch.toLowerCase()) ||
+                f.key.toLowerCase().includes(fieldSearch.toLowerCase()) ||
+                (fields[f.key] ?? "").toLowerCase().includes(fieldSearch.toLowerCase())
+              ).length} nəticə
+            </p>
+          )}
+        </div>
         <div className="surface-panel p-5 grid gap-4 sm:grid-cols-2">
-          {(activeTabDef.fields as readonly FieldDef[]).map((f) => (
+          {((activeTabDef.fields as readonly FieldDef[]).filter((f) =>
+            !fieldSearch ||
+            f.label.toLowerCase().includes(fieldSearch.toLowerCase()) ||
+            f.key.toLowerCase().includes(fieldSearch.toLowerCase()) ||
+            (fields[f.key] ?? "").toLowerCase().includes(fieldSearch.toLowerCase())
+          )).map((f) => (
             <label key={f.key} className={`form-label${f.textarea ? " sm:col-span-2" : ""}`}>
               {f.label}
               {f.array ? (
