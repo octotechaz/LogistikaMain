@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 export const dynamic = "force-dynamic";
 
@@ -186,16 +188,29 @@ const CONTENT_KEYS = [
   "nav_login","nav_login_register","nav_welcome_user","nav_default_user","footer_tagline_static",
 ];
 
+async function loadLocaleJson(locale: Locale): Promise<Record<string, unknown>> {
+  try {
+    const filePath = path.join(process.cwd(), "public", "locales", `${locale}.json`);
+    const raw = await readFile(filePath, "utf-8");
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
 export async function GET(request: NextRequest) {
   const localeParam = request.nextUrl.searchParams.get("locale") ?? "az";
   const locale: Locale = SUPPORTED_LOCALES.includes(localeParam as Locale)
     ? (localeParam as Locale)
     : "az";
 
-  const dbKeys = CONTENT_KEYS.map((k) => `${k}_${locale}`);
-  const rows = await prisma.appSetting.findMany({ where: { key: { in: dbKeys } } });
+  const [dbRows, jsonFallback] = await Promise.all([
+    prisma.appSetting.findMany({ where: { key: { in: CONTENT_KEYS.map((k) => `${k}_${locale}`) } } }),
+    loadLocaleJson(locale),
+  ]);
+
   const dbMap: Record<string, string> = {};
-  for (const row of rows) dbMap[row.key] = row.value;
+  for (const row of dbRows) dbMap[row.key] = row.value;
 
   const result: Record<string, unknown> = {};
   for (const key of CONTENT_KEYS) {
@@ -206,6 +221,8 @@ export async function GET(request: NextRequest) {
       } else {
         result[key] = raw;
       }
+    } else if (jsonFallback[key] !== undefined) {
+      result[key] = jsonFallback[key];
     }
   }
 
