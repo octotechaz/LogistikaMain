@@ -50,7 +50,9 @@ const publicListingSelect = {
   },
 } satisfies Prisma.CargoPostSelect;
 
-type PublicCargoPost = Prisma.CargoPostGetPayload<{ select: typeof publicListingSelect }>;
+type PublicCargoPost = Prisma.CargoPostGetPayload<{ select: typeof publicListingSelect }> & {
+  translations?: Record<string, { title?: string; description?: string }> | null;
+};
 
 function ownerDisplayName(post: PublicCargoPost) {
   const profile = post.cargoOwnerProfile;
@@ -109,6 +111,7 @@ export function mapCargoPostToPublicListing(post: PublicCargoPost): CargoListing
     needsUnloadingHelp: post.needsUnloadingHelp ?? undefined,
     requiresInvoice: post.requiresInvoice ?? undefined,
     roundTrip: post.roundTrip ?? undefined,
+    translations: (post as unknown as { translations?: Record<string, { title?: string; description?: string }> }).translations,
     createdAt: post.createdAt.toISOString(),
     approvedAt: null,
     expiresAt: toIso(post.expiresAt),
@@ -140,11 +143,11 @@ function listingIdWhere(id: string): Prisma.CargoPostWhereInput {
 export async function getPublicListingsFromPostgres(): Promise<CargoListing[]> {
   await deactivateExpiredCargoPosts();
 
-  const posts = await prisma.cargoPost.findMany({
+  const posts = await (prisma.cargoPost.findMany as Function)({
     where: publicApprovedCargoPostWhere(),
-    select: publicListingSelect,
+    select: { ...publicListingSelect, translations: true },
     orderBy: { createdAt: "desc" },
-  });
+  }) as PublicCargoPost[];
 
   return posts.map(mapCargoPostToPublicListing);
 }
@@ -152,12 +155,12 @@ export async function getPublicListingsFromPostgres(): Promise<CargoListing[]> {
 export async function getPublicListingByIdFromPostgres(id: string): Promise<CargoListing | null> {
   await deactivateExpiredCargoPosts();
 
-  const post = await prisma.cargoPost.findFirst({
+  const post = await (prisma.cargoPost.findFirst as Function)({
     where: {
       AND: [listingIdWhere(id), publicApprovedCargoPostWhere()],
     },
-    select: publicListingSelect,
-  });
+    select: { ...publicListingSelect, translations: true },
+  }) as PublicCargoPost | null;
 
   if (!post) {
     return null;
