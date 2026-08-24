@@ -143,7 +143,8 @@ function listingIdWhere(id: string): Prisma.CargoPostWhereInput {
 export async function getPublicListingsFromPostgres(): Promise<CargoListing[]> {
   await deactivateExpiredCargoPosts();
 
-  const posts = await (prisma.cargoPost.findMany as Function)({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const posts = await (prisma.cargoPost.findMany as any)({
     where: publicApprovedCargoPostWhere(),
     select: { ...publicListingSelect, translations: true },
     orderBy: { createdAt: "desc" },
@@ -155,7 +156,8 @@ export async function getPublicListingsFromPostgres(): Promise<CargoListing[]> {
 export async function getPublicListingByIdFromPostgres(id: string): Promise<CargoListing | null> {
   await deactivateExpiredCargoPosts();
 
-  const post = await (prisma.cargoPost.findFirst as Function)({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const post = await (prisma.cargoPost.findFirst as any)({
     where: {
       AND: [listingIdWhere(id), publicApprovedCargoPostWhere()],
     },
