@@ -18,6 +18,7 @@ import { OwnerListingsTable } from "@/components/classifieds/OwnerListingsTable"
 import { ImageUploader } from "@/components/ImageUploader";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { useClassifieds } from "@/components/providers/ClassifiedsProvider";
+import { useLocale } from "@/hooks/useLocale";
 import { cn } from "@/lib/utils";
 import {
   formatVolume,
@@ -72,6 +73,7 @@ function stringValue(value: unknown) {
 }
 
 export function OwnerDashboardPageClient({ sessionUser }: { sessionUser: SessionUser }) {
+  const { t } = useLocale();
   const { ready } = useClassifieds();
   const [listings, setListings] = useState<CargoListing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,8 +180,8 @@ export function OwnerDashboardPageClient({ sessionUser }: { sessionUser: Session
   return (
     <DashboardShell
       section="owner"
-      title="Mənim elanlarım"
-      description="Yeni elanlar admin təsdiqindən sonra dərc olunur. Buradan elanlarınızı izləyə və redaktə edə bilərsiniz."
+      title={t("owner_my_listings", "Mənim elanlarım")}
+      description={t("owner_dashboard_desc", "Yeni elanlar admin təsdiqindən sonra dərc olunur. Buradan elanlarınızı izləyə və redaktə edə bilərsiniz.")}
       sessionUser={sessionUser}
       action={
         <ButtonLink href="/cargo-owner/cargo-posts/new">
@@ -196,22 +198,22 @@ export function OwnerDashboardPageClient({ sessionUser }: { sessionUser: Session
 
       <div className="grid gap-4 md:grid-cols-4">
         <MetricCard
-          label="Aktiv elanlar"
+          label={t("owner_active_listings", "Aktiv elanlar")}
           value={String(activeCount)}
           icon={<ShieldCheck className="h-5 w-5" />}
         />
         <MetricCard
-          label="Təsdiq gözləyir"
+          label={t("owner_pending", "Təsdiq gözləyir")}
           value={String(pendingCount)}
           icon={<Clock3 className="h-5 w-5" />}
         />
         <MetricCard
-          label="Vaxtı keçən"
+          label={t("owner_expired", "Vaxtı keçən")}
           value={String(expiredCount)}
           icon={<Clock3 className="h-5 w-5" />}
         />
         <MetricCard
-          label="Deaktiv / rədd"
+          label={t("owner_deactivated", "Deaktiv / rədd")}
           value={String(inactiveCount)}
           icon={<ClipboardList className="h-5 w-5" />}
         />
@@ -226,7 +228,7 @@ export function OwnerDashboardPageClient({ sessionUser }: { sessionUser: Session
         />
       ) : (
         <EmptyAccessState
-          title="Hələ elan yoxdur"
+          title={t("owner_no_listings_title", "Hələ elan yoxdur")}
           description="İlk yük elanınızı yaradın; daşıyıcılar elanı görüb sizə müraciət edə bilsin."
           actionHref="/cargo-owner/cargo-posts/new"
           actionLabel="İlk elanımı yarat"
@@ -241,6 +243,7 @@ type FormLocale = (typeof FORM_LOCALES)[number];
 const FORM_LOCALE_LABELS: Record<FormLocale, string> = { az: "AZ", ru: "RU", en: "EN", tr: "TR" };
 
 export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionUser }) {
+  const { t } = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { ready, listings, saveListing } = useClassifieds();
@@ -494,10 +497,10 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
 
     const allTranslations: Record<string, { title: string; description: string }> = {};
     for (const loc of FORM_LOCALES) {
-      const t = (translations[loc]?.title ?? "").trim();
+      const titleVal = (translations[loc]?.title ?? "").trim();
       const d = (translations[loc]?.description ?? "").trim();
-      if (t || d) {
-        allTranslations[loc] = { title: t, description: d };
+      if (titleVal || d) {
+        allTranslations[loc] = { title: titleVal, description: d };
       }
     }
     const azData = translations["az"] ?? { title: "", description: "" };
@@ -691,8 +694,8 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
   return (
     <DashboardShell
       section="owner"
-      title={editing ? "Elanı redaktə et" : "Yeni yük elanı"}
-      description="Formu göndərdikdən sonra elan admin yoxlamasına düşür; təsdiqlənəndən sonra ictimai katalogda görünür."
+      title={editing ? t("owner_form_edit_title", "Elanı redaktə et") : t("owner_form_new_title", "Yeni yük elanı")}
+      description={t("owner_form_desc", "Formu göndərdikdən sonra elan admin yoxlamasına düşür; təsdiqlənəndən sonra ictimai katalogda görünür.")}
       sessionUser={sessionUser}
     >
       <div className="overflow-hidden rounded-[16px] border border-slate-200/60 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
@@ -723,7 +726,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
               {/* Multi-locale title + description */}
               <div className="md:col-span-2">
                 <div className="flex items-center gap-1 mb-3 border-b border-slate-100 pb-2">
-                  <span className="text-xs font-semibold text-slate-500 mr-2">Dillər:</span>
+                  <span className="text-xs font-semibold text-slate-500 mr-2">{t("owner_form_langs", "Dillər:")}</span>
                   {FORM_LOCALES.map((loc) => (
                     <button
                       key={loc}
@@ -738,7 +741,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                       {FORM_LOCALE_LABELS[loc]}
                     </button>
                   ))}
-                  <span className="ml-2 text-xs text-slate-400">AZ tələb olunur, digər dillər istəyə görə</span>
+                  <span className="ml-2 text-xs text-slate-400">{t("owner_form_lang_hint", "AZ tələb olunur, digər dillər istəyə görə")}</span>
                 </div>
 
                 {FORM_LOCALES.map((loc) => (
@@ -798,7 +801,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                     defaultValue={editing?.cargoType || ""}
                     required
                   >
-                    <option value="" disabled hidden>Növü seçin</option>
+                    <option value="" disabled hidden>{t("owner_form_select_type", "Növü seçin")}</option>
                     {classifiedsCargoTypes.map((item) => (
                       <option key={item} value={item}>
                         {item}
@@ -826,7 +829,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                     disabled={categoriesLoading}
                     className="form-select w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pl-10 text-[15px] py-2.5 h-auto transition-shadow appearance-none disabled:opacity-60"
                   >
-                    <option value="">{categoriesLoading ? "Yüklənir..." : "Kateqoriya seçin (istəyə bağlı)"}</option>
+                    <option value="">{categoriesLoading ? t("owner_form_loading", "Yüklənir...") : t("owner_form_select_category", "Kateqoriya seçin (istəyə bağlı)")}</option>
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>{cat.label}</option>
                     ))}
@@ -864,7 +867,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                   required
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <span className="text-slate-400 text-sm font-medium">kq</span>
+                  <span className="text-slate-400 text-sm font-medium">{t("owner_form_unit_kg", "kq")}</span>
                 </div>
               </div>
             </div>
@@ -903,7 +906,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                       defaultValue={editing?.pickupCity || ""}
                       required
                     >
-                      <option value="" disabled hidden>Şəhər seçin</option>
+                      <option value="" disabled hidden>{t("owner_form_select_city", "Şəhər seçin")}</option>
                       {classifiedsCities.map((item) => (
                         <option key={item} value={item}>{item}</option>
                       ))}
@@ -939,7 +942,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                       defaultValue={editing?.deliveryCity || ""}
                       required
                     >
-                      <option value="" disabled hidden>Şəhər seçin</option>
+                      <option value="" disabled hidden>{t("owner_form_select_city", "Şəhər seçin")}</option>
                       {classifiedsCities.map((item) => (
                         <option key={item} value={item}>{item}</option>
                       ))}
@@ -1013,7 +1016,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
 
               <ClockTimePicker
                 name="pickupTime"
-                label="Yükləmə saatı"
+                label={t("owner_form_pickup_time", "Yükləmə saatı")}
                 defaultValue={editing?.pickupTime || ""}
               />
             </div>
@@ -1039,7 +1042,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                     className="form-select w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pl-10 text-[15px] py-2.5 h-auto transition-shadow appearance-none"
                     defaultValue={editing?.vehicleType || "Fərq etməz"}
                   >
-                    <option value="Fərq etməz">Fərq etməz</option>
+                    <option value="Fərq etməz">{t("owner_form_any_vehicle", "Fərq etməz")}</option>
                     {classifiedsVehicleTypes.map((item) => (
                       <option key={item} value={item}>{item}</option>
                     ))}
@@ -1063,18 +1066,18 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                     type="number"
                     min="1"
                     className="form-control w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pl-10 pr-12 text-[15px] py-2.5 h-auto transition-shadow"
-                    placeholder="Məbləğ"
+                    placeholder={t("owner_form_price_placeholder", "Məbləğ")}
                     defaultValue={stringValue(editing?.price || "")}
                   />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <span className="text-slate-400 text-sm font-medium">AZN</span>
+                    <span className="text-slate-400 text-sm font-medium">{t("owner_form_currency", "AZN")}</span>
                   </div>
                 </div>
               </div>
 
               <div className="form-group mb-0">
                 <PhoneField
-                  label="Əlaqə telefonu"
+                  label={t("owner_form_contact_phone", "Əlaqə telefonu")}
                   name="ownerPhone"
                   value={contactPhone}
                   onChange={(next) => {
@@ -1095,7 +1098,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                 <textarea
                   name="note"
                   className="form-control w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-[15px] py-3 transition-shadow min-h-[100px]"
-                  placeholder="Sürücü üçün əlavə xüsusi qeydləriniz varsa yazın..."
+                  placeholder={t("owner_form_note_placeholder", "Sürücü üçün əlavə xüsusi qeydləriniz varsa yazın...")}
                   defaultValue={editing?.note || ""}
                 />
               </div>
@@ -1109,15 +1112,15 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
 
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
-                  <label className="text-[14px] font-semibold text-slate-700 mb-2 block">Yükləmə ilə bağlı yardım</label>
+                  <label className="text-[14px] font-semibold text-slate-700 mb-2 block">{t("owner_form_loading_help", "Yükləmə ilə bağlı yardım")}</label>
                   <div className="relative">
                     <select
                       name="needsLoadingHelp"
                       className="form-select w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-[15px] py-2.5 h-auto transition-shadow appearance-none"
                       defaultValue={editing?.needsLoadingHelp || "Xeyr"}
                     >
-                      <option value="Bəli">Bəli, yükləmə yardımı lazımdır</option>
-                      <option value="Xeyr">Xeyr, yükləmə yardımı lazım deyil</option>
+                      <option value="Bəli">{t("owner_form_loading_help_yes", "Bəli, yükləmə yardımı lazımdır")}</option>
+                      <option value="Xeyr">{t("owner_form_loading_help_no", "Xeyr, yükləmə yardımı lazım deyil")}</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <i className="ri-arrow-down-s-line text-slate-400"></i>
@@ -1126,15 +1129,15 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                 </div>
 
                 <div>
-                  <label className="text-[14px] font-semibold text-slate-700 mb-2 block">Boşaltma ilə bağlı yardım</label>
+                  <label className="text-[14px] font-semibold text-slate-700 mb-2 block">{t("owner_form_unloading_help", "Boşaltma ilə bağlı yardım")}</label>
                   <div className="relative">
                     <select
                       name="needsUnloadingHelp"
                       className="form-select w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-[15px] py-2.5 h-auto transition-shadow appearance-none"
                       defaultValue={editing?.needsUnloadingHelp || "Xeyr"}
                     >
-                      <option value="Bəli">Bəli, boşaltma yardımı lazımdır</option>
-                      <option value="Xeyr">Xeyr, boşaltma yardımı lazım deyil</option>
+                      <option value="Bəli">{t("owner_form_unloading_help_yes", "Bəli, boşaltma yardımı lazımdır")}</option>
+                      <option value="Xeyr">{t("owner_form_unloading_help_no", "Xeyr, boşaltma yardımı lazım deyil")}</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <i className="ri-arrow-down-s-line text-slate-400"></i>
@@ -1143,15 +1146,15 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                 </div>
 
                 <div>
-                  <label className="text-[14px] font-semibold text-slate-700 mb-2 block">Faktura (Sənəd) tələb olunur</label>
+                  <label className="text-[14px] font-semibold text-slate-700 mb-2 block">{t("owner_form_invoice", "Faktura (Sənəd) tələb olunur")}</label>
                   <div className="relative">
                     <select
                       name="requiresInvoice"
                       className="form-select w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-[15px] py-2.5 h-auto transition-shadow appearance-none"
                       defaultValue={editing?.requiresInvoice || "Xeyr"}
                     >
-                      <option value="Bəli">Bəli</option>
-                      <option value="Xeyr">Xeyr</option>
+                      <option value="Bəli">{t("owner_form_yes", "Bəli")}</option>
+                      <option value="Xeyr">{t("owner_form_no", "Xeyr")}</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <i className="ri-arrow-down-s-line text-slate-400"></i>
@@ -1160,15 +1163,15 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                 </div>
 
                 <div>
-                  <label className="text-[14px] font-semibold text-slate-700 mb-2 block">Gediş-dönüş yük imkanı</label>
+                  <label className="text-[14px] font-semibold text-slate-700 mb-2 block">{t("owner_form_roundtrip", "Gediş-dönüş yük imkanı")}</label>
                   <div className="relative">
                     <select
                       name="roundTrip"
                       className="form-select w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-[15px] py-2.5 h-auto transition-shadow appearance-none"
                       defaultValue={editing?.roundTrip || "Xeyr"}
                     >
-                      <option value="Bəli">Bəli, qayıdış yükü də var</option>
-                      <option value="Xeyr">Xeyr, yalnız bir tərəfə</option>
+                      <option value="Bəli">{t("owner_form_roundtrip_yes", "Bəli, qayıdış yükü də var")}</option>
+                      <option value="Xeyr">{t("owner_form_roundtrip_no", "Xeyr, yalnız bir tərəfə")}</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <i className="ri-arrow-down-s-line text-slate-400"></i>
@@ -1200,7 +1203,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
             <ImageUploader
               key={listingId || "new-load"}
               folder="classified-loads"
-              label="Şəkilləri seçin"
+              label={t("owner_form_select_images", "Şəkilləri seçin")}
               maxFiles={listingImageMaxFiles}
               maxFileSizeBytes={listingImageMaxFileSizeBytes}
               helperText={getListingImageLimitHint()}
@@ -1221,10 +1224,10 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
           >
             <i className={editing || (listingId && !listingId.startsWith("load-")) ? "ri-save-line" : "ri-send-plane-line"}></i>
             {isSubmitting
-              ? "Göndərilir..."
+              ? t("owner_form_submitting", "Göndərilir...")
               : editing || (listingId && !listingId.startsWith("load-"))
                 ? "Dəyişiklikləri saxla"
-                : "Elanı göndər"}
+                : t("owner_form_submit", "Elanı göndər")}
           </Button>
         </div>
       </form>
