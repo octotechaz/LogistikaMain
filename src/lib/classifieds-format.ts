@@ -229,6 +229,9 @@ export function applyListingFilters(listings: CargoListing[], filters: ListingFi
     const matchesMaxVolume =
       filters.maxVolume === "" || (!Number.isNaN(volume) && volume <= Number(filters.maxVolume));
 
+    const matchesLocale = !filters.listingLocale ||
+      !!(listing.translations as Record<string, unknown> | undefined)?.[filters.listingLocale];
+
     return (
       matchesKeyword &&
       matchesPickupCity &&
@@ -245,7 +248,8 @@ export function applyListingFilters(listings: CargoListing[], filters: ListingFi
       matchesWidth &&
       matchesHeight &&
       matchesMinVolume &&
-      matchesMaxVolume
+      matchesMaxVolume &&
+      matchesLocale
     );
   });
 }
@@ -267,6 +271,7 @@ export function createEmptyFilters(): ListingFilters {
     maxVolume: "",
     length: "",
     width: "",
-    height: ""
+    height: "",
+    listingLocale: ""
   };
 }

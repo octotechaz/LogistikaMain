@@ -417,5 +417,7 @@
     "Showing disrespect to other users",
     "Using the platform for spam and advertising purposes"
   ],
-  "catalog_chip_home": "Household items"
+  "catalog_chip_home": "Household items",
+  "catalog_filter_locale": "Listing language",
+  "catalog_filter_locale_all": "All"
 }

@@ -417,5 +417,7 @@
     "Başqa istifadəçilərə qarşı hörmətsiz davranmaq",
     "Platformadan spam və reklam məqsədilə istifadə etmək"
   ],
-  "catalog_chip_home": "Ev əşyaları"
+  "catalog_chip_home": "Ev əşyaları",
+  "catalog_filter_locale": "Elan dili",
+  "catalog_filter_locale_all": "Hamısı"
 }

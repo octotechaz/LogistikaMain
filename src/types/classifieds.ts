@@ -109,6 +109,7 @@ export interface ListingFilters {
   length: string;
   width: string;
   height: string;
+  listingLocale: string;
 }
 
 

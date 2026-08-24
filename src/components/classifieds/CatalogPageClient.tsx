@@ -441,7 +441,7 @@ function CatalogSelectCard({
         onClick={() => setOpen((current) => !current)}
         className={cn(
           "relative flex h-full w-full min-w-0 flex-col items-start justify-start rounded-[13px] border bg-white px-4 pb-[11px] pt-[11px] text-left shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition duration-200 hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)]",
-          open ? "border-logistics-orange ring-4 ring-orange-100" : "border-slate-200 hover:border-slate-300"
+          open ? "border-slate-400" : "border-slate-200 hover:border-slate-300"
         )}
         aria-expanded={open}
         aria-haspopup="listbox"
@@ -528,7 +528,7 @@ function CatalogInputCard({
     <div
       className={cn(
           "relative h-[60px] min-w-0 shrink-0 rounded-[13px] border bg-white px-4 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition duration-200 hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)]",
-        focused ? "border-logistics-orange ring-4 ring-orange-100" : "border-slate-200 hover:border-slate-300"
+        focused ? "border-slate-400" : "border-slate-200 hover:border-slate-300"
         ,
         className
       )}
@@ -584,7 +584,7 @@ function AdvancedFilterCell({
         value={value}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="h-11 rounded-[12px] border border-slate-200 bg-white px-3 text-[0.95rem] text-slate-700 outline-none transition duration-200 placeholder:text-slate-500 hover:border-slate-300 focus:border-logistics-orange focus:ring-4 focus:ring-orange-100"
+        className="h-11 rounded-[12px] border border-slate-200 bg-white px-3 text-[0.95rem] text-slate-700 outline-none transition duration-200 placeholder:text-slate-500 hover:border-slate-300 focus:border-slate-400"
       />
     </label>
   );
@@ -1491,6 +1491,20 @@ export function CatalogPageClient({
                     inputMode="decimal"
                     onChange={(value) => updateFilter("height", value)}
                   />
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[13px] font-semibold text-slate-500">{t("catalog_filter_locale", "Elan dili")}</span>
+                    <select
+                      value={draftFilters.listingLocale}
+                      onChange={(e) => updateFilter("listingLocale", e.target.value)}
+                      className="h-11 rounded-[12px] border border-slate-200 bg-white px-3 text-[0.95rem] text-slate-700 outline-none transition duration-200 hover:border-slate-300 focus:border-slate-400"
+                    >
+                      <option value="">{t("catalog_filter_locale_all", "Hamısı")}</option>
+                      <option value="az">AZ</option>
+                      <option value="ru">RU</option>
+                      <option value="en">EN</option>
+                      <option value="tr">TR</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
