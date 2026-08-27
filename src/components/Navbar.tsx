@@ -84,7 +84,7 @@ export function Navbar({
             {t("nav_howitworks", "Necə işləyir")}
           </Link>
 
-          <LocaleSwitcher className="hidden sm:flex" />
+          <LocaleSwitcher />
 
           {user ? (
             <div className="relative hidden sm:block" ref={dropdownRef}>

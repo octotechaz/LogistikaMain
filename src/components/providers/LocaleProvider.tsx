@@ -14,8 +14,6 @@ function getStoredLocale(): Locale {
   if (typeof window === "undefined") return DEFAULT_LOCALE;
   const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
   if (stored && SUPPORTED_LOCALES.includes(stored)) return stored;
-  const browserLang = navigator.language.slice(0, 2) as Locale;
-  if (SUPPORTED_LOCALES.includes(browserLang)) return browserLang;
   return DEFAULT_LOCALE;
 }
 
