@@ -621,9 +621,28 @@ export function DashboardShell({
   const router = useRouter();
   const { logout } = useApiAuthUser();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
   const prefetchedRef = useRef<Set<string>>(new Set());
 
   const { t } = useLocale();
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
+
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileSidebarOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileSidebarOpen]);
 
   const navItems =
     section === "owner"
@@ -699,6 +718,117 @@ export function DashboardShell({
     });
   }
 
+  const mobileSidebarDrawer =
+    portalReady && typeof document !== "undefined"
+      ? createPortal(
+          <AnimatePresence>
+            {mobileSidebarOpen ? (
+              <div className="fixed inset-0 z-[90] lg:hidden">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm"
+                  onClick={() => setMobileSidebarOpen(false)}
+                  aria-hidden="true"
+                />
+
+                <motion.aside
+                  initial={{ x: "-100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "-100%" }}
+                  transition={{ type: "spring", damping: 26, stiffness: 260 }}
+                  className="fixed inset-y-0 left-0 flex w-[290px] max-w-[85vw] flex-col bg-white shadow-2xl"
+                >
+                  <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100 px-5">
+                    <AppLogo />
+                    <button
+                      type="button"
+                      onClick={() => setMobileSidebarOpen(false)}
+                      aria-label="Menyunu bağla"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-slate-200"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="shrink-0 border-b border-slate-100 bg-slate-50/70 p-5">
+                    <p className="mb-0.5 text-xs font-bold uppercase tracking-wider text-slate-400">{sectionMeta.panel}</p>
+                    <h3 className="truncate text-base font-bold text-slate-800">{sectionMeta.name}</h3>
+                  </div>
+
+                  <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+                    {navItems.map((item) => {
+                      const active = isNavActive(item.href);
+                      const pending = pendingHref === item.href && pathname !== item.href;
+                      return (
+                        <NextLink
+                          key={item.href}
+                          href={item.href}
+                          prefetch
+                          onClick={(event) => {
+                            setMobileSidebarOpen(false);
+                            goTo(item.href, event);
+                          }}
+                          onMouseEnter={() => router.prefetch(item.href)}
+                          className={cn(
+                            "flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-medium transition-colors",
+                            active
+                              ? "bg-blue-50 font-semibold text-blue-700"
+                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                            pending && "ring-2 ring-blue-100"
+                          )}
+                        >
+                          <i
+                            className={cn(
+                              item.icon,
+                              "text-[18px]",
+                              active ? "text-blue-600" : "text-slate-400"
+                            )}
+                            aria-hidden
+                          />
+                          <span>{item.label}</span>
+                        </NextLink>
+                      );
+                    })}
+                  </nav>
+
+                  <div className="shrink-0 space-y-2 border-t border-slate-200 bg-slate-50/50 p-4">
+                    <div className="flex items-center justify-between px-1 pb-1">
+                      <span className="text-xs font-medium text-slate-400">{t("nav_language", "Dil")}</span>
+                      <LocaleSwitcher />
+                    </div>
+                    <ButtonLink
+                      href="/"
+                      variant="secondary"
+                      onClick={() => setMobileSidebarOpen(false)}
+                      className="h-11 w-full justify-start border-slate-200 bg-white px-4 text-slate-700 shadow-sm hover:bg-slate-50"
+                    >
+                      <i className="ri-home-4-line mr-2 text-[18px] text-slate-400"></i>
+                      {t("dashboard_btn_view_site", "Sayta bax")}
+                    </ButtonLink>
+
+                    <Button
+                      variant="ghost"
+                      className="h-11 w-full justify-start px-4 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={() => {
+                        setMobileSidebarOpen(false);
+                        logout();
+                      }}
+                    >
+                      <i className="ri-logout-box-line mr-2 text-[18px] opacity-80"></i>
+                      {t("dashboard_btn_logout", "Çıxış et")}
+                    </Button>
+                  </div>
+                </motion.aside>
+              </div>
+            ) : null}
+          </AnimatePresence>,
+          document.body
+        )
+      : null;
+
   return (
     <div className="relative min-h-screen bg-[#f4f6f9]">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[280px] flex-col border-r border-slate-200 bg-white shadow-sm lg:flex">
@@ -772,30 +902,25 @@ export function DashboardShell({
       </aside>
 
       <main className="relative z-0 flex min-h-screen flex-col lg:pl-[280px]">
-        <header className="sticky top-0 z-30 flex h-[72px] shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 shadow-sm lg:hidden">
-          <AppLogo />
-          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto pb-1">
-            {navItems.map((item) => {
-              const active = isNavActive(item.href);
-              return (
-                <NextLink
-                  key={item.href}
-                  href={item.href}
-                  prefetch
-                  onClick={(event) => goTo(item.href, event)}
-                  onMouseEnter={() => router.prefetch(item.href)}
-                  className={cn(
-                    "shrink-0 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold transition-colors duration-100",
-                    active ? "bg-blue-50 text-blue-700" : "bg-slate-50 text-slate-600"
-                  )}
-                >
-                  {item.label}
-                </NextLink>
-              );
-            })}
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white/95 px-4 shadow-sm backdrop-blur-md lg:hidden">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(true)}
+              aria-label="Menyunu aç"
+              aria-expanded={mobileSidebarOpen}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 transition hover:bg-slate-200 active:scale-95"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <AppLogo />
           </div>
-          <LocaleSwitcher className="shrink-0" />
+
+          <div className="flex items-center gap-2">
+            <LocaleSwitcher className="shrink-0" />
+          </div>
         </header>
+        {mobileSidebarDrawer}
 
         <div className="w-full flex-1 p-6 lg:p-10">
           <div className="mx-auto max-w-[1200px] space-y-8">
