@@ -4,6 +4,7 @@ import { Menu, Sparkles, X, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { navItems } from "@/components/landing/mock-data";
 import { useApiAuthUser } from "@/hooks/useApiAuthUser";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 
 type LandingNavbarProps = {
   onPrimaryAction: () => void;
@@ -67,6 +68,7 @@ export function LandingNavbar({ onPrimaryAction }: LandingNavbarProps) {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
+          <LocaleSwitcher className="shrink-0" />
           {resolvedUser ? (
             <div className="relative group">
               <a href="/cargo-owner/dashboard" className="h-11 items-center justify-center gap-2 py-2 text-sm font-semibold transition duration-200 hover:-translate-y-px border bg-white text-navy-900 hover:bg-navy-50 hidden rounded-[14px] border-[#d9e4f4] px-[18px] sm:inline-flex cursor-pointer"
@@ -112,14 +114,17 @@ export function LandingNavbar({ onPrimaryAction }: LandingNavbarProps) {
           </button>
         </div>
 
-        <button
-          type="button"
-          className="rounded-full border border-white/10 p-2.5 text-slate-200 lg:hidden"
-          onClick={() => setIsMenuOpen((current) => !current)}
-          aria-label="Menunu ac"
-        >
-          {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-2 lg:hidden">
+          <LocaleSwitcher className="shrink-0" />
+          <button
+            type="button"
+            className="rounded-full border border-white/10 p-2.5 text-slate-200"
+            onClick={() => setIsMenuOpen((current) => !current)}
+            aria-label="Menunu ac"
+          >
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {isMenuOpen ? (

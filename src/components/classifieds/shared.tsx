@@ -314,7 +314,7 @@ export function PublicNavbar() {
             </nav>
 
             <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-              <LocaleSwitcher className="hidden sm:flex" />
+              <LocaleSwitcher className="shrink-0" />
               {showFavorites ? <FavoriteNavLink /> : null}
 
               {user ? (

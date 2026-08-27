@@ -37,11 +37,15 @@ export function LocaleSwitcher({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function handle(e: MouseEvent) {
+    function handle(e: Event) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
     document.addEventListener("mousedown", handle);
-    return () => document.removeEventListener("mousedown", handle);
+    document.addEventListener("touchstart", handle, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handle);
+      document.removeEventListener("touchstart", handle);
+    };
   }, []);
 
   return (
@@ -49,11 +53,11 @@ export function LocaleSwitcher({ className }: { className?: string }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+        className="flex h-9 sm:h-10 items-center gap-1.5 sm:gap-2 rounded-[10px] sm:rounded-[12px] border border-slate-200 bg-white px-2 sm:px-2.5 text-xs sm:text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none"
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <Flag locale={locale} className="h-5 w-5 shrink-0" />
+        <Flag locale={locale} className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
         <span>{LOCALE_LABELS[locale]}</span>
         <svg className={cn("h-3.5 w-3.5 text-slate-400 transition-transform", open && "rotate-180")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <polyline points="6 9 12 15 18 9" />
@@ -61,7 +65,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-[200] mt-1.5 w-44 overflow-hidden rounded-[12px] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.12)]">
+        <div className="absolute right-0 top-full z-[200] mt-1.5 w-44 overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.14)] py-1">
           {SUPPORTED_LOCALES.map((l) => (
             <button
               key={l}
