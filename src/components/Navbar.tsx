@@ -73,6 +73,10 @@ export function Navbar({
           </span>
         </Link>
 
+        <div className="flex items-center gap-2 sm:hidden">
+          <LocaleSwitcher />
+        </div>
+
         <nav className="flex basis-full flex-wrap items-center gap-3 md:basis-auto">
           <Link className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900" href="/">
             {t("nav_home", "Ana səhifə")}
@@ -84,7 +88,7 @@ export function Navbar({
             {t("nav_howitworks", "Necə işləyir")}
           </Link>
 
-          <LocaleSwitcher />
+          <LocaleSwitcher className="hidden sm:flex" />
 
           {user ? (
             <div className="relative hidden sm:block" ref={dropdownRef}>
