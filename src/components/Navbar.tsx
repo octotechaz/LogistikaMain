@@ -63,7 +63,7 @@ export function Navbar({
 
   return (
     <header className="sticky top-0 z-[60] border-b border-navy-100 bg-white/95 backdrop-blur">
-      <div className="relative mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3 font-bold text-navy-900">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-900 text-white">
             <Truck className="h-5 w-5" aria-hidden />
@@ -77,7 +77,7 @@ export function Navbar({
           <LocaleSwitcher />
         </div>
 
-        <nav className="flex basis-full flex-wrap items-center gap-3 md:basis-auto">
+        <nav className="hidden items-center gap-3 sm:flex">
           <Link className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900" href="/">
             {t("nav_home", "Ana səhifə")}
           </Link>
@@ -88,7 +88,7 @@ export function Navbar({
             {t("nav_howitworks", "Necə işləyir")}
           </Link>
 
-          <LocaleSwitcher className="hidden sm:flex" />
+          <LocaleSwitcher />
 
           {user ? (
             <div className="relative hidden sm:block" ref={dropdownRef}>
