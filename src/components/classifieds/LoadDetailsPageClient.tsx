@@ -218,7 +218,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
     const detailId = numericIdFromListingId(listing.id);
   const ownerDisplayName =
     (listing.ownerName && listing.ownerName !== "Kargo Yük Sahibi" ? listing.ownerName : t("ld_default_user", "İstifadəçi"));
-  const ownerListingHref = `/?search=${encodeURIComponent(listing.ownerPhone || '')}`;
+  const ownerListingHref = `/seller/${listing.ownerId}`;
 
   const getMembershipDuration = (createdAt?: string) => {
     if (!createdAt) return t("ld_new_user", "Yeni istifadəçi");

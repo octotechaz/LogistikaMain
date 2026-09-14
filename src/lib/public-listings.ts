@@ -153,6 +153,20 @@ export async function getPublicListingsFromPostgres(): Promise<CargoListing[]> {
   return posts.map(mapCargoPostToPublicListing);
 }
 
+export async function getPublicListingsByOwnerFromPostgres(ownerId: string): Promise<CargoListing[]> {
+  await deactivateExpiredCargoPosts();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const posts = await (prisma.cargoPost.findMany as any)({
+    where: {
+      AND: [publicApprovedCargoPostWhere(), { ownerId }],
+    },
+    select: { ...publicListingSelect, translations: true },
+    orderBy: { createdAt: "desc" },
+  }) as PublicCargoPost[];
+
+  return posts.map(mapCargoPostToPublicListing);
+}
+
 export async function getPublicListingByIdFromPostgres(id: string): Promise<CargoListing | null> {
   await deactivateExpiredCargoPosts();
 

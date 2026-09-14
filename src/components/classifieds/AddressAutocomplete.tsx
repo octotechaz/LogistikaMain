@@ -21,6 +21,7 @@ interface AddressAutocompleteProps {
   required?: boolean;
   error?: string;
   onFieldChange?: () => void;
+  onCityDetected?: (city: string) => void;
 }
 
 const AZ_CENTER: [number, number] = [40.4093, 47.8671];
@@ -39,7 +40,7 @@ const markerIcon = L.divIcon({
   iconAnchor: [19, 38],
 });
 
-function resolveLabel(lat: number, lng: number): Promise<string> {
+function resolveGeo(lat: number, lng: number): Promise<{ label: string; city?: string }> {
   return fetch(
     `/api/geocode/reverse?lat=${encodeURIComponent(String(lat))}&lon=${encodeURIComponent(String(lng))}`,
     { cache: "no-store" }
@@ -47,9 +48,13 @@ function resolveLabel(lat: number, lng: number): Promise<string> {
     .then((response) => response.json().catch(() => null))
     .then((result) => {
       const label = result?.data?.label;
-      return typeof label === "string" && label ? label : "Seçilmiş yer";
+      const city = result?.data?.city;
+      return {
+        label: typeof label === "string" && label ? label : "Seçilmiş yer",
+        city: typeof city === "string" && city ? city : undefined,
+      };
     })
-    .catch(() => "Seçilmiş yer");
+    .catch(() => ({ label: "Seçilmiş yer" }));
 }
 
 function MapInitializer({ onLocated }: { onLocated: (lat: number, lng: number) => void }) {
@@ -69,11 +74,11 @@ function Recenter({ center }: { center: [number, number] }) {
   return null;
 }
 
-function ReverseLocator({ position, onResolve }: { position: [number, number]; onResolve: (label: string) => void }) {
+function ReverseLocator({ position, onResolve }: { position: [number, number]; onResolve: (label: string, city?: string) => void }) {
   useEffect(() => {
     let cancelled = false;
-    resolveLabel(position[0], position[1]).then((label) => {
-      if (!cancelled) onResolve(label);
+    resolveGeo(position[0], position[1]).then(({ label, city }) => {
+      if (!cancelled) onResolve(label, city);
     });
     return () => { cancelled = true; };
   }, [position[0], position[1]]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -87,12 +92,15 @@ export function AddressAutocomplete({
   required,
   error,
   onFieldChange,
+  onCityDetected,
 }: AddressAutocompleteProps) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string>(defaultValue);
   const [position, setPosition] = useState<[number, number]>(AZ_CENTER);
   const [resolvedLabel, setResolvedLabel] = useState<string>("");
+  const [resolvedCity, setResolvedCity] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const [locateError, setLocateError] = useState<string>("");
   const seededRef = useRef(false);
 
@@ -117,7 +125,10 @@ export function AddressAutocomplete({
           const lat = geo.coords.latitude;
           const lng = geo.coords.longitude;
           setPosition([lat, lng]);
-          resolveLabel(lat, lng).then(setResolvedLabel);
+          resolveGeo(lat, lng).then(({ label: lbl, city }) => {
+            setResolvedLabel(lbl);
+            if (city) setResolvedCity(city);
+          });
           setLoading(false);
         },
         () => {
@@ -147,6 +158,8 @@ export function AddressAutocomplete({
     setPosition([lat, lng]);
     setSelected("");
     setResolvedLabel("");
+    setResolvedCity("");
+    setResolving(true);
     onFieldChange?.();
   }, [onFieldChange]);
 
@@ -155,6 +168,9 @@ export function AddressAutocomplete({
     setSelected(value);
     setOpen(false);
     onFieldChange?.();
+    if (resolvedCity && onCityDetected) {
+      onCityDetected(resolvedCity);
+    }
   }
 
   return (
@@ -270,7 +286,11 @@ export function AddressAutocomplete({
                     },
                   }}
                 />
-                <ReverseLocator position={position} onResolve={setResolvedLabel} />
+                <ReverseLocator position={position} onResolve={(lbl, city) => {
+                  setResolvedLabel(lbl);
+                  if (city) setResolvedCity(city);
+                  setResolving(false);
+                }} />
               </MapContainer>
 
               <button
@@ -324,7 +344,7 @@ export function AddressAutocomplete({
               <button
                 type="button"
                 onClick={handleConfirm}
-                disabled={loading}
+                disabled={loading || resolving}
                 className="shrink-0 rounded-xl bg-blue-600 px-6 py-2.5 text-[14px] font-semibold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md disabled:opacity-50"
               >
                 Təsdiqlə

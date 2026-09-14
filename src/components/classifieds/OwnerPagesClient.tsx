@@ -30,6 +30,17 @@ import {
   classifiedsCities,
   classifiedsVehicleTypes
 } from "@/lib/classifieds-meta";
+
+function matchCity(raw: string): string {
+  if (!raw) return "";
+  const normalized = raw.trim().toLowerCase();
+  const found = classifiedsCities.find(
+    (c) => c.toLowerCase() === normalized ||
+           normalized.includes(c.toLowerCase()) ||
+           c.toLowerCase().includes(normalized)
+  );
+  return found ?? "";
+}
 import {
   derivePickupDeadlineFromLegacyDuration,
   getBakuTodayDateString,
@@ -265,6 +276,8 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
   const [remoteListing, setRemoteListing] = useState<CargoListing | null>(null);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [contactPhone, setContactPhone] = useState(sessionUser.phone || "");
+  const [pickupCity, setPickupCity] = useState<string>("");
+  const [deliveryCity, setDeliveryCity] = useState<string>("");
   const listingId = searchParams.get("id");
   const cachedListing =
     listingId
@@ -313,6 +326,11 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
   useEffect(() => {
     setContactPhone(editing?.ownerPhone || sessionUser.phone || "");
   }, [editing?.ownerPhone, sessionUser.phone]);
+
+  useEffect(() => {
+    if (editing?.pickupCity) setPickupCity(editing.pickupCity);
+    if (editing?.deliveryCity) setDeliveryCity(editing.deliveryCity);
+  }, [editing?.pickupCity, editing?.deliveryCity]);
 
   useEffect(() => {
     setCategoriesLoading(true);
@@ -903,7 +921,8 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                     <select
                       name="pickupCity"
                       className="form-select w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-[14px] py-2.5 h-auto transition-shadow appearance-none"
-                      defaultValue={editing?.pickupCity || ""}
+                      value={pickupCity}
+                      onChange={(e) => setPickupCity(e.target.value)}
                       required
                     >
                       <option value="" disabled hidden>{t("owner_form_select_city", "Şəhər seçin")}</option>
@@ -919,11 +938,15 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
 
                 <AddressAutocomplete
                   name="pickupAddress"
-                  label={<>Ünvan <span className="text-red-500">*</span></>}
+                  label="Ünvan"
                   defaultValue={editing?.pickupAddress}
                   required
                   error={fieldErrors.pickupAddress}
                   onFieldChange={() => clearFieldError("pickupAddress")}
+                  onCityDetected={(city) => {
+                    const matched = matchCity(city);
+                    if (matched) setPickupCity(matched);
+                  }}
                 />
               </div>
 
@@ -939,7 +962,8 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                     <select
                       name="deliveryCity"
                       className="form-select w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-[14px] py-2.5 h-auto transition-shadow appearance-none"
-                      defaultValue={editing?.deliveryCity || ""}
+                      value={deliveryCity}
+                      onChange={(e) => setDeliveryCity(e.target.value)}
                       required
                     >
                       <option value="" disabled hidden>{t("owner_form_select_city", "Şəhər seçin")}</option>
@@ -955,11 +979,15 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
 
                 <AddressAutocomplete
                   name="deliveryAddress"
-                  label={<>Ünvan <span className="text-red-500">*</span></>}
+                  label="Ünvan"
                   defaultValue={editing?.deliveryAddress}
                   required
                   error={fieldErrors.deliveryAddress}
                   onFieldChange={() => clearFieldError("deliveryAddress")}
+                  onCityDetected={(city) => {
+                    const matched = matchCity(city);
+                    if (matched) setDeliveryCity(matched);
+                  }}
                 />
               </div>
             </div>

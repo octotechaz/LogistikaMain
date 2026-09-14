@@ -570,7 +570,12 @@ export function AdminLoadsPageClient() {
             ) : null}
             {listings
               .slice()
-              .sort((left, right) => +new Date(right.createdAt) - +new Date(left.createdAt))
+              .sort((left, right) => {
+                const lp = effectiveStatus(left) === "PENDING" ? 0 : 1;
+                const rp = effectiveStatus(right) === "PENDING" ? 0 : 1;
+                if (lp !== rp) return lp - rp;
+                return +new Date(right.createdAt) - +new Date(left.createdAt);
+              })
               .map((listing) => {
                 const currentStatus = effectiveStatus(listing);
                 const isPending = currentStatus === "PENDING";

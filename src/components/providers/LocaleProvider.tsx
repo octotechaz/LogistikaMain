@@ -9,12 +9,47 @@ export const DEFAULT_LOCALE: Locale = "az";
 export type Messages = Record<string, unknown>;
 
 const STORAGE_KEY = "tranzit_locale";
-
-function getStoredLocale(): Locale {
-  if (typeof window === "undefined") return DEFAULT_LOCALE;
+function getStoredLocale(): Locale | null {
+  if (typeof window === "undefined") return null;
   const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
   if (stored && SUPPORTED_LOCALES.includes(stored)) return stored;
-  return DEFAULT_LOCALE;
+  return null;
+}
+
+const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
+  AZ: "az", RU: "ru", TR: "tr", BY: "ru", KZ: "ru", UA: "ru",
+  UZ: "ru", TM: "ru", KG: "ru", TJ: "ru", AM: "ru", GE: "ru", MD: "ru",
+};
+
+function getPositionAsync(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) { reject(new Error("no geolocation")); return; }
+    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 });
+  });
+}
+
+async function detectLocaleByGeo(): Promise<Locale> {
+  try {
+    const pos = await getPositionAsync();
+    const { latitude, longitude } = pos.coords;
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+      { headers: { "Accept-Language": "en" } }
+    );
+    if (!res.ok) return DEFAULT_LOCALE;
+    const data = await res.json();
+    const countryCode = (data?.address?.country_code as string)?.toUpperCase();
+    return COUNTRY_LOCALE_MAP[countryCode] ?? DEFAULT_LOCALE;
+  } catch {
+    try {
+      const res = await fetch("/api/public/geo-locale", { cache: "no-store" });
+      if (!res.ok) return DEFAULT_LOCALE;
+      const { locale } = await res.json();
+      return (SUPPORTED_LOCALES.includes(locale) ? locale : DEFAULT_LOCALE) as Locale;
+    } catch {
+      return DEFAULT_LOCALE;
+    }
+  }
 }
 
 const staticCache: Partial<Record<Locale, Messages>> = {};
@@ -35,7 +70,9 @@ async function loadDynamicContent(locale: Locale): Promise<Messages> {
     const res = await fetch(`/api/public/page-content?locale=${locale}`, { cache: "no-store" });
     if (!res.ok) return {};
     const json = await res.json();
-    const data = (json?.data ?? json) as Messages;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { locale: _loc, ...rest } = (json?.data ?? json) as Messages & { locale?: unknown };
+    const data = rest as Messages;
     contentCache[locale] = data;
     return data;
   } catch { return {}; }
@@ -70,12 +107,28 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const initial = getStoredLocale();
-    setLocaleState(initial);
-    loadMessages(initial).then((m) => {
-      setMessages(m);
-      setReady(true);
-    });
+    const stored = getStoredLocale();
+    if (stored) {
+      setLocaleState(stored);
+      loadMessages(stored).then((m) => {
+        setMessages(m);
+        setReady(true);
+      });
+    } else {
+      detectLocaleByGeo()
+        .then((detected) => {
+          localStorage.setItem(STORAGE_KEY, detected);
+          setLocaleState(detected);
+          return loadMessages(detected);
+        })
+        .then((m) => {
+          setMessages(m);
+          setReady(true);
+        })
+        .catch(() => {
+          setReady(true);
+        });
+    }
 
     function onStorage(e: StorageEvent) {
       if (e.key === STORAGE_KEY && e.newValue && SUPPORTED_LOCALES.includes(e.newValue as Locale)) {
@@ -120,7 +173,13 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     return fallback;
   }, [messages]);
 
-  if (!ready) return null;
+  if (!ready) {
+    return (
+      <LocaleContext.Provider value={{ locale: DEFAULT_LOCALE, setLocale: () => {}, t: (k, f) => f ?? k, tArray: (_, f) => f ?? [], tSteps: (_, f) => f ?? [], ready: false }}>
+        {children}
+      </LocaleContext.Provider>
+    );
+  }
 
   return (
     <LocaleContext.Provider value={{ locale, setLocale, t, tArray, tSteps, ready }}>

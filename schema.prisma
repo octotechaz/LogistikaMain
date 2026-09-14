@@ -323,6 +323,7 @@ model CargoPost {
   pickupDeadlineDate  DateTime?
   expiresAt           DateTime?
   deactivatedAt       DateTime?
+  translations        Json?
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 

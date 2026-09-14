@@ -31,6 +31,18 @@ function extractLabel(address: Record<string, string | undefined> | undefined): 
   );
 }
 
+function extractCity(address: Record<string, string | undefined> | undefined): string | null {
+  if (!address) return null;
+  return (
+    address.city ||
+    address.town ||
+    address.village ||
+    address.municipality ||
+    address.county ||
+    null
+  );
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const lat = searchParams.get("lat");
@@ -68,13 +80,15 @@ export async function GET(request: Request) {
         address?: Record<string, string | undefined>;
       };
       const label = extractLabel(data.address);
+      const city = extractCity(data.address);
       if (label) {
-        return ok({ label });
+        return ok({ label, city: city ?? nearestCityLabel(latitude, longitude) });
       }
     }
   } catch (error) {
     console.error("[geocode/reverse]", error);
   }
 
-  return ok({ label: nearestCityLabel(latitude, longitude) });
+  const fallbackCity = nearestCityLabel(latitude, longitude);
+  return ok({ label: fallbackCity, city: fallbackCity });
 }
