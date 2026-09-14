@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ChevronRight, Clock3, MapPin, RotateCcw, Search, SlidersHorizontal, User } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ArrowLeft, Clock3, MapPin, RotateCcw, Search, SlidersHorizontal, User } from "lucide-react";
 
 import { applyListingFilters, createEmptyFilters, formatWeight } from "@/lib/classifieds-format";
 import { useLocale } from "@/hooks/useLocale";
@@ -18,9 +17,9 @@ type SellerInfo = {
 
 type SortMode = "newest" | "price-asc" | "price-desc" | "weight-desc";
 
-function formatPrice(price?: string | null) {
+function formatPrice(price?: string | number | null) {
   if (!price) return null;
-  const n = parseFloat(price);
+  const n = parseFloat(String(price));
   if (!Number.isFinite(n)) return null;
   return `${n.toLocaleString("az-AZ")} ₼`;
 }
@@ -28,8 +27,8 @@ function formatPrice(price?: string | null) {
 function sortListings(list: CargoListing[], mode: SortMode): CargoListing[] {
   const copy = [...list];
   if (mode === "newest") return copy.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-  if (mode === "price-asc") return copy.sort((a, b) => parseFloat(a.price || "0") - parseFloat(b.price || "0"));
-  if (mode === "price-desc") return copy.sort((a, b) => parseFloat(b.price || "0") - parseFloat(a.price || "0"));
+  if (mode === "price-asc") return copy.sort((a, b) => parseFloat(String(a.price || "0")) - parseFloat(String(b.price || "0")));
+  if (mode === "price-desc") return copy.sort((a, b) => parseFloat(String(b.price || "0")) - parseFloat(String(a.price || "0")));
   if (mode === "weight-desc") return copy.sort((a, b) => (b.weight || 0) - (a.weight || 0));
   return copy;
 }
