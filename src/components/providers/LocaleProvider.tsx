@@ -9,8 +9,21 @@ export const DEFAULT_LOCALE: Locale = "az";
 export type Messages = Record<string, unknown>;
 
 const STORAGE_KEY = "tranzit_locale";
+const STORAGE_DATE_KEY = "tranzit_locale_date";
+
+function getTodayString() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function getStoredLocale(): Locale | null {
   if (typeof window === "undefined") return null;
+  const today = getTodayString();
+  const lastDate = localStorage.getItem(STORAGE_DATE_KEY);
+  if (lastDate !== today) {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem(STORAGE_DATE_KEY, today);
+    return null;
+  }
   const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
   if (stored && SUPPORTED_LOCALES.includes(stored)) return stored;
   return null;
@@ -118,6 +131,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
       detectLocaleByGeo()
         .then((detected) => {
           localStorage.setItem(STORAGE_KEY, detected);
+          localStorage.setItem(STORAGE_DATE_KEY, getTodayString());
           setLocaleState(detected);
           return loadMessages(detected);
         })
@@ -147,6 +161,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
 
   const setLocale = useCallback((next: Locale) => {
     localStorage.setItem(STORAGE_KEY, next);
+    localStorage.setItem(STORAGE_DATE_KEY, getTodayString());
     delete contentCache[next];
     delete staticCache[next];
     loadMessages(next).then((m) => {
