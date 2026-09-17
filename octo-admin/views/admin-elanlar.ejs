@@ -1,0 +1,1414 @@
+<%- include('partials/header') %>
+
+<%
+  const cargoList = Array.isArray(cargos) ? cargos : [];
+  const pendingCount = cargoList.filter(c => c.status === 'PENDING').length;
+  const approvedCount = cargoList.filter(c => c.status === 'APPROVED').length;
+  const rejectedCount = cargoList.filter(c => c.status === 'REJECTED').length;
+
+  function fmtDate(value) {
+    if (!value) return '—';
+    const d = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleDateString('az-AZ', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function fmtDateTime(value) {
+    if (!value) return '—';
+    const d = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleDateString('az-AZ', {
+      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  function statusLabel(status) {
+    if (status === 'PENDING') return 'Gözləyir';
+    if (status === 'APPROVED') return 'Təsdiqlənib';
+    if (status === 'REJECTED') return 'İmtina edilib';
+    return status || '—';
+  }
+
+  function statusClass(status) {
+    if (status === 'PENDING') return 'elan-badge--pending';
+    if (status === 'APPROVED') return 'elan-badge--approved';
+    if (status === 'REJECTED') return 'elan-badge--rejected';
+    return 'elan-badge--muted';
+  }
+
+  function editBadgeLabel(c) {
+    if (c.is_edited && c.status === 'PENDING') return 'Redaktə edilib – təsdiq gözləyir';
+    return statusLabel(c.status);
+  }
+
+  function editBadgeClass(c) {
+    if (c.is_edited && c.status === 'PENDING') return 'elan-badge--edited';
+    return statusClass(c.status);
+  }
+
+  const cargosJson = JSON.stringify(cargoList.map(c => ({
+    id: c.id,
+    title: c.title,
+    cargo_type: c.cargo_type,
+    description: c.description,
+    weight: c.weight,
+    volume: c.volume,
+    length: c.length,
+    width: c.width,
+    height: c.height,
+    quantity: c.quantity,
+    loading_city: c.loading_city,
+    loading_address: c.loading_address,
+    unloading_city: c.unloading_city,
+    unloading_address: c.unloading_address,
+    pickup_date: c.pickup_date,
+    latest_pickup_date: c.latest_pickup_date,
+    loading_time: c.loading_time,
+    transport_type: c.transport_type,
+    price: c.price,
+    phone: c.phone,
+    notes: c.notes,
+    needs_loading_help: c.needs_loading_help,
+    needs_unloading_help: c.needs_unloading_help,
+    requires_invoice: c.requires_invoice,
+    round_trip: c.round_trip,
+    created_at: c.created_at,
+    user_name: c.user_name,
+    user_email: c.user_email,
+    user_phone: c.user_phone,
+    status: c.status,
+    is_edited: c.is_edited || false,
+    last_edited_at: c.last_edited_at || null,
+    edit_snapshot: c.edit_snapshot || null,
+    images: c.images || [],
+  }))).replace(/</g, '\\u003c');
+%>
+
+<style>
+  .elan-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .elan-page-header h5 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+  }
+
+  .elan-page-header p {
+    margin: 0.25rem 0 0;
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+
+  .elan-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .elan-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  .elan-stat strong {
+    font-variant-numeric: tabular-nums;
+    color: #0f172a;
+  }
+
+  .elan-stat--pending { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+  .elan-stat--pending strong { color: #b45309; }
+  .elan-stat--approved { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+  .elan-stat--approved strong { color: #047857; }
+  .elan-stat--rejected { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+  .elan-stat--rejected strong { color: #b91c1c; }
+
+  .elan-shell {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.03);
+    overflow: hidden;
+  }
+
+  .elan-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
+  }
+
+  .elan-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .elan-filter-group label {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #64748b;
+    white-space: nowrap;
+  }
+
+  .elan-search-wrap {
+    position: relative;
+    flex: 1 1 14rem;
+    min-width: 0;
+  }
+
+  .elan-search-wrap i {
+    position: absolute;
+    left: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 0.9rem;
+    pointer-events: none;
+  }
+
+  .elan-search-input {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.5rem 0.85rem 0.5rem 2.15rem;
+    font-size: 0.875rem;
+    color: #0f172a;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .elan-search-input::placeholder { color: #94a3b8; }
+
+  .elan-search-input:focus {
+    border-color: var(--brand-orange);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+  }
+
+  .elan-filter-select {
+    min-width: 9.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.45rem 2rem 0.45rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #0f172a;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M3 4.5L6 8l3-3.5'/%3E%3C/svg%3E") no-repeat right 0.7rem center;
+    appearance: none;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .elan-filter-select:focus {
+    border-color: var(--brand-orange);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+  }
+
+  /* Hide default DataTables search — we use the toolbar search */
+  .elan-shell .dataTables_filter { display: none !important; }
+  .elan-shell .dataTables_length { margin-bottom: 0.75rem; }
+  .elan-shell .dataTables_wrapper { padding: 0 0.75rem 0.75rem; }
+
+  .elan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.28rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 650;
+    line-height: 1.2;
+    border: 1px solid transparent;
+  }
+
+  .elan-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.85;
+  }
+
+  .elan-badge--pending { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+  .elan-badge--edited { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  .elan-badge--approved { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+  .elan-badge--rejected { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+  .elan-badge--muted { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+
+  .elan-id {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: #94a3b8;
+    font-size: 0.85rem;
+  }
+
+  .elan-route {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .elan-route span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #475569;
+    font-size: 0.84rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .elan-route .dot-from {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3b82f6;
+    flex-shrink: 0;
+  }
+
+  .elan-route .dot-to {
+    color: #ef4444;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .elan-user-cell {
+    min-width: 0;
+  }
+
+  .elan-user-cell .name {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.9rem;
+  }
+
+  .elan-user-cell .meta {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 12rem;
+  }
+
+  .elan-title-cell {
+    font-weight: 650;
+    color: #0f172a;
+    max-width: 14rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .elan-row {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  .elan-row:hover {
+    background: #fff7ed !important;
+  }
+
+  .elan-row.is-highlighted {
+    background: #fff7ed !important;
+    box-shadow: inset 3px 0 0 var(--brand-orange);
+  }
+
+  .elan-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: nowrap;
+  }
+
+  .elan-status-select {
+    min-width: 7.25rem;
+    max-width: 8.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.3rem 1.6rem 0.3rem 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #334155;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M3 4.5L6 8l3-3.5'/%3E%3C/svg%3E") no-repeat right 0.5rem center;
+    appearance: none;
+    outline: none;
+  }
+
+  .elan-status-select:focus {
+    border-color: var(--brand-orange);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+  }
+
+  .elan-status-select.is-pending { background-color: #fffbeb; border-color: #fde68a; color: #b45309; }
+  .elan-status-select.is-approved { background-color: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+  .elan-status-select.is-rejected { background-color: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+
+  .elan-btn-icon {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #64748b;
+    transition: all 0.15s ease;
+  }
+
+  .elan-btn-icon:hover {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: var(--brand-orange);
+  }
+
+  .elan-btn-icon.danger:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+  }
+
+  .elan-btn-icon.primary {
+    background: var(--brand-orange);
+    border-color: var(--brand-orange);
+    color: #fff;
+  }
+
+  .elan-btn-icon.primary:hover {
+    background: var(--brand-orange-hover);
+    border-color: var(--brand-orange-hover);
+    color: #fff;
+  }
+
+  /* Mobile cards */
+  .elan-cards {
+    display: none;
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .elan-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 0.95rem 1rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+
+  .elan-card:active {
+    transform: scale(0.995);
+  }
+
+  .elan-card.is-highlighted {
+    border-color: #fdba74;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+  }
+
+  .elan-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .elan-card-title {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.98rem;
+    line-height: 1.3;
+    margin: 0.15rem 0 0;
+  }
+
+  .elan-card-meta {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .elan-card-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .elan-card-meta-row .label {
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  .elan-card-meta-row .value {
+    color: #334155;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .elan-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.85rem;
+  }
+
+  .elan-card-actions .elan-status-select {
+    flex: 1;
+    max-width: none;
+    min-width: 0;
+    height: 2.15rem;
+  }
+
+  .elan-table-wrap {
+    padding: 0 0.35rem 0.35rem;
+  }
+
+  /* Detail modal */
+  .elan-modal .modal-content {
+    border: none;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  }
+
+  .elan-modal .modal-header {
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: linear-gradient(180deg, #fff 0%, #fafbfc 100%);
+  }
+
+  .elan-modal .modal-title {
+    font-size: 1.05rem;
+    font-weight: 750;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+  }
+
+  .elan-modal .modal-body {
+    padding: 1.15rem 1.25rem 1.35rem;
+    max-height: min(72vh, 640px);
+    overflow-y: auto;
+  }
+
+  .elan-modal .modal-footer {
+    padding: 0.9rem 1.25rem;
+    border-top: 1px solid #f1f5f9;
+    background: #f8fafc;
+    gap: 0.5rem;
+  }
+
+  .elan-detail-hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .elan-detail-hero h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 750;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  .elan-detail-section {
+    margin-bottom: 1rem;
+    padding: 0.95rem 1rem;
+    border: 1px solid #f1f5f9;
+    border-radius: 14px;
+    background: #fff;
+  }
+
+  .elan-detail-section h6 {
+    margin: 0 0 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 750;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #94a3b8;
+  }
+
+  .elan-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1rem;
+  }
+
+  .elan-detail-item {
+    min-width: 0;
+  }
+
+  .elan-detail-item.full {
+    grid-column: 1 / -1;
+  }
+
+  .elan-detail-item .label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 0.15rem;
+  }
+
+  .elan-detail-item .value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+    word-break: break-word;
+  }
+
+  .elan-detail-item .value.muted {
+    font-weight: 500;
+    color: #64748b;
+  }
+
+  .elan-route-box {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+
+  .elan-route-point {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    padding: 0.7rem 0.8rem;
+    border-radius: 12px;
+    background: #f8fafc;
+  }
+
+  .elan-route-point .icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+  }
+
+  .elan-route-point.from .icon { background: #dbeafe; color: #2563eb; }
+  .elan-route-point.to .icon { background: #fee2e2; color: #dc2626; }
+
+  .elan-route-point .city {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.92rem;
+  }
+
+  .elan-route-point .addr {
+    color: #64748b;
+    font-size: 0.8rem;
+    margin-top: 0.1rem;
+  }
+
+  .elan-flag-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .elan-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 650;
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  .elan-flag.yes {
+    background: #ecfdf5;
+    color: #047857;
+  }
+
+  .elan-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .elan-images a {
+    display: block;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    aspect-ratio: 1;
+    background: #f8fafc;
+  }
+
+  .elan-images img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .elan-diff-section {
+    border: 1px solid #bfdbfe;
+    background: #f0f6ff;
+  }
+
+  .elan-diff-section > h6 {
+    color: #1d4ed8;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .elan-diff-meta {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.75rem;
+  }
+
+  .elan-diff-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .elan-diff-row {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, auto) auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    font-size: 0.82rem;
+  }
+
+  .elan-diff-row .label {
+    color: #475569;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .elan-diff-row .old {
+    color: #b91c1c;
+    text-decoration: line-through;
+    word-break: break-word;
+    min-width: 0;
+  }
+
+  .elan-diff-row .arrow {
+    color: #94a3b8;
+  }
+
+  .elan-diff-row .new {
+    color: #047857;
+    font-weight: 600;
+    word-break: break-word;
+    min-width: 0;
+  }
+
+  .elan-diff-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .elan-diff-img {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    aspect-ratio: 1;
+    background: #fff;
+  }
+
+  .elan-diff-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .elan-diff-img span {
+    position: absolute;
+    inset-inline-start: 0;
+    bottom: 0;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    color: #fff;
+  }
+
+  .elan-diff-img.new-img span { background: #047857; }
+  .elan-diff-img.removed-img span { background: #b91c1c; }
+  .elan-diff-img.removed-img img { opacity: 0.45; }
+
+  .elan-diff-section h6.mt-0 { margin-top: 0; }
+
+  @media (max-width: 767.98px) {
+    .elan-diff-row { grid-template-columns: 1fr; gap: 0.15rem; }
+    .elan-diff-row .arrow { display: none; }
+  }
+
+  .elan-modal-status-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .elan-modal-status-form .elan-status-select {
+    min-width: 8.5rem;
+    max-width: none;
+    height: 2.35rem;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 991.98px) {
+    .elan-desktop-only { display: none !important; }
+    .elan-cards { display: grid; }
+    .elan-toolbar { padding: 0.85rem; }
+    .elan-search-wrap { flex: 1 1 100%; }
+    .elan-filter-select { width: 100%; min-width: 0; }
+    .elan-filter-group { width: 100%; }
+    .elan-filter-group label { display: none; }
+    .elan-detail-grid { grid-template-columns: 1fr; }
+    .elan-modal .modal-dialog { margin: 0.5rem; }
+    .elan-modal .modal-body { max-height: min(78vh, 720px); }
+  }
+
+  @media (min-width: 992px) {
+    .elan-mobile-only { display: none !important; }
+  }
+</style>
+
+<div class="elan-page-header">
+  <div>
+    <h5>Bütün Elanlar</h5>
+    <p>Admin idarəetmə — elan tələblərini nəzərdən keçirin və status dəyişin</p>
+  </div>
+  <div class="elan-stats">
+    <span class="elan-stat"><strong><%= cargoList.length %></strong> ümum</span>
+    <span class="elan-stat elan-stat--pending"><strong><%= pendingCount %></strong> gözləyir</span>
+    <span class="elan-stat elan-stat--approved"><strong><%= approvedCount %></strong> təsdiq</span>
+    <span class="elan-stat elan-stat--rejected"><strong><%= rejectedCount %></strong> imtina</span>
+  </div>
+</div>
+
+<% if(typeof req !== 'undefined' && req.query) { %>
+  <% if(req.query.updated) { %>
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius: 12px;">
+      <i class="bi bi-check-circle-fill me-2"></i> Elan statusu uğurla yeniləndi!
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+  <% if(req.query.deleted) { %>
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius: 12px;">
+      <i class="bi bi-check-circle-fill me-2"></i> Elan uğurla silindi!
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+<% } %>
+
+<div class="elan-shell">
+  <div class="elan-toolbar">
+    <div class="elan-search-wrap">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <input
+        type="search"
+        id="elanSearchInput"
+        class="elan-search-input"
+        placeholder="Axtarış: ID, istifadəçi, başlıq, marşrut..."
+        autocomplete="off"
+      >
+    </div>
+    <div class="elan-filter-group">
+      <label for="elanStatusFilter">Status</label>
+      <select id="elanStatusFilter" class="elan-filter-select" aria-label="Status filter">
+        <option value="">Bütün statuslar</option>
+        <option value="PENDING">Gözləyir</option>
+        <option value="APPROVED">Təsdiqlənib</option>
+        <option value="REJECTED">İmtina edilib</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Desktop table -->
+  <div class="elan-table-wrap elan-desktop-only">
+    <div class="table-responsive">
+      <table id="myTable" class="table table-hover w-100 mb-0">
+        <thead>
+          <tr>
+            <th class="border-0">ID</th>
+            <th class="border-0">İstifadəçi</th>
+            <th class="border-0">Başlıq</th>
+            <th class="border-0">Marşrut</th>
+            <th class="border-0">Tarix</th>
+            <th class="border-0">Status</th>
+            <th class="border-0 text-end">Əməliyyat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if(cargoList.length > 0) { %>
+            <% cargoList.forEach(cargo => { %>
+              <tr
+                id="elan-<%= cargo.id %>"
+                class="elan-row"
+                data-elan-id="<%= cargo.id %>"
+                data-status="<%= cargo.status %>"
+              >
+                <td><span class="elan-id">#<%= cargo.id %></span></td>
+                <td>
+                  <div class="elan-user-cell">
+                    <div class="name"><%= cargo.user_name || 'Naməlum' %></div>
+                    <div class="meta"><%= cargo.user_email || '' %></div>
+                  </div>
+                </td>
+                <td><div class="elan-title-cell" title="<%= cargo.title %>"><%= cargo.title %></div></td>
+                <td>
+                  <div class="elan-route">
+                    <span><i class="dot-from"></i><%= cargo.loading_city %></span>
+                    <span><i class="bi bi-geo-alt-fill dot-to"></i><%= cargo.unloading_city %></span>
+                  </div>
+                </td>
+                <td>
+                  <small class="text-muted d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-calendar3"></i> <%= fmtDate(cargo.latest_pickup_date) %>
+                  </small>
+                </td>
+                <td>
+                  <span class="elan-badge <%= editBadgeClass(cargo) %>"><%= editBadgeLabel(cargo) %></span>
+                </td>
+                <td class="text-end" onclick="event.stopPropagation()">
+                  <div class="elan-actions admin-row-actions">
+                    <form action="/dashboard/elan/status/<%= cargo.id %>" method="POST" class="d-inline-flex gap-1 align-items-center mb-0">
+                      <select
+                        name="status"
+                        class="elan-status-select <%= cargo.status === 'PENDING' ? 'is-pending' : cargo.status === 'APPROVED' ? 'is-approved' : cargo.status === 'REJECTED' ? 'is-rejected' : '' %>"
+                        onchange="this.classList.remove('is-pending','is-approved','is-rejected'); this.classList.add(this.value === 'PENDING' ? 'is-pending' : this.value === 'APPROVED' ? 'is-approved' : this.value === 'REJECTED' ? 'is-rejected' : '');"
+                      >
+                        <option value="PENDING" <%= cargo.status === 'PENDING' ? 'selected' : '' %>>Gözləyir</option>
+                        <option value="APPROVED" <%= cargo.status === 'APPROVED' ? 'selected' : '' %>>Təsdiqlə</option>
+                        <option value="REJECTED" <%= cargo.status === 'REJECTED' ? 'selected' : '' %>>İmtina et</option>
+                      </select>
+                      <button type="submit" class="elan-btn-icon primary" title="Yenilə">
+                        <i class="bi bi-check-lg"></i>
+                      </button>
+                    </form>
+                    <button type="button" class="elan-btn-icon js-open-elan" data-elan-id="<%= cargo.id %>" title="Detallar">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <form action="/dashboard/elan/admin-sil/<%= cargo.id %>" method="POST" onsubmit="return confirm('Bu elanı silmək istədiyinizə əminsiniz?');" class="d-inline mb-0">
+                      <button type="submit" class="elan-btn-icon danger" title="Sil">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Mobile cards -->
+  <div class="elan-cards elan-mobile-only" id="elanMobileCards">
+    <% if(cargoList.length > 0) { %>
+      <% cargoList.forEach(cargo => { %>
+        <article
+          class="elan-card"
+          id="elan-card-<%= cargo.id %>"
+          data-elan-id="<%= cargo.id %>"
+          data-status="<%= cargo.status %>"
+          data-search="<%= [cargo.id, cargo.title, cargo.user_name, cargo.user_email, cargo.loading_city, cargo.unloading_city, cargo.phone].filter(Boolean).join(' ').toLowerCase() %>"
+        >
+          <div class="elan-card-top">
+            <div>
+              <span class="elan-id">#<%= cargo.id %></span>
+              <h3 class="elan-card-title"><%= cargo.title %></h3>
+            </div>
+            <span class="elan-badge <%= editBadgeClass(cargo) %>"><%= editBadgeLabel(cargo) %></span>
+          </div>
+
+          <div class="elan-route">
+            <span><i class="dot-from"></i><%= cargo.loading_city %></span>
+            <span><i class="bi bi-geo-alt-fill dot-to"></i><%= cargo.unloading_city %></span>
+          </div>
+
+          <div class="elan-card-meta">
+            <div class="elan-card-meta-row">
+              <span class="label">İstifadəçi</span>
+              <span class="value"><%= cargo.user_name || 'Naməlum' %></span>
+            </div>
+            <div class="elan-card-meta-row">
+              <span class="label">Son tarix</span>
+              <span class="value"><%= fmtDate(cargo.latest_pickup_date) %></span>
+            </div>
+          </div>
+
+          <div class="elan-card-actions" onclick="event.stopPropagation()">
+            <form action="/dashboard/elan/status/<%= cargo.id %>" method="POST" class="d-flex gap-2 align-items-center mb-0 flex-grow-1">
+              <select
+                name="status"
+                class="elan-status-select <%= cargo.status === 'PENDING' ? 'is-pending' : cargo.status === 'APPROVED' ? 'is-approved' : cargo.status === 'REJECTED' ? 'is-rejected' : '' %>"
+              >
+                <option value="PENDING" <%= cargo.status === 'PENDING' ? 'selected' : '' %>>Gözləyir</option>
+                <option value="APPROVED" <%= cargo.status === 'APPROVED' ? 'selected' : '' %>>Təsdiqlə</option>
+                <option value="REJECTED" <%= cargo.status === 'REJECTED' ? 'selected' : '' %>>İmtina et</option>
+              </select>
+              <button type="submit" class="elan-btn-icon primary" title="Yenilə">
+                <i class="bi bi-check-lg"></i>
+              </button>
+            </form>
+            <button type="button" class="elan-btn-icon js-open-elan" data-elan-id="<%= cargo.id %>" title="Detallar">
+              <i class="bi bi-eye"></i>
+            </button>
+            <form action="/dashboard/elan/admin-sil/<%= cargo.id %>" method="POST" onsubmit="return confirm('Bu elanı silmək istədiyinizə əminsiniz?');" class="d-inline mb-0">
+              <button type="submit" class="elan-btn-icon danger" title="Sil">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+        </article>
+      <% }) %>
+    <% } else { %>
+      <div class="text-center text-muted py-5">Elan tapılmadı.</div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade elan-modal" id="elanDetailModal" tabindex="-1" aria-labelledby="elanDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <div class="text-muted small mb-1" id="elanModalId">#—</div>
+          <h5 class="modal-title" id="elanDetailModalLabel">Elan detalları</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bağla"></button>
+      </div>
+      <div class="modal-body" id="elanModalBody">
+        <!-- filled by JS -->
+      </div>
+      <div class="modal-footer flex-wrap">
+        <form id="elanModalStatusForm" method="POST" class="elan-modal-status-form mb-0">
+          <select name="status" id="elanModalStatusSelect" class="elan-status-select"></select>
+          <button type="submit" class="btn btn-primary btn-sm px-3" style="border-radius: 8px;">
+            <i class="bi bi-check2 me-1"></i> Statusu yenilə
+          </button>
+        </form>
+        <form id="elanModalDeleteForm" method="POST" class="mb-0" onsubmit="return confirm('Bu elanı silmək istədiyinizə əminsiniz?');">
+          <button type="submit" class="btn btn-outline-danger btn-sm px-3" style="border-radius: 8px;">
+            <i class="bi bi-trash me-1"></i> Sil
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script id="elan-data" type="application/json"><%- cargosJson %></script>
+
+<script>
+(function () {
+  const cargos = JSON.parse(document.getElementById('elan-data').textContent || '[]');
+  const byId = Object.create(null);
+  cargos.forEach(function (c) { byId[String(c.id)] = c; });
+
+  const modalEl = document.getElementById('elanDetailModal');
+  let modal = null;
+  function getModal() {
+    if (!modal) {
+      modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    }
+    return modal;
+  }
+  const statusFilter = document.getElementById('elanStatusFilter');
+  const searchInput = document.getElementById('elanSearchInput');
+
+  function getDataTable() {
+    if (!(window.jQuery && window.jQuery.fn.dataTable && window.jQuery.fn.dataTable.isDataTable('#myTable'))) {
+      return null;
+    }
+    return window.jQuery('#myTable').DataTable();
+  }
+
+  function cardSearchText(card) {
+    return ((card.getAttribute('data-search') || '') + ' ' + (card.textContent || '')).toLowerCase();
+  }
+
+  function applyFilters() {
+    const status = statusFilter ? statusFilter.value : '';
+    const q = (searchInput && searchInput.value ? searchInput.value : '').trim().toLowerCase();
+    const table = getDataTable();
+
+    if (table) {
+      table.search(q);
+      if (!status) {
+        table.column(5).search('');
+      } else {
+        const labels = [statusLabel(status)];
+        if (status === 'PENDING') labels.push('Redaktə edilib – təsdiq gözləyir');
+        const pattern = labels
+          .map(function (l) { return l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); })
+          .join('|');
+        table.column(5).search('^(' + pattern + ')$', true, false);
+      }
+      table.draw();
+    }
+
+    document.querySelectorAll('#elanMobileCards .elan-card').forEach(function (card) {
+      const statusOk = !status || card.getAttribute('data-status') === status;
+      const searchOk = !q || cardSearchText(card).indexOf(q) !== -1;
+      card.style.display = statusOk && searchOk ? '' : 'none';
+    });
+  }
+
+  function esc(value) {
+    if (value == null || value === '') return '—';
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function fmtDate(value) {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return esc(value);
+    return d.toLocaleDateString('az-AZ', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function fmtDateTime(value) {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return esc(value);
+    return d.toLocaleDateString('az-AZ', {
+      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  function statusLabel(status) {
+    if (status === 'PENDING') return 'Gözləyir';
+    if (status === 'APPROVED') return 'Təsdiqlənib';
+    if (status === 'REJECTED') return 'İmtina edilib';
+    return status || '—';
+  }
+
+  function statusClass(status) {
+    if (status === 'PENDING') return 'elan-badge--pending';
+    if (status === 'APPROVED') return 'elan-badge--approved';
+    if (status === 'REJECTED') return 'elan-badge--rejected';
+    return 'elan-badge--muted';
+  }
+
+  function editBadgeLabel(c) {
+    if (c.is_edited && c.status === 'PENDING') return 'Redaktə edilib – təsdiq gözləyir';
+    return statusLabel(c.status);
+  }
+
+  function editBadgeClass(c) {
+    if (c.is_edited && c.status === 'PENDING') return 'elan-badge--edited';
+    return statusClass(c.status);
+  }
+
+  function fmtEditValue(value) {
+    if (value == null || value === '') return '—';
+    return esc(value);
+  }
+
+  function strVal(v) {
+    return (v == null || v === '') ? '' : String(v);
+  }
+
+  function editDiffRows(snapshot, cargo) {
+    if (!snapshot || !snapshot.fields) return '';
+    const f = snapshot.fields;
+    const oldDims = [f.length, f.width, f.height].filter(function (v) { return v != null && v !== ''; }).join(' × ');
+    const newDims = [cargo.length, cargo.width, cargo.height].filter(function (v) { return v != null && v !== ''; }).join(' × ');
+
+    const rows = [
+      ['Başlıq', f.cargoName, cargo.title],
+      ['Növ', f.cargoType, cargo.cargo_type],
+      ['Təsvir', f.description, cargo.description],
+      ['Çəki', f.weight, cargo.weight],
+      ['Həcm', f.volume, cargo.volume],
+      ['Say', f.quantity, cargo.quantity],
+      ['Ölçülər', oldDims, newDims],
+      ['Yükləmə şəhəri', f.pickupCity, cargo.loading_city],
+      ['Yükləmə ünvanı', f.pickupAddress, cargo.loading_address],
+      ['Boşaltma şəhəri', f.deliveryCity, cargo.unloading_city],
+      ['Boşaltma ünvanı', f.deliveryAddress, cargo.unloading_address],
+      ['Yükləmə tarixi', f.pickupDate, cargo.pickup_date],
+      ['Son götürülmə', f.pickupDeadlineDate, cargo.latest_pickup_date],
+      ['Yükləmə saatı', f.legacyPickupTime, cargo.loading_time],
+      ['Nəqliyyat', f.requiredVehicleType, cargo.transport_type],
+      ['Qiymət', f.proposedPrice, cargo.price],
+      ['Əlaqə telefonu', f.contactPhone, cargo.phone],
+      ['Qeydlər', f.legacyNote, cargo.notes]
+    ];
+
+    return rows
+      .filter(function (r) { return strVal(r[1]) !== strVal(r[2]); })
+      .map(function (r) {
+        return '<div class="elan-diff-row">' +
+          '<span class="label">' + esc(r[0]) + '</span>' +
+          '<span class="old">' + fmtEditValue(r[1]) + '</span>' +
+          '<span class="arrow">→</span>' +
+          '<span class="new">' + fmtEditValue(r[2]) + '</span>' +
+        '</div>';
+      })
+      .join('');
+  }
+
+  function editDiffImages(snapshot, cargo) {
+    if (!snapshot) return '';
+    const oldImages = Array.isArray(snapshot.imageUrls) ? snapshot.imageUrls : [];
+    const newImages = Array.isArray(cargo.images) ? cargo.images : [];
+    const removed = oldImages.filter(function (url) { return newImages.indexOf(url) === -1; });
+    const added = newImages.filter(function (url) { return oldImages.indexOf(url) === -1; });
+
+    if (removed.length === 0 && added.length === 0) return '';
+
+    return '<h6>Şəkil dəyişiklikləri</h6>' +
+      '<div class="elan-diff-images">' +
+        added.map(function (url) {
+          return '<div class="elan-diff-img new-img"><img src="' + esc(url) + '" alt="Yeni şəkil"><span>Yeni</span></div>';
+        }).join('') +
+        removed.map(function (url) {
+          return '<div class="elan-diff-img removed-img"><img src="' + esc(url) + '" alt="Silinən şəkil"><span>Silinən</span></div>';
+        }).join('') +
+      '</div>';
+  }
+
+  function editDiffHtml(cargo) {
+    if (!cargo.is_edited || !cargo.edit_snapshot) return '';
+    const snap = cargo.edit_snapshot;
+    const diffRows = editDiffRows(snap, cargo);
+    const diffImgs = editDiffImages(snap, cargo);
+    const editedAt = cargo.last_edited_at ? fmtDateTime(cargo.last_edited_at) : '—';
+
+    return '<div class="elan-detail-section elan-diff-section">' +
+      '<h6><i class="bi bi-pencil-square"></i> Redaktə – dəyişilmiş sahələr</h6>' +
+      '<div class="elan-diff-meta">Redaktə olunub: ' + editedAt + '</div>' +
+      (diffRows ? '<div class="elan-diff-list">' + diffRows + '</div>' : '<div class="text-muted small">Sahə dəyişikliyi yoxdur.</div>') +
+      diffImgs +
+    '</div>';
+  }
+
+  function flagChip(label, value) {
+    const yes = value === 'Bəli' || value === true || value === 'true';
+    return '<span class="elan-flag ' + (yes ? 'yes' : '') + '">' + esc(label) + ': <strong>' + esc(value || '—') + '</strong></span>';
+  }
+
+  function renderDetail(cargo) {
+    document.getElementById('elanModalId').textContent = '#' + cargo.id;
+    document.getElementById('elanDetailModalLabel').textContent = cargo.title || 'Elan detalları';
+
+    const select = document.getElementById('elanModalStatusSelect');
+    select.innerHTML =
+      '<option value="PENDING"' + (cargo.status === 'PENDING' ? ' selected' : '') + '>Gözləyir</option>' +
+      '<option value="APPROVED"' + (cargo.status === 'APPROVED' ? ' selected' : '') + '>Təsdiqlə</option>' +
+      '<option value="REJECTED"' + (cargo.status === 'REJECTED' ? ' selected' : '') + '>İmtina et</option>';
+    select.className = 'elan-status-select ' + (
+      cargo.status === 'PENDING' ? 'is-pending' :
+      cargo.status === 'APPROVED' ? 'is-approved' :
+      cargo.status === 'REJECTED' ? 'is-rejected' : ''
+    );
+
+    document.getElementById('elanModalStatusForm').action = '/dashboard/elan/status/' + encodeURIComponent(cargo.id);
+    document.getElementById('elanModalDeleteForm').action = '/dashboard/elan/admin-sil/' + encodeURIComponent(cargo.id);
+
+    const dims = [cargo.length, cargo.width, cargo.height]
+      .filter(function (v) { return v != null && v !== ''; })
+      .map(function (v) { return v + ' m'; })
+      .join(' × ') || '—';
+
+    const images = Array.isArray(cargo.images) ? cargo.images : [];
+    const imagesHtml = images.length
+      ? '<div class="elan-images">' + images.map(function (url) {
+          return '<a href="' + esc(url) + '" target="_blank" rel="noopener"><img src="' + esc(url) + '" alt="Elan şəkli"></a>';
+        }).join('') + '</div>'
+      : '<div class="text-muted small">Şəkil yoxdur</div>';
+
+    document.getElementById('elanModalBody').innerHTML =
+      '<div class="elan-detail-hero">' +
+        '<div>' +
+          '<h3>' + esc(cargo.title) + '</h3>' +
+          '<div class="text-muted small mt-1">' + esc(cargo.cargo_type || 'Növ göstərilməyib') + '</div>' +
+        '</div>' +
+        '<span class="elan-badge ' + editBadgeClass(cargo) + '">' + esc(editBadgeLabel(cargo)) + '</span>' +
+      '</div>' +
+
+      '<div class="elan-detail-section">' +
+        '<h6>İstifadəçi</h6>' +
+        '<div class="elan-detail-grid">' +
+          '<div class="elan-detail-item"><span class="label">Ad</span><span class="value">' + esc(cargo.user_name || 'Naməlum') + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">E-poçt</span><span class="value muted">' + esc(cargo.user_email) + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">Hesab telefonu</span><span class="value">' + esc(cargo.user_phone) + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">Əlaqə telefonu</span><span class="value">' + esc(cargo.phone) + '</span></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="elan-detail-section">' +
+        '<h6>Yük məlumatı</h6>' +
+        '<div class="elan-detail-grid">' +
+          '<div class="elan-detail-item full"><span class="label">Təsvir</span><span class="value muted">' + esc(cargo.description || '—') + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">Çəki</span><span class="value">' + (cargo.weight != null ? esc(cargo.weight) + ' kq' : '—') + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">Həcm</span><span class="value">' + (cargo.volume != null ? esc(cargo.volume) + ' m³' : '—') + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">Say</span><span class="value">' + esc(cargo.quantity) + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">Ölçülər</span><span class="value">' + esc(dims) + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">Nəqliyyat</span><span class="value">' + esc(cargo.transport_type || 'Fərq etməz') + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">Qiymət</span><span class="value">' + (cargo.price != null && cargo.price !== '' ? esc(cargo.price) + ' AZN' : '—') + '</span></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="elan-detail-section">' +
+        '<h6>Marşrut</h6>' +
+        '<div class="elan-route-box">' +
+          '<div class="elan-route-point from">' +
+            '<span class="icon"><i class="bi bi-circle-fill"></i></span>' +
+            '<div><div class="city">' + esc(cargo.loading_city) + '</div><div class="addr">' + esc(cargo.loading_address || 'Ünvan yoxdur') + '</div></div>' +
+          '</div>' +
+          '<div class="elan-route-point to">' +
+            '<span class="icon"><i class="bi bi-geo-alt-fill"></i></span>' +
+            '<div><div class="city">' + esc(cargo.unloading_city) + '</div><div class="addr">' + esc(cargo.unloading_address || 'Ünvan yoxdur') + '</div></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="elan-detail-section">' +
+        '<h6>Tarixlər</h6>' +
+        '<div class="elan-detail-grid">' +
+          '<div class="elan-detail-item"><span class="label">Yükləmə tarixi</span><span class="value">' + fmtDate(cargo.pickup_date) + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">Son götürülmə</span><span class="value">' + fmtDate(cargo.latest_pickup_date) + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">Yükləmə saatı</span><span class="value">' + esc(cargo.loading_time) + '</span></div>' +
+          '<div class="elan-detail-item"><span class="label">Yerləşdirilib</span><span class="value">' + fmtDateTime(cargo.created_at) + '</span></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="elan-detail-section">' +
+        '<h6>Kömək və tələblər</h6>' +
+        '<div class="elan-flag-chips">' +
+          flagChip('Yükləmə yardımı', cargo.needs_loading_help) +
+          flagChip('Boşaltma yardımı', cargo.needs_unloading_help) +
+          flagChip('Faktura', cargo.requires_invoice) +
+          flagChip('Gediş-dönüş', cargo.round_trip) +
+        '</div>' +
+        (cargo.notes
+          ? '<div class="elan-detail-item full mt-3"><span class="label">Qeydlər</span><span class="value muted">' + esc(cargo.notes) + '</span></div>'
+          : '') +
+      '</div>' +
+
+      editDiffHtml(cargo) +
+
+      '<div class="elan-detail-section mb-0">' +
+        '<h6>Şəkillər</h6>' +
+        imagesHtml +
+      '</div>';
+  }
+
+  function openElan(id) {
+    const cargo = byId[String(id)];
+    if (!cargo) return;
+    renderDetail(cargo);
+    getModal().show();
+
+    document.querySelectorAll('.elan-row.is-highlighted, .elan-card.is-highlighted').forEach(function (el) {
+      el.classList.remove('is-highlighted');
+    });
+    const row = document.getElementById('elan-' + id);
+    const card = document.getElementById('elan-card-' + id);
+    if (row) row.classList.add('is-highlighted');
+    if (card) card.classList.add('is-highlighted');
+  }
+
+  document.addEventListener('click', function (e) {
+    const openBtn = e.target.closest('.js-open-elan');
+    if (openBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      openElan(openBtn.getAttribute('data-elan-id'));
+      return;
+    }
+
+    const row = e.target.closest('.elan-row');
+    if (row && !e.target.closest('form, button, a, select, input')) {
+      openElan(row.getAttribute('data-elan-id'));
+      return;
+    }
+
+    const card = e.target.closest('.elan-card');
+    if (card && !e.target.closest('form, button, a, select, input')) {
+      openElan(card.getAttribute('data-elan-id'));
+    }
+  });
+
+  if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+  if (searchInput) searchInput.addEventListener('input', applyFilters);
+
+  function initDeepLink() {
+    const params = new URLSearchParams(window.location.search);
+    const elanId = params.get('elan');
+    if (elanId && byId[String(elanId)]) {
+      const target = document.getElementById('elan-' + elanId) || document.getElementById('elan-card-' + elanId);
+      if (target) {
+        target.classList.add('is-highlighted');
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      openElan(elanId);
+    }
+  }
+
+  // Wait for footer scripts (Bootstrap / DataTables) before filters & deep-link modal
+  window.addEventListener('load', function () {
+    applyFilters();
+    initDeepLink();
+  });
+})();
+</script>
+
+<%- include('partials/footer') %>

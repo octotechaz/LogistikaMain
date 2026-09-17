@@ -1,0 +1,7 @@
+version: "3"
+tunnels:
+  public:
+    addr: 3001
+    proto: http
+    schemes:
+      - https

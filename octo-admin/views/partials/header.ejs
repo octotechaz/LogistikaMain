@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Kargo İdarəetmə Paneli</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <style>
+        /* Theme Colors */
+        :root {
+            --brand-orange: #f97316;
+            --brand-orange-hover: #ea580c;
+            --brand-orange-light: #fff7ed;
+            --brand-orange-soft: #ffedd5;
+            --sidebar-width: 240px;
+            --sidebar-collapsed-width: 72px;
+        }
+
+        html {
+            font-size: 100%;
+        }
+
+        body {
+            background-color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            font-size: 1rem;
+        }
+        
+        /* Modern Light Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: #ffffff;
+            color: #334155;
+            z-index: 1040;
+            box-shadow: 1px 0 10px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+            height: 56px;
+        }
+        
+        .sidebar.collapsed .sidebar-header {
+            justify-content: center;
+            padding: 14px 8px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            color: #0f172a;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            height: 30px;
+            width: 100%;
+        }
+
+        .sidebar-brand .full-logo {
+            transition: opacity 0.3s ease;
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #0f172a;
+            opacity: 1;
+        }
+
+        .sidebar-brand .compact-logo {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            color: var(--brand-orange);
+            pointer-events: none;
+        }
+
+        .sidebar.collapsed .sidebar-brand .full-logo {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sidebar.collapsed .sidebar-brand .compact-logo {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .sidebar .nav {
+            padding: 12px 10px;
+            flex-grow: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .sidebar.collapsed .nav {
+            padding: 12px 8px;
+            align-items: center;
+        }
+
+        .sidebar a.nav-link-item {
+            color: #64748b;
+            text-decoration: none;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            white-space: nowrap;
+            width: 100%;
+        }
+        
+        .sidebar.collapsed a.nav-link-item {
+            justify-content: center;
+            padding: 8px;
+            width: auto;
+        }
+
+        .sidebar a.nav-link-item span {
+            transition: opacity 0.2s;
+        }
+
+        .sidebar .menu-heading {
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            font-size: 0.7rem;
+        }
+
+        .sidebar.collapsed .menu-heading span {
+            display: none;
+        }
+
+        .sidebar.collapsed .menu-heading {
+            height: 2px;
+            padding: 0;
+            margin: 10px 0;
+            background-color: #f1f5f9;
+            width: 50%;
+            border-radius: 2px;
+        }
+        
+        .sidebar.collapsed a.nav-link-item span {
+            display: none;
+        }
+
+        .sidebar a.nav-link-item i {
+            font-size: 1.05rem;
+            margin-right: 10px;
+            color: #94a3b8;
+            transition: all 0.2s ease;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed a.nav-link-item i {
+            margin-right: 0;
+        }
+
+        .sidebar a.nav-link-item:hover {
+            color: #0f172a;
+            background-color: #f8fafc;
+        }
+
+        .sidebar a.nav-link-item:hover i {
+            color: var(--brand-orange);
+        }
+
+        .sidebar a.nav-link-item.active {
+            color: var(--brand-orange-hover);
+            background-color: var(--brand-orange-light);
+            font-weight: 600;
+        }
+
+        .sidebar a.nav-link-item.active i {
+            color: var(--brand-orange);
+        }
+        
+        .sidebar-footer {
+            padding: 12px 14px;
+            border-top: 1px solid #f1f5f9;
+            background-color: #f8fafc;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        
+        .sidebar.collapsed .sidebar-footer {
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .sidebar.collapsed .user-info {
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background-color: var(--brand-orange-soft);
+            color: var(--brand-orange-hover);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .sidebar.collapsed .user-avatar {
+            margin-right: 0;
+        }
+        
+        .user-email {
+            font-size: 0.78rem;
+            color: #475569;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+        
+        .sidebar.collapsed .user-email {
+            display: none;
+        }
+        
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 7px 0;
+            color: #ef4444;
+            background: white;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .sidebar.collapsed .logout-btn {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 50%;
+        }
+        
+        .logout-btn i {
+            margin-right: 8px;
+        }
+        
+        .sidebar.collapsed .logout-btn i {
+            margin-right: 0;
+        }
+        
+        .sidebar.collapsed .logout-btn span {
+            display: none;
+        }
+        
+        .logout-btn:hover {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border-color: #fca5a5;
+        }
+
+        /* Topbar / Toggle Button */
+        .topbar {
+            height: 56px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        
+        .toggle-sidebar-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toggle-sidebar-btn:hover {
+            background: #f1f5f9;
+            color: var(--brand-orange);
+        }
+
+        /* Main Content Wrapper */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar.collapsed + .main-wrapper {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        .content {
+            padding: 0 24px 24px;
+            flex-grow: 1;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--brand-orange);
+            border-color: var(--brand-orange);
+        }
+        
+        .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+            background-color: var(--brand-orange-hover) !important;
+            border-color: var(--brand-orange-hover) !important;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2) !important;
+        }
+        
+        .text-primary {
+            color: var(--brand-orange) !important;
+        }
+        
+        .bg-primary {
+            background-color: var(--brand-orange) !important;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        }
+        
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 20px 24px;
+        }
+
+        /* Modern Form Elements — default size only; do not override -sm controls */
+        .form-control:not(.form-control-sm),
+        .form-select:not(.form-select-sm) {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.875rem;
+            color: #334155;
+            transition: all 0.2s ease-in-out;
+            background-color: #f8fafc;
+        }
+
+        .form-control-sm,
+        .form-select-sm {
+            padding: 0.2rem 0.45rem;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            min-height: auto;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        .form-select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        }
+
+        .input-group-text {
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .input-group .form-control {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .input-group .input-group-text {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-left: 0;
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Modern DataTables Styling */
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            font-size: 0.8125rem;
+        }
+
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 0.35rem;
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px 12px;
+            margin-left: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: var(--brand-orange);
+            box-shadow: 0 0 0 0.2rem rgba(249, 115, 22, 0.15);
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px 30px 6px 12px;
+            outline: none;
+        }
+
+        table.dataTable {
+            margin-top: 15px !important;
+            margin-bottom: 15px !important;
+            border-collapse: collapse !important;
+        }
+        
+        table.dataTable thead th {
+            border-bottom: 2px solid #f1f5f9;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.4px;
+            padding: 10px 12px;
+            background-color: #f8fafc;
+        }
+
+        table.dataTable tbody td {
+            padding: 10px 12px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        table.dataTable tbody td .badge {
+            padding: 4px 9px !important;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        table.dataTable .btn-sm {
+            --bs-btn-padding-y: 0.25rem;
+            --bs-btn-padding-x: 0.55rem;
+            --bs-btn-font-size: 0.8rem;
+            line-height: 1.25;
+        }
+
+        table.dataTable .admin-row-actions {
+            gap: 0.35rem !important;
+        }
+
+        table.dataTable tbody tr:hover {
+            background-color: #f8fafc !important;
+        }
+
+        .dataTables_info {
+            color: #64748b !important;
+            font-size: 0.9rem;
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--brand-orange);
+            border-color: var(--brand-orange);
+        }
+        
+        .page-link {
+            color: var(--brand-orange);
+            border-radius: 6px;
+            margin: 0 3px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .page-link:hover {
+            background-color: var(--brand-orange-light);
+            color: var(--brand-orange-hover);
+            border-color: var(--brand-orange-soft);
+        }
+
+        .page-item:first-child .page-link, .page-item:last-child .page-link {
+            border-radius: 6px;
+        }
+
+        /* Shared admin panel shells / tables / actions */
+        .admin-page-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.85rem;
+            margin-bottom: 1.15rem;
+        }
+        .admin-page-header h5,
+        .admin-page-header h4 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+        }
+        .admin-page-header p {
+            margin: 0.2rem 0 0;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        .admin-shell {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.03);
+            overflow: hidden;
+        }
+        .admin-shell .table-responsive {
+            margin: 0;
+        }
+        .admin-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex-wrap: nowrap;
+        }
+        .admin-select {
+            min-width: 7.25rem;
+            max-width: 9rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.3rem 1.6rem 0.3rem 0.55rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #334155;
+            background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M3 4.5L6 8l3-3.5'/%3E%3C/svg%3E") no-repeat right 0.5rem center;
+            appearance: none;
+            outline: none;
+        }
+        .admin-select:focus {
+            border-color: var(--brand-orange);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+        }
+        .admin-btn-icon {
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #64748b;
+            transition: all 0.15s ease;
+        }
+        .admin-btn-icon:hover {
+            background: #fff7ed;
+            border-color: #fed7aa;
+            color: var(--brand-orange);
+        }
+        .admin-btn-icon.danger:hover {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        .admin-btn-icon.primary {
+            background: var(--brand-orange);
+            border-color: var(--brand-orange);
+            color: #fff;
+        }
+        .admin-btn-icon.primary:hover {
+            background: var(--brand-orange-hover);
+            border-color: var(--brand-orange-hover);
+            color: #fff;
+        }
+        .admin-id {
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            max-width: 7.5rem;
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: bottom;
+        }
+        .admin-cards {
+            display: none;
+            padding: 0.75rem;
+            gap: 0.75rem;
+        }
+        .admin-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 0.95rem 1rem;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+        .admin-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.65rem;
+        }
+        .admin-card-title {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 0.98rem;
+            line-height: 1.3;
+            margin: 0.15rem 0 0;
+        }
+        .admin-card-meta {
+            display: grid;
+            gap: 0.4rem;
+            margin-top: 0.7rem;
+            padding-top: 0.7rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        .admin-card-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            font-size: 0.82rem;
+        }
+        .admin-card-meta-row .label { color: #94a3b8; font-weight: 500; }
+        .admin-card-meta-row .value { color: #334155; font-weight: 600; text-align: right; word-break: break-word; }
+        .admin-card-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.85rem;
+            flex-wrap: wrap;
+        }
+        .admin-card-actions .admin-select {
+            flex: 1;
+            max-width: none;
+            min-width: 0;
+            height: 2.15rem;
+        }
+        @media (max-width: 991.98px) {
+            .admin-desktop-only { display: none !important; }
+            .admin-cards { display: grid; }
+            .dataTables_wrapper .dataTables_length,
+            .dataTables_wrapper .dataTables_filter {
+                float: none !important;
+                text-align: left !important;
+                width: 100%;
+            }
+            .dataTables_wrapper .dataTables_filter input {
+                margin-left: 0;
+                width: 100%;
+                margin-top: 0.35rem;
+            }
+            .admin-page-header .btn {
+                width: 100%;
+            }
+        }
+        @media (min-width: 992px) {
+            .admin-mobile-only { display: none !important; }
+        }
+
+        /* Mobile Backdrop */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 1030;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-backdrop.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Sidebar Close Button (mobile only) */
+        .sidebar-close-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 5px;
+            position: absolute;
+            right: 10px;
+            top: 15px;
+            border-radius: 6px;
+            line-height: 1;
+        }
+        .sidebar-close-btn:hover {
+            background: #f1f5f9;
+            color: var(--brand-orange);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .main-wrapper, .sidebar.collapsed + .main-wrapper {
+                margin-left: 0;
+            }
+            .topbar {
+                padding: 0 15px;
+            }
+            .sidebar-close-btn {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="<%= user && user.role === 'ADMIN' ? '/octo-admin' : (typeof publicAppUrl !== 'undefined' ? publicAppUrl : 'https://tranzit.az') %>" class="sidebar-brand">
+                <span class="full-logo">Tranzit.<span class="text-logistics-orange" style="color: #f97316;">az</span></span>
+                <i class="bi bi-truck compact-logo"></i>
+            </a>
+            <button id="closeSidebar" type="button" aria-label="Yan paneli bağla" class="sidebar-close-btn">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="nav flex-column">
+            <% if(user && user.role === 'ADMIN') { %>
+                <div class="menu-heading px-3 py-2 mt-2 mb-1 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <span>Admin Menu</span>
+                </div>
+                <a href="/dashboard/butun-elanlar" class="nav-link-item <%= path === '/dashboard/butun-elanlar' || path === '/dashboard/butun-elanlar' ? 'active' : '' %>" title="Bütün Elanlar">
+                    <i class="bi bi-collection"></i>
+                    <span>Bütün Elanlar</span>
+                </a>
+                <a href="/dashboard/istifadeciler" class="nav-link-item <%= path === '/dashboard/istifadeciler' || path === '/dashboard/istifadeciler' ? 'active' : '' %>" title="İstifadəçilər">
+                    <i class="bi bi-people"></i>
+                    <span>İstifadəçilər</span>
+                </a>
+                <a href="/dashboard/kategoriler" class="nav-link-item <%= path === '/dashboard/kategoriler' || path === '/dashboard/kategoriler' ? 'active' : '' %>" title="Kateqoriyalar">
+                    <i class="bi bi-tags"></i>
+                    <span>Kateqoriyalar</span>
+                </a>
+                <a href="/dashboard/avtomobiller" class="nav-link-item <%= path === '/dashboard/avtomobiller' ? 'active' : '' %>" title="Avtomobil Onayları">
+                    <i class="bi bi-truck"></i>
+                    <span>Avtomobil Onayları</span>
+                </a>
+                <a href="/dashboard/whatsapp" class="nav-link-item <%= path === '/dashboard/whatsapp' || path === '/dashboard/whatsapp' ? 'active' : '' %>" title="WhatsApp Ayarları">
+                    <i class="bi bi-whatsapp"></i>
+                    <span>WhatsApp Ayarları</span>
+                </a>
+                <a href="/dashboard/footer-ayarlari" class="nav-link-item <%= path === '/dashboard/footer-ayarlari' ? 'active' : '' %>" title="Footer Ayarları">
+                    <i class="bi bi-layout-text-window-reverse"></i>
+                    <span>Footer Ayarları</span>
+                </a>
+                <a href="/dashboard/filter-ayarlari" class="nav-link-item <%= path === '/dashboard/filter-ayarlari' ? 'active' : '' %>" title="Filter Ayarları">
+                    <i class="bi bi-funnel"></i>
+                    <span>Filter Ayarları</span>
+                </a>
+                <a href="/dashboard/sehife-mezmunu" class="nav-link-item <%= path === '/dashboard/sehife-mezmunu' ? 'active' : '' %>" title="Səhifə Məzmunu">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span>Səhifə Məzmunu</span>
+                </a>
+            <% } %>
+
+            <% if (!(user && user.role === 'ADMIN')) { %>
+                <div class="menu-heading px-3 py-2 mt-2 mb-1 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <span>Yük Sahibi Menu</span>
+                </div>
+                <a href="/dashboard/yeni-elan" class="nav-link-item <%= path === '/dashboard/yeni-elan' || path === '/dashboard/yeni-elan' ? 'active' : '' %>" title="Yeni Elan">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Yeni Elan</span>
+                </a>
+                <a href="/dashboard/menim-elanlarim" class="nav-link-item <%= path === '/dashboard/menim-elanlarim' || path === '/dashboard/menim-elanlarim' ? 'active' : '' %>" title="Mənim elanlarım">
+                    <i class="bi bi-view-list"></i>
+                    <span>Mənim elanlarım</span>
+                </a>
+                <a href="/dashboard/profil" class="nav-link-item <%= path === '/dashboard/profil' ? 'active' : '' %>" title="Profil Ayarları">
+                    <i class="bi bi-person-gear"></i>
+                    <span>Profil Ayarları</span>
+                </a>
+            <% } %>
+            <hr class="my-2 border-light w-100">
+            <a href="<%= typeof publicAppUrl !== 'undefined' ? publicAppUrl : 'https://tranzit.az' %>" class="nav-link-item" title="Sayta qayıt">
+                <i class="bi bi-box-arrow-up-right"></i>
+                <span>Sayta qayıt</span>
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" title="<%= user ? user.email : '' %>" style="overflow: hidden; padding: 0;">
+                    <% if (user && user.profile_picture) { %>
+                        <img src="<%= user.profile_picture %>" alt="<%= user.name %>" style="width: 100%; height: 100%; object-fit: cover;">
+                    <% } else { %>
+                        <%= user && user.name ? user.name.charAt(0).toUpperCase() : 'U' %>
+                    <% } %>
+                </div>
+                <div class="user-email" title="<%= user ? user.email : '' %>">
+                    <%= user ? user.email : 'Qonaq' %>
+                </div>
+            </div>
+            <a href="/dashboard/logout" class="logout-btn" title="Çıxış et">
+                <i class="bi bi-box-arrow-right"></i> <span>Çıxış et</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper" id="mainWrapper">
+        
+        <!-- Topbar -->
+        <div class="topbar">
+            <button type="button" class="toggle-sidebar-btn" id="toggleSidebar" aria-label="Yan paneli aç/bağla">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="content">

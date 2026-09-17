@@ -1,0 +1,127 @@
+LOGISTIKA TRAEFIK / PORTAINER TEST RAPORU
+Tarih: 2026-08-12
+Hazirlayan: Cursor QA kontrolu
+Klasor: /Users/ali_new/Desktop/logistika-traefik-portainer
+
+1. KAPSAM
+
+Bu rapor, Portainer + Traefik icin hazirlanan deployment kopyasinin teknik
+dogrulama sonucunu ozetler. Kontrol kapsami:
+
+- TypeScript typecheck
+- Otomatik test paketi
+- Production build
+- Docker compose YAML dogrulamasi
+- Deployment risk analizi
+
+2. UYGULANAN TESTLER
+
+2.1 Typecheck
+- Komut: npm run typecheck
+- Sonuc: BASARILI
+- Not: TypeScript seviyesinde hata bulunmadi.
+
+2.2 Otomatik test paketi
+- Komut: npm test
+- Sonuc: BASARILI
+- Ozet:
+  - Toplam test: 462
+  - Gecen: 462
+  - Basarisiz: 0
+  - Iptal: 0
+  - Skip: 0
+- Sonuc degerlendirmesi: Mevcut test kapsami altinda fonksiyonel regresyon
+  tespit edilmedi.
+
+2.3 Production build
+- Komut: npm run build
+- Sonuc: BASARILI
+- Ek not:
+  - Build surecinde ana sayfa tarafinda build-time DB baglantisi riski
+    tespit edildi.
+  - Bu sorun, ana sayfanin runtime dynamic render olacak sekilde
+    duzenlenmesiyle giderildi.
+  - Duzeltme sonrasi build temiz sekilde tamamlandi.
+
+2.4 Docker compose YAML dogrulamasi
+- Dosyalar:
+  - docker-compose.yml
+  - compose.portainer-live.yml
+- Sonuc: BASARILI
+- Not: YAML yapisi parse edildi, `services` ve `networks` bloklari dogrulandi.
+
+3. TESPIT EDILEN VE GIDERILEN KRITIK NOKTALAR
+
+3.1 Build sirasinda veritabani baglanti riski
+Durum:
+- Homepage SSR akisinda build sirasinda `postgres:5432` baglantisi deneniyordu.
+- Portainer image build asamasinda veritabani henuz ayakta olmayabilecegi icin
+  bu durum deployment riski olusturuyordu.
+
+Alinan aksiyon:
+- `src/app/page.tsx` dosyasi dynamic render moduna alindi.
+
+Sonuc:
+- Build asamasindaki veritabani baglanti hatasi ortadan kaldirildi.
+
+3.2 Deployment compose sertlestirmesi
+Durum:
+- Portainer/Traefik icin kullanilan compose yapisinin production'a uygun
+  sekilde netlestirilmesi gerekiyordu.
+
+Alinan aksiyonlar:
+- Admin router icin hedef port `3005` olarak netlestirildi.
+- `www.tranzit.az` -> `tranzit.az` redirect tanimi eklendi.
+- `PUBLIC_LISTINGS_SQLITE_PATH` ve `OCTO_ADMIN_SQLITE_PATH` env alanlari eklendi.
+- Healthcheck tanimi eklendi.
+- Upload/data volume path'leri netlestirildi.
+
+Sonuc:
+- Portainer stack yapisi daha deterministik ve production uyumlu hale getirildi.
+
+4. UYARILAR / BILINEN DURUMLAR
+
+4.1 Lint warning'leri
+- Production build sirasinda hata degil, warning seviyesinde bazi lint uyarilari
+  goruldu.
+- Bunlar deploy'u bloke etmemektedir.
+- Ozet:
+  - Kullanilmayan eslint-disable directive
+  - Bazi yerlerde `<img>` kullanimi nedeniyle Next.js optimizasyon uyarisi
+
+4.2 Docker runtime testi
+- Bu lokal ortamda `docker compose` / `docker-compose` aktif olmadigi icin
+  tam container ayağa kaldirma testi burada yapilamadi.
+- Buna ragmen:
+  - uygulama typecheck'ten gecti
+  - tum testler gecti
+  - production build gecti
+  - compose YAML yapisi dogrulandi
+
+5. GENEL DEGERLENDIRME
+
+Bu deployment kopyasi, mevcut lokal QA sinirlari icinde basarili bulunmustur.
+Kod seviyesinde, test seviyesinde ve build seviyesinde blocker niteliginde acik
+problem kalmamistir.
+
+Portainer deployment oncesi son kontrol listesi:
+- DNS kayitlari dogru IP'ye bakiyor mu
+- `octobot-net` external network mevcut mu
+- `/datastore/logistika/...` klasorleri yazilabilir mi
+- `.env` production degerleri eksiksiz mi
+- Traefik `websecure` ve `letsencrypt` resolver ayarlari hazir mi
+
+6. SONUC
+
+Karar: SARTLI OLARAK YAYINA HAZIR
+
+Gerekce:
+- Typecheck basarili
+- Tum otomatik testler basarili
+- Production build basarili
+- Deployment compose dosyalari dogrulandi
+- Build-time veritabani riski giderildi
+
+Operasyonel not:
+- Ilk canli deploy sonrasi Portainer container loglari ve
+  `https://tranzit.az/api/health` endpoint'i mutlaka kontrol edilmelidir.

@@ -1,0 +1,28 @@
+# Local Traefik (HTTP :80 → host app ports).
+#
+# Usage:
+#   1) npm start
+#   2) npm run traefik:local   # optional
+#
+# Direct ports (preferred — no /etc/hosts):
+#   http://lvh.me:3001
+#   http://portal.lvh.me:3001
+#   http://admin.lvh.me:3005
+
+services:
+  traefik:
+    image: traefik:v3.3
+    container_name: tranzit-traefik-local
+    restart: unless-stopped
+    command:
+      - --api.dashboard=false
+      - --providers.file.filename=/etc/traefik/dynamic.yml
+      - --providers.file.watch=true
+      - --entrypoints.web.address=:80
+      - --log.level=INFO
+    ports:
+      - "80:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./traefik/dynamic.local.yml:/etc/traefik/dynamic.yml:ro
