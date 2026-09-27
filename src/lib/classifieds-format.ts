@@ -181,10 +181,11 @@ export function applyListingFilters(listings: CargoListing[], filters: ListingFi
       filters.pickupCity === "" || listing.pickupCity === filters.pickupCity;
     const matchesDeliveryCity =
       filters.deliveryCity === "" || listing.deliveryCity === filters.deliveryCity;
+    const normStr = (s?: string | null) => (s ?? "").trim().toLocaleLowerCase("az").replace(/[ı]/g, "i");
     const matchesCargoType =
-      filters.cargoType === "" || listing.cargoType === filters.cargoType;
+      filters.cargoType === "" || normStr(listing.cargoType) === normStr(filters.cargoType);
     const matchesVehicleType =
-      filters.vehicleType === "" || listing.vehicleType === filters.vehicleType;
+      filters.vehicleType === "" || normStr(listing.vehicleType) === normStr(filters.vehicleType);
 
     const numericWeight = Number(listing.weight);
     const matchesMinWeight =

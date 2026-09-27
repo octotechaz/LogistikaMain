@@ -183,16 +183,20 @@ function getCategoryTone(iconTone: string) {
   return categoryToneClassNames[iconTone] ?? categoryToneClassNames["text-logistics-orange"];
 }
 
+function norm(s?: string | null) {
+  return (s ?? "").trim().toLocaleLowerCase("az").replace(/[ı]/g, "i");
+}
+
 function categoryMatchesListing(category: PublicListingCategory, listing: CargoListing) {
   if (category.id === "all") {
     return true;
   }
 
-  if (category.matchCargoType && listing.cargoType !== category.matchCargoType) {
+  if (category.matchCargoType && norm(listing.cargoType) !== norm(category.matchCargoType)) {
     return false;
   }
 
-  if (category.matchVehicleType && listing.vehicleType !== category.matchVehicleType) {
+  if (category.matchVehicleType && norm(listing.vehicleType) !== norm(category.matchVehicleType)) {
     return false;
   }
 

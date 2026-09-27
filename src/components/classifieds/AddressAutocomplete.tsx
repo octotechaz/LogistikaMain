@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LocateFixed, MapPin, X } from "lucide-react";
+import { LocateFixed, MapPin, Search, X } from "lucide-react";
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -104,6 +104,12 @@ export function AddressAutocomplete({
   const [locateError, setLocateError] = useState<string>("");
   const seededRef = useRef(false);
 
+  // Axtarış state-ləri
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchResults, setSearchResults] = useState<PlaceResult[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (defaultValue) setSelected(defaultValue);
   }, [defaultValue]);
@@ -162,6 +168,38 @@ export function AddressAutocomplete({
     setResolving(true);
     onFieldChange?.();
   }, [onFieldChange]);
+
+  function handleSearchInput(value: string) {
+    setSearchQuery(value);
+    setSearchResults([]);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    if (value.trim().length < 2) return;
+    searchTimerRef.current = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const res = await fetch(`/api/geocode/search?q=${encodeURIComponent(value)}`, { cache: "no-store" });
+        const payload = await res.json().catch(() => null);
+        setSearchResults(payload?.data?.places ?? []);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 400);
+  }
+
+  function handleSelectSearchResult(place: PlaceResult) {
+    setPosition([place.latitude, place.longitude]);
+    setResolvedLabel(place.label);
+    setSearchQuery(place.label);
+    setSearchResults([]);
+    // şəhəri çıxart
+    const parts = place.label.split(",");
+    const city = parts[parts.length - 2]?.trim() || parts[0]?.trim() || "";
+    if (city && onCityDetected) onCityDetected(city);
+    setResolvedCity(city);
+    onFieldChange?.();
+  }
 
   function handleConfirm() {
     const value = resolvedLabel || selected || "Seçilmiş yer";
@@ -262,7 +300,43 @@ export function AddressAutocomplete({
               </button>
             </div>
 
-            <div className="relative h-[340px] w-full">
+            {/* Ünvan axtarışı */}
+            <div className="px-4 py-3 border-b border-slate-100 bg-white">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => handleSearchInput(e.target.value)}
+                  placeholder="Ünvan axtar: məs. Mingəçevir, Şəfa küçəsi..."
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 py-2.5 text-[13px] text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-400/20 placeholder:text-slate-400"
+                />
+                {searchLoading && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                )}
+              </div>
+              {searchResults.length > 0 && (
+                <ul className="mt-1 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+                  {searchResults.map((place, i) => (
+                    <li key={i}>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectSearchResult(place)}
+                        className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left text-[13px] text-slate-700 transition hover:bg-blue-50"
+                      >
+                        <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-500" />
+                        <span className="leading-snug">{place.label}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {!searchLoading && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
+                <p className="mt-1.5 text-[12px] text-slate-400 pl-1">Nəticə tapılmadı — xəritədə klikləyərək seçin</p>
+              )}
+            </div>
+
+            <div className="relative h-[300px] w-full">
               <MapContainer
                 center={position}
                 zoom={AZ_ZOOM}

@@ -236,6 +236,88 @@ async function main() {
     })
   ]);
 
+  // CARRIER istifadəçilər — müraciət sistemi üçün
+  const carrierUsers = await Promise.all([
+    createUser({ firstName: "Kamran", lastName: "Hüseynli", phone: "+994501234567", email: "carrier1@tranzit.local", role: Role.CARRIER, companyName: "Hüseynli Nəqliyyat" }),
+    createUser({ firstName: "Tural", lastName: "Babayev", phone: "+994552345678", email: "carrier2@tranzit.local", role: Role.CARRIER, companyName: "Bakı Trans MMC" }),
+  ]);
+
+  const carrierProfiles = await Promise.all([
+    prisma.carrierProfile.create({
+      data: {
+        userId: carrierUsers[0].id,
+        whatsappPhone: "+994501234567",
+        vehicleType: "TIR",
+        supportedCargoTypes: ["Tikinti materialı", "Metal", "Paletli yük"],
+        maxWeightTons: 22,
+        cargoSpaceVolumeM3: 90,
+        locationLabel: "Bakı",
+        locationLat: 40.409264,
+        locationLng: 49.867092,
+      }
+    }),
+    prisma.carrierProfile.create({
+      data: {
+        userId: carrierUsers[1].id,
+        whatsappPhone: "+994552345678",
+        vehicleType: "Ford Transit",
+        supportedCargoTypes: ["Mebel", "Ev əşyaları", "Ərzaq"],
+        maxWeightTons: 3,
+        cargoSpaceVolumeM3: 18,
+        locationLabel: "Sumqayıt",
+        locationLat: 40.589722,
+        locationLng: 49.66861,
+      }
+    }),
+  ]);
+
+  await Promise.all([
+    prisma.vehicle.create({
+      data: {
+        carrierId: carrierUsers[0].id,
+        carrierProfileId: carrierProfiles[0].id,
+        vehicleType: "TIR",
+        brand: "Mercedes-Benz",
+        model: "Actros",
+        plateNumber: "77-TI-999",
+        driverFirstName: "Kamran",
+        driverLastName: "Hüseynli",
+        driverPhone: "+994501234567",
+        capacityTons: 22,
+        bodyLength: 13.6,
+        bodyWidth: 2.45,
+        bodyHeight: 2.7,
+        overallDimensions: "13.6x2.45x2.7",
+        workDays: ["Bazar ertəsi", "Çərşənbə axşamı", "Çərşənbə", "Cümə axşamı", "Cümə"],
+        workHours: "08:00-20:00",
+        serviceAreas: ["Bakı", "Gəncə", "Sumqayıt", "Mingəçevir"],
+        status: "APPROVED",
+      }
+    }),
+    prisma.vehicle.create({
+      data: {
+        carrierId: carrierUsers[1].id,
+        carrierProfileId: carrierProfiles[1].id,
+        vehicleType: "Ford Transit",
+        brand: "Ford",
+        model: "Transit",
+        plateNumber: "10-TR-555",
+        driverFirstName: "Tural",
+        driverLastName: "Babayev",
+        driverPhone: "+994552345678",
+        capacityTons: 3,
+        bodyLength: 4.2,
+        bodyWidth: 1.9,
+        bodyHeight: 2.0,
+        overallDimensions: "4.2x1.9x2.0",
+        workDays: ["Hər gün"],
+        workHours: "09:00-19:00",
+        serviceAreas: ["Bakı", "Sumqayıt", "Xırdalan", "Abşeron"],
+        status: "APPROVED",
+      }
+    }),
+  ]);
+
   const dispatcherUsers = await Promise.all([
       createUser({
         firstName: "Samir",
@@ -474,6 +556,197 @@ async function main() {
     }
   });
 
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14); // 14 gün sonra
+
+  await prisma.cargoPost.createMany({
+    data: [
+      {
+        ownerId: ownerUsers[0].id,
+        cargoOwnerProfileId: ownerProfiles[0].id,
+        cargoName: "Mebel dəsti",
+        cargoType: "Mebel",
+        description: "Bakıdan Gəncəyə 2 ton yüngül mebel daşınması. Həcm: 18 m³. Diqqətlə daşınmalıdır.",
+        weight: 2,
+        volume: 18,
+        length: 4,
+        width: 2,
+        height: 2,
+        quantity: "1 dəst",
+        pickupCity: "Bakı",
+        deliveryCity: "Gəncə",
+        pickupAddress: "Bakı, Nərimanov rayonu, Hüsü Hacıyev küç. 14",
+        deliveryAddress: "Gəncə, Nizami küç. 45",
+        pickupDate: new Date(pickupBase),
+        requiredVehicleType: "Ford Transit",
+        proposedPrice: 220,
+        priceNegotiable: false,
+        contactPhone: "+994703334455",
+        status: "ACTIVE",
+        legacyAdminStatus: "APPROVED",
+        expiresAt
+      },
+      {
+        ownerId: ownerUsers[0].id,
+        cargoOwnerProfileId: ownerProfiles[0].id,
+        cargoName: "Tikinti materialı (kubik)",
+        cargoType: "Tikinti materialı",
+        description: "Bakıdan Sumqayıta 10 ton inşaat kubik daşınması. Kamaz tələb olunur.",
+        weight: 10,
+        volume: 30,
+        quantity: "10 ton",
+        pickupCity: "Bakı",
+        deliveryCity: "Sumqayıt",
+        pickupAddress: "Bakı, Qaradağ rayonu, Sənaye şossesi",
+        deliveryAddress: "Sumqayıt, 18-ci sənaye zonası",
+        pickupDate: new Date(pickupBase + 1000 * 60 * 60 * 24),
+        requiredVehicleType: "Kamaz",
+        proposedPrice: 150,
+        priceNegotiable: true,
+        contactPhone: "+994703334455",
+        status: "ACTIVE",
+        legacyAdminStatus: "APPROVED",
+        expiresAt
+      },
+      {
+        ownerId: ownerUsers[1].id,
+        cargoOwnerProfileId: ownerProfiles[1].id,
+        cargoName: "Paletli tikinti materialı",
+        cargoType: "Paletli yük",
+        description: "Xırdalandan Gəncəyə 18 ton paletli tikinti materialı. TIR tələb olunur. Yüklənmə köməyi var.",
+        weight: 18,
+        volume: 42,
+        quantity: "18 palet",
+        pickupCity: "Xırdalan",
+        deliveryCity: "Gəncə",
+        pickupAddress: "Xırdalan, logistika anbarı, H. Əliyev pr. 110",
+        deliveryAddress: "Gəncə, sənaye zonası, 7-ci blok",
+        pickupDate: new Date(pickupBase + 1000 * 60 * 60 * 24 * 2),
+        requiredVehicleType: "TIR",
+        proposedPrice: 850,
+        priceNegotiable: true,
+        contactPhone: "+994502224466",
+        needsLoadingHelp: "Var",
+        status: "ACTIVE",
+        legacyAdminStatus: "APPROVED",
+        expiresAt
+      },
+      {
+        ownerId: ownerUsers[1].id,
+        cargoOwnerProfileId: ownerProfiles[1].id,
+        cargoName: "Soyudulmuş ərzaq məhsulları",
+        cargoType: "Ərzaq",
+        description: "Lənkərandan Bakıya soyuduculu maşınla 4 ton ərzaq. Temperatur: +2°C - +4°C.",
+        weight: 4,
+        volume: 20,
+        quantity: "120 qutu",
+        pickupCity: "Lənkəran",
+        deliveryCity: "Bakı",
+        pickupAddress: "Lənkəran, mərkəzi anbar, H. Aslanov küç. 3",
+        deliveryAddress: "Bakı, Nərimanov r., Tbilisi pr. 82",
+        pickupDate: new Date(pickupBase + 1000 * 60 * 60 * 24 * 3),
+        requiredVehicleType: "Soyuduculu maşın",
+        proposedPrice: 560,
+        priceNegotiable: false,
+        contactPhone: "+994502224466",
+        status: "ACTIVE",
+        legacyAdminStatus: "APPROVED",
+        expiresAt
+      },
+      {
+        ownerId: ownerUsers[0].id,
+        cargoOwnerProfileId: ownerProfiles[0].id,
+        cargoName: "Texniki avadanlıq",
+        cargoType: "Texnika",
+        description: "Gəncədən Bakıya 4 ədəd texniki avadanlıq. Möhkəm bağlama tələb olunur.",
+        weight: 6,
+        volume: 22,
+        quantity: "4 ədəd",
+        pickupCity: "Gəncə",
+        deliveryCity: "Bakı",
+        pickupAddress: "Gəncə, sənaye küç. 12, Texnikaevi",
+        deliveryAddress: "Bakı, Xətai r., 8 Noyabr pr. 44",
+        pickupDate: new Date(pickupBase + 1000 * 60 * 60 * 24 * 4),
+        requiredVehicleType: "TIR",
+        proposedPrice: 750,
+        priceNegotiable: true,
+        contactPhone: "+994703334455",
+        status: "ACTIVE",
+        legacyAdminStatus: "APPROVED",
+        expiresAt
+      },
+      {
+        ownerId: ownerUsers[1].id,
+        cargoOwnerProfileId: ownerProfiles[1].id,
+        cargoName: "Ev əşyaları köçürməsi",
+        cargoType: "Ev əşyaları",
+        description: "Şəkidən Bakıya ev əşyalarının daşınması. 3 ton, yüngül qablaşdırma.",
+        weight: 3,
+        volume: 25,
+        quantity: "1 ev",
+        pickupCity: "Şəki",
+        deliveryCity: "Bakı",
+        pickupAddress: "Şəki, İstiqlal küç. 7",
+        deliveryAddress: "Bakı, Binəqədi r., Binəqədi qəs.",
+        pickupDate: new Date(pickupBase + 1000 * 60 * 60 * 24 * 5),
+        requiredVehicleType: "Ford Transit",
+        proposedPrice: 320,
+        priceNegotiable: true,
+        contactPhone: "+994502224466",
+        status: "ACTIVE",
+        legacyAdminStatus: "APPROVED",
+        expiresAt
+      },
+      {
+        ownerId: ownerUsers[0].id,
+        cargoOwnerProfileId: ownerProfiles[0].id,
+        cargoName: "Dəmir konstruksiyalar",
+        cargoType: "Metal",
+        description: "Bakıdan Mingəçevirə dəmir konstruksiyalar. 15 ton, uzun ölçülü yük.",
+        weight: 15,
+        volume: 35,
+        length: 9,
+        width: 2.4,
+        height: 1.5,
+        quantity: "6 ədəd",
+        pickupCity: "Bakı",
+        deliveryCity: "Mingəçevir",
+        pickupAddress: "Bakı, Sabunçu r., Zavod küç. 1",
+        deliveryAddress: "Mingəçevir, sənaye məntəqəsi",
+        pickupDate: new Date(pickupBase + 1000 * 60 * 60 * 24 * 6),
+        requiredVehicleType: "TIR",
+        proposedPrice: 950,
+        priceNegotiable: false,
+        contactPhone: "+994703334455",
+        status: "ACTIVE",
+        legacyAdminStatus: "APPROVED",
+        expiresAt
+      },
+      {
+        ownerId: ownerUsers[1].id,
+        cargoOwnerProfileId: ownerProfiles[1].id,
+        cargoName: "Qida məhsulları (toplu)",
+        cargoType: "Ərzaq",
+        description: "Bakıdan Naxçıvana qida məhsulları, 8 ton. Sürətli çatdırılma vacibdir.",
+        weight: 8,
+        volume: 28,
+        quantity: "200 qutu",
+        pickupCity: "Bakı",
+        deliveryCity: "Naxçıvan",
+        pickupAddress: "Bakı, Abşeron r., İndustriya küç. 5",
+        deliveryAddress: "Naxçıvan, mərkəzi bazar yaxınlığı",
+        pickupDate: new Date(pickupBase + 1000 * 60 * 60 * 24 * 2),
+        requiredVehicleType: "Kamaz",
+        proposedPrice: 1200,
+        priceNegotiable: true,
+        contactPhone: "+994502224466",
+        roundTrip: "Var",
+        status: "ACTIVE",
+        legacyAdminStatus: "APPROVED",
+        expiresAt
+      }
+    ]
+  });
+
   await prisma.adminLog.create({
     data: {
       adminId: admin.id,
@@ -489,6 +762,11 @@ async function main() {
   console.log("Operator:", "operator@tranzit.az");
   console.log("Yük verən:", "owner@tranzit.az");
   console.log("Yük verən 2:", "owner2@tranzit.az");
+  console.log("Sürücü:", "driver1@tranzit.local");
+  console.log("Daşıyıcı (CARRIER):", "carrier1@tranzit.local");
+  console.log("Daşıyıcı 2 (CARRIER):", "carrier2@tranzit.local");
+  console.log("Dispetçer:", "dispatcher1@tranzit.local");
+  console.log("CargoPost ilanları: 8 ilan əlavə edildi");
 }
 
 main()

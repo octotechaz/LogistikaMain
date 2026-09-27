@@ -111,12 +111,65 @@ function DetailFactItem({
   );
 }
 
+type VehicleOption = { id: string; plateNumber: string; vehicleType: string; brand: string; model: string };
+
 export function LoadDetailsPageClient({ id }: { id: string }) {
   const { t, locale } = useLocale();
   const { user: currentApiUser, legacyUser, isLoading: isAuthLoading } = useApiAuthUser();
   const isAuthorized = !!(currentApiUser || legacyUser);
+  const isCarrier = currentApiUser?.role === "CARRIER";
   const [sqliteListing, setSqliteListing] = useState<CargoListing | null | undefined>(undefined);
   const [allListings, setAllListings] = useState<CargoListing[]>([]);
+
+  // Müraciət forması state-ləri
+  const [applyVehicleId, setApplyVehicleId] = useState("");
+  const [applyMessage, setApplyMessage] = useState("");
+  const [applyPrice, setApplyPrice] = useState("");
+  const [applyVehicles, setApplyVehicles] = useState<VehicleOption[]>([]);
+  const [applyLoading, setApplyLoading] = useState(false);
+  const [applySuccess, setApplySuccess] = useState(false);
+  const [applyError, setApplyError] = useState("");
+
+  useEffect(() => {
+    if (!isCarrier) return;
+    fetch("/api/vehicles", { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(payload => {
+        const list: VehicleOption[] = (payload?.data ?? []).filter((v: { status: string }) => v.status === "APPROVED");
+        setApplyVehicles(list);
+        if (list.length > 0) setApplyVehicleId(list[0].id);
+      })
+      .catch(() => {});
+  }, [isCarrier]);
+
+  async function handleApply(listingId: string) {
+    setApplyError("");
+    if (!applyVehicleId) { setApplyError("Avtomobil seçin."); return; }
+    setApplyLoading(true);
+    try {
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cargoPostId: listingId,
+          vehicleId: applyVehicleId,
+          message: applyMessage || undefined,
+          offeredPrice: applyPrice ? Number(applyPrice) : undefined,
+        }),
+      });
+      const payload = await res.json();
+      if (!res.ok) {
+        setApplyError(payload?.message ?? "Müraciət göndərilmədi.");
+      } else {
+        setApplySuccess(true);
+      }
+    } catch {
+      setApplyError("Şəbəkə xətası. Yenidən cəhd edin.");
+    } finally {
+      setApplyLoading(false);
+    }
+  }
 
   // Fetch all listings to ensure we have data if Context is empty (like on page load)
   useEffect(() => {
@@ -549,6 +602,70 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                   </Link>
                 </div>
               </div>
+
+              {/* CARRIER üçün müraciət forması */}
+              {isCarrier && (
+                <div className="mt-4 rounded-[14px] border border-slate-200 bg-slate-50 p-4">
+                  <h3 className="text-base font-bold text-navy-900 mb-3">Müraciət göndər</h3>
+                  {applySuccess ? (
+                    <div className="rounded-[10px] bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800 font-medium">
+                      Müraciətiniz uğurla göndərildi! Elan sahibi sizinlə əlaqə saxlayacaq.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {applyVehicles.length === 0 ? (
+                        <p className="text-sm text-slate-500">Müraciət etmək üçün təsdiqlənmiş avtomobiliniz olmalıdır. <Link href="/carrier/vehicles/new" className="text-logistics-orange underline">Avtomobil əlavə et</Link></p>
+                      ) : (
+                        <>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-500 mb-1">Avtomobil</label>
+                            <select
+                              value={applyVehicleId}
+                              onChange={e => setApplyVehicleId(e.target.value)}
+                              className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm text-navy-900 outline-none focus:border-logistics-orange"
+                            >
+                              {applyVehicles.map(v => (
+                                <option key={v.id} value={v.id}>{v.brand} {v.model} — {v.plateNumber}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-500 mb-1">Təklif qiymət (AZN, istəyə görə)</label>
+                            <input
+                              type="number"
+                              value={applyPrice}
+                              onChange={e => setApplyPrice(e.target.value)}
+                              placeholder="məs. 350"
+                              className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm text-navy-900 outline-none focus:border-logistics-orange"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-500 mb-1">Mesaj (istəyə görə)</label>
+                            <textarea
+                              value={applyMessage}
+                              onChange={e => setApplyMessage(e.target.value)}
+                              placeholder="Salam, bu yükü daşıya bilərəm..."
+                              rows={3}
+                              className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm text-navy-900 outline-none focus:border-logistics-orange resize-none"
+                            />
+                          </div>
+                          {applyError && (
+                            <p className="text-xs text-red-600">{applyError}</p>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleApply(listing.id)}
+                            disabled={applyLoading}
+                            className="w-full rounded-[10px] bg-logistics-orange py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 disabled:opacity-60"
+                          >
+                            {applyLoading ? "Göndərilir..." : "Müraciət göndər"}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { OperatorLoadActions } from "@/components/OperatorLoadActions";
 import { StatusBadge } from "@/components/StatusBadge";
+import RouteMap from "@/components/Map/RouteMap";
 import { requireRole } from "@/lib/auth";
 import {
   buildOperatorSmsMessage,
@@ -109,6 +110,13 @@ export default async function OperatorLoadDetailPage({ params }: { params: Promi
             </div>
           </aside>
         </section>
+
+        <RouteMap
+          fromCity={load.pickupCity ?? undefined}
+          fromAddress={load.pickupAddress ?? undefined}
+          toCity={load.deliveryCity ?? undefined}
+          toAddress={load.deliveryAddress ?? undefined}
+        />
 
         <OperatorLoadActions
           loadId={load.id}

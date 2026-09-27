@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ButtonLink } from "@/components/ui/Button";
+import RouteMap from "@/components/Map/RouteMap";
 import { requireRole } from "@/lib/auth";
 import {
   formatDimensions,
@@ -47,6 +48,13 @@ export default async function CargoOwnerLoadDetailPage({ params }: { params: Pro
           </div>
           <StatusBadge status={load.status} />
         </div>
+
+        <RouteMap
+          fromCity={load.pickupCity ?? undefined}
+          fromAddress={load.pickupAddress ?? undefined}
+          toCity={load.deliveryCity ?? undefined}
+          toAddress={load.deliveryAddress ?? undefined}
+        />
 
         <section className="grid gap-4 lg:grid-cols-[1fr_320px]">
           <div className="rounded-lg border border-navy-100 bg-white p-5 shadow-sm">
