@@ -82,6 +82,7 @@ type PublicCategory = {
   iconKey: string;
   iconTone: string;
   isActive: boolean;
+  matchCargoType?: string | null;
 };
 
 function stringValue(value: unknown) {
@@ -269,6 +270,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
   const [categories, setCategories] = useState<PublicCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [selectedCargoType, setSelectedCargoType] = useState<string>("");
   const [fieldErrors, setFieldErrors] = useState<
     Partial<
       Record<"pickupAddress" | "deliveryAddress" | "pickupDeadlineDate" | "contactPhone", string>
@@ -351,6 +353,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
   useEffect(() => {
     if (editing) {
       setSelectedCategoryId((editing as unknown as { categoryId?: string }).categoryId || "");
+      setSelectedCargoType(editing.cargoType || "");
       const existingTranslations = (editing as unknown as { translations?: Record<string, { title?: string; description?: string }> }).translations ?? {};
       const init: Partial<Record<FormLocale, { title: string; description: string }>> = {
         az: { title: editing.title ?? "", description: editing.description ?? "" },
@@ -407,6 +410,14 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
     );
     return total !== null ? formatVolume(total) : "";
   }, [measurements.length, measurements.width, measurements.height, measurements.quantity]);
+
+  // Seçilmiş cargoType'a göre kategorileri filtrele
+  const filteredCategories = useMemo(() => {
+    if (!selectedCargoType) return categories;
+    return categories.filter(
+      (cat) => !cat.matchCargoType || cat.matchCargoType === selectedCargoType
+    );
+  }, [categories, selectedCargoType]);
 
   useEffect(() => {
     setMeasurements(editingMeasurementDefaults);
@@ -826,7 +837,11 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                   <select
                     name="cargoType"
                     className="form-select w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pl-10 text-[15px] py-2.5 h-auto transition-shadow appearance-none"
-                    defaultValue={editing?.cargoType || ""}
+                    value={selectedCargoType}
+                    onChange={(e) => {
+                      setSelectedCargoType(e.target.value);
+                      setSelectedCategoryId("");
+                    }}
                     required
                   >
                     <option value="" disabled hidden>{t("owner_form_select_type", "Növü seçin")}</option>
@@ -858,7 +873,7 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
                     className="form-select w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pl-10 text-[15px] py-2.5 h-auto transition-shadow appearance-none disabled:opacity-60"
                   >
                     <option value="">{categoriesLoading ? t("owner_form_loading", "Yüklənir...") : t("owner_form_select_category", "Kateqoriya seçin (istəyə bağlı)")}</option>
-                    {categories.map((cat) => (
+                    {filteredCategories.map((cat) => (
                       <option key={cat.id} value={cat.id}>{cat.label}</option>
                     ))}
                   </select>
