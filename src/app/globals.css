@@ -200,23 +200,22 @@ textarea {
   }
 }
 
+/* ── PhoneField wrapper ── */
 .phone-field .PhoneInput {
   display: flex;
   align-items: stretch;
   width: 100%;
   min-height: 2.75rem;
-  overflow: hidden;
-  border-radius: 0.5rem;
-  border: 1px solid #e2e8f0;
+  overflow: visible;
+  border-radius: 0.625rem;
+  border: 1.5px solid #e2e8f0;
   background: #fff;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .phone-field .PhoneInput:focus-within {
   border-color: #f97316;
-  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.13);
 }
 
 .phone-field-error .PhoneInput {
@@ -225,54 +224,150 @@ textarea {
 
 .phone-field-error .PhoneInput:focus-within {
   border-color: #ef4444;
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
 }
 
+/* PhoneInputCountry wraps our custom dropdown */
 .phone-field .PhoneInputCountry {
   display: flex;
-  align-items: center;
-  gap: 0.35rem;
+  align-items: stretch;
   margin: 0;
-  padding: 0 0.7rem 0 0.85rem;
-  border-right: 1px solid #e2e8f0;
+  padding: 0;
+  border-right: 1.5px solid #e2e8f0;
+  background: transparent;
+  position: relative;
+}
+
+/* ── Custom country button ── */
+.pf-country-root {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.pf-country-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.75rem 0 0.85rem;
+  background: #f8fafc;
+  border: none;
+  border-radius: 0.5rem 0 0 0.5rem;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.pf-country-btn:hover {
+  background: #f1f5f9;
+}
+
+.pf-flag {
+  display: flex;
+  align-items: center;
+  width: 1.4rem;
+  height: 1rem;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(15,23,42,0.10);
+  flex-shrink: 0;
+}
+
+.pf-flag svg,
+.pf-flag img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pf-flag-empty {
+  background: #e2e8f0;
+}
+
+.pf-calling-code {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  letter-spacing: 0.01em;
+}
+
+.pf-chevron {
+  color: #94a3b8;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.pf-chevron-open {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown ── */
+.pf-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  min-width: 190px;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 0.875rem;
+  box-shadow: 0 8px 32px rgba(15,23,42,0.13), 0 2px 8px rgba(15,23,42,0.06);
+  padding: 0.35rem;
+  animation: pf-drop-in 0.14s ease;
+}
+
+@keyframes pf-drop-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.pf-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: none;
+  border-radius: 0.55rem;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s ease;
+}
+
+.pf-option:hover {
   background: #f8fafc;
 }
 
-.phone-field .PhoneInputCountryIcon {
-  width: 1.35rem;
-  height: 1rem;
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08);
-  border-radius: 2px;
-  overflow: hidden;
+.pf-option-selected {
+  background: #fff7ed;
 }
 
-.phone-field .PhoneInputCountryIcon--border {
-  background-color: transparent;
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08);
+.pf-option-label {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #0f172a;
+  white-space: nowrap;
 }
 
-.phone-field .PhoneInputCountrySelect {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  opacity: 0;
-  cursor: pointer;
-  z-index: 1;
+.pf-option-code {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94a3b8;
+  font-family: ui-monospace, monospace;
+  margin-left: auto;
+  padding-left: 0.5rem;
 }
 
-.phone-field .PhoneInputCountrySelectArrow {
-  display: block;
-  width: 0.35rem;
-  height: 0.35rem;
-  margin-left: 0.15rem;
-  border-right: 1.5px solid #64748b;
-  border-bottom: 1.5px solid #64748b;
-  opacity: 0.85;
-  transform: rotate(45deg);
+.pf-check {
+  flex-shrink: 0;
+  margin-left: 0.25rem;
 }
 
+/* ── Number input ── */
 .phone-field .PhoneInputInput {
   flex: 1 1 auto;
   min-width: 0;
