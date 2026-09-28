@@ -58,6 +58,7 @@ import { effectiveStatus } from "@/lib/status/classifieds";
 import { cn } from "@/lib/utils";
 import type { CargoListing } from "@/types/classifieds";
 import { useLocale } from "@/hooks/useLocale";
+import { ContactBottomSheet } from "@/components/classifieds/ContactBottomSheet";
 
 function numericIdFromListingId(id: string) {
   // Eğer id direkt sqlite ID'si ise (örn: '1', '2' gibi sayılar) başa 56 koyup 6 haneli yapalım
@@ -119,6 +120,9 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
   const isAuthorized = !!(currentApiUser || legacyUser);
   const isCarrier = currentApiUser?.role === "CARRIER";
   const [sqliteListing, setSqliteListing] = useState<CargoListing | null | undefined>(undefined);
+
+  // Müraciət forması state-ləri
+  const [contactSheetOpen, setContactSheetOpen] = useState(false);
 
   // Müraciət forması state-ləri
   const [applyVehicleId, setApplyVehicleId] = useState("");
@@ -549,38 +553,31 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
               </div>
 
               <div className="mt-5 rounded-[14px] border border-logistics-orange/65 px-5 py-4">
-                <div className="flex flex-col gap-3">
-                  <a
-                    href={`tel:${listing.ownerPhone}`}
-                    className="flex w-full items-center justify-center gap-2 rounded-[14px] bg-logistics-orange py-3 text-[1.05rem] font-semibold text-white shadow-[0_6px_20px_rgba(249,115,22,0.25)] transition hover:-translate-y-1 hover:bg-orange-600"
-                  >
-                    <PhoneCall className="h-5 w-5" />
-                    {listing.ownerPhone}
-                  </a>
-                  <a
-                    href={`https://wa.me/${listing.ownerPhone?.replace(/[^0-9]/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-slate-300 bg-white py-3 text-[1.02rem] font-semibold text-navy-900 shadow-sm transition hover:-translate-y-1 hover:bg-slate-50"
-                  >
-                    <MessageCircleMore className="h-5 w-5" />
-                    {t("ld_whatsapp", "WhatsApp ilə yaz")}
-                  </a>
-                </div>
+                <button
+                  type="button"
+                  data-no-loader
+                  onClick={() => setContactSheetOpen(true)}
+                  className="flex w-full items-center justify-center gap-2 rounded-[14px] bg-logistics-orange py-3 text-[1.05rem] font-semibold text-white shadow-[0_6px_20px_rgba(249,115,22,0.25)] transition hover:-translate-y-1 hover:bg-orange-600"
+                >
+                  <PhoneCall className="h-5 w-5" />
+                  {listing.ownerPhone}
+                </button>
 
                 <div className="mt-3 text-center">
-                  <p className="text-[0.85rem] text-slate-500">
-                    {t("ld_call_hint_pre", "Zəng edərkən")} <b>Tranzit.AZ</b>{t("ld_call_hint_post", "-dan gəldiyinizi qeyd etməyi unutmayın.")}
-                  </p>
-                  
                   <Link
                     href={ownerListingHref}
-                    className="mt-4 inline-block text-[0.95rem] font-medium text-logistics-orange transition hover:text-orange-600 hover:underline"
+                    className="mt-1 inline-block text-[0.95rem] font-medium text-logistics-orange transition hover:text-orange-600 hover:underline"
                   >
                     {t("ld_all_listings", "İstifadəçinin bütün elanları")}
                   </Link>
                 </div>
               </div>
+
+              <ContactBottomSheet
+                phone={listing.ownerPhone || ""}
+                open={contactSheetOpen}
+                onClose={() => setContactSheetOpen(false)}
+              />
 
               {/* CARRIER üçün müraciət forması */}
               {isCarrier && (
