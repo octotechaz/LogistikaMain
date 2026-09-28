@@ -34,34 +34,14 @@ const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
   UZ: "ru", TM: "ru", KG: "ru", TJ: "ru", AM: "ru", GE: "ru", MD: "ru",
 };
 
-function getPositionAsync(): Promise<GeolocationPosition> {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) { reject(new Error("no geolocation")); return; }
-    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 });
-  });
-}
-
-async function detectLocaleByGeo(): Promise<Locale> {
+async function detectLocaleByIp(): Promise<Locale> {
   try {
-    const pos = await getPositionAsync();
-    const { latitude, longitude } = pos.coords;
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
-      { headers: { "Accept-Language": "en" } }
-    );
+    const res = await fetch("/api/public/geo-locale", { cache: "force-cache" });
     if (!res.ok) return DEFAULT_LOCALE;
-    const data = await res.json();
-    const countryCode = (data?.address?.country_code as string)?.toUpperCase();
-    return COUNTRY_LOCALE_MAP[countryCode] ?? DEFAULT_LOCALE;
+    const { locale } = await res.json();
+    return (SUPPORTED_LOCALES.includes(locale) ? locale : DEFAULT_LOCALE) as Locale;
   } catch {
-    try {
-      const res = await fetch("/api/public/geo-locale", { cache: "no-store" });
-      if (!res.ok) return DEFAULT_LOCALE;
-      const { locale } = await res.json();
-      return (SUPPORTED_LOCALES.includes(locale) ? locale : DEFAULT_LOCALE) as Locale;
-    } catch {
-      return DEFAULT_LOCALE;
-    }
+    return DEFAULT_LOCALE;
   }
 }
 
@@ -128,7 +108,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
         setReady(true);
       });
     } else {
-      detectLocaleByGeo()
+      detectLocaleByIp()
         .then((detected) => {
           localStorage.setItem(STORAGE_KEY, detected);
           localStorage.setItem(STORAGE_DATE_KEY, getTodayString());

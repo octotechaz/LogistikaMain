@@ -95,8 +95,9 @@ function getSnapshot() {
   return memoryIds;
 }
 
+const EMPTY_SERVER_SNAPSHOT: string[] = [];
 function getServerSnapshot() {
-  return [] as string[];
+  return EMPTY_SERVER_SNAPSHOT;
 }
 
 function writeFavorites(ids: Array<string | number>) {

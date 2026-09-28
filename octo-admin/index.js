@@ -820,6 +820,52 @@ app.post('/dashboard/istifadeci/yarat', requireAuth, requireAdmin, async (req, r
     }
 });
 
+// Admin - Demo test hesabı yaratma (OTP tələb olunmur)
+app.post('/dashboard/istifadeci/demo-yarat', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        function randomDigits(n) {
+            return Array.from({ length: n }, () => Math.floor(Math.random() * 10)).join('');
+        }
+
+        let user = null;
+        let plainPassword = null;
+
+        for (let i = 0; i < 5; i++) {
+            const suffix = randomDigits(6);
+            const name = 'Test İstifadəçi';
+            const email = `demo${suffix}@tranzit.az`;
+            const phone = `+99450${suffix}`;
+            const password = `Demo${suffix}!`;
+
+            const existing = await userRepository.findIdentityConflict({ email, phone });
+            if (existing) continue;
+
+            const salt = bcrypt.genSaltSync(10);
+            const hash = bcrypt.hashSync(password, salt);
+
+            user = await userRepository.createLegacyUser({
+                name,
+                email,
+                phone,
+                passwordHash: hash,
+                role: 'USER',
+            });
+
+            plainPassword = password;
+            break;
+        }
+
+        if (!user) {
+            return res.json({ success: false, message: 'Unikal hesab yaratmaq mümkün olmadı, yenidən cəhd edin.' });
+        }
+
+        return res.json({ success: true, user, password: plainPassword });
+    } catch (error) {
+        console.error(error);
+        return res.json({ success: false, message: 'Server xətası baş verdi.' });
+    }
+});
+
 // Admin - İstifadəçi silmə
 app.post('/dashboard/istifadeci/sil/:id', requireAuth, requireAdmin, async (req, res) => {
     try {

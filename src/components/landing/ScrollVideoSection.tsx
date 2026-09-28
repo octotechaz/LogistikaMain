@@ -25,29 +25,36 @@ export function ScrollVideoSection() {
   );
 
   useEffect(() => {
+    let rafId: number | null = null;
+
     const handleSync = () => {
-      const section = sectionRef.current;
-      const video = videoRef.current;
-      if (!section || !video) return;
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const section = sectionRef.current;
+        const video = videoRef.current;
+        if (!section || !video) return;
 
-      const rect = section.getBoundingClientRect();
-      const viewport = window.innerHeight;
-      const total = rect.height - viewport;
-      const progressed = Math.min(Math.max(viewport - rect.top, 0), total <= 0 ? viewport : rect.height);
-      const progress = total <= 0 ? 0 : Math.min(Math.max(progressed / total, 0), 1);
+        const rect = section.getBoundingClientRect();
+        const viewport = window.innerHeight;
+        const total = rect.height - viewport;
+        const progressed = Math.min(Math.max(viewport - rect.top, 0), total <= 0 ? viewport : rect.height);
+        const progress = total <= 0 ? 0 : Math.min(Math.max(progressed / total, 0), 1);
 
-      if (video.readyState >= 2) {
-        video.currentTime = progress * duration;
-      }
+        if (video.readyState >= 2) {
+          video.currentTime = progress * duration;
+        }
 
-      const nextIndex = Math.min(stageMarkers.length - 1, Math.floor(progress * stageMarkers.length));
-      setActiveIndex(nextIndex);
+        const nextIndex = Math.min(stageMarkers.length - 1, Math.floor(progress * stageMarkers.length));
+        setActiveIndex(nextIndex);
+      });
     };
 
     handleSync();
     window.addEventListener("scroll", handleSync, { passive: true });
-    window.addEventListener("resize", handleSync);
+    window.addEventListener("resize", handleSync, { passive: true });
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", handleSync);
       window.removeEventListener("resize", handleSync);
     };

@@ -61,7 +61,11 @@ import { normalizeInternationalPhone } from "@/lib/phone-validation";
 import type { CargoListing, CargoListingDraft } from "@/types/classifieds";
 import { PhoneField } from "@/components/PhoneField";
 import { ClockTimePicker } from "@/components/classifieds/ClockTimePicker";
-import { AddressAutocomplete } from "@/components/classifieds/AddressAutocomplete";
+import dynamic from "next/dynamic";
+const AddressAutocomplete = dynamic(
+  () => import("@/components/classifieds/AddressAutocomplete").then((m) => m.AddressAutocomplete),
+  { ssr: false }
+);
 
 type SessionUser = {
   id: string;

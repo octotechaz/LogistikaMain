@@ -1,16 +1,18 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { CargoListings } from "@/components/landing/CargoListings";
 import { CargoPostForm } from "@/components/landing/CargoPostForm";
-import { FAQSection } from "@/components/landing/FAQSection";
-import { Footer } from "@/components/landing/Footer";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { IntroLoader } from "@/components/landing/IntroLoader";
 import { LandingNavbar } from "@/components/landing/LandingNavbar";
 import { RoleSelection } from "@/components/landing/RoleSelection";
-import { ScrollVideoSection } from "@/components/landing/ScrollVideoSection";
-import { StatsSection } from "@/components/landing/StatsSection";
+
+const ScrollVideoSection = dynamic(() => import("@/components/landing/ScrollVideoSection").then(m => m.ScrollVideoSection), { ssr: false });
+const StatsSection = dynamic(() => import("@/components/landing/StatsSection").then(m => m.StatsSection), { ssr: false });
+const FAQSection = dynamic(() => import("@/components/landing/FAQSection").then(m => m.FAQSection), { ssr: false });
+const Footer = dynamic(() => import("@/components/landing/Footer").then(m => m.Footer), { ssr: false });
 import {
   listingSeed,
   ownerBenefits,

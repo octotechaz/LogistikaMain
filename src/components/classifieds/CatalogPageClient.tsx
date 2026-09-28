@@ -110,77 +110,21 @@ const fallbackHomeCategories: PublicListingCategory[] = [
   { id: "all", label: "All", iconKey: "grid", iconTone: "text-logistics-orange", sortOrder: 10, isActive: true }
 ];
 
-const categoryToneClassNames: Record<string, { text: string; border: string; bg: string }> = {
-  "text-logistics-orange": {
-    text: "text-logistics-orange",
-    border: "border-logistics-orange",
-    bg: "bg-orange-50"
-  },
-  "text-slate-500": {
-    text: "text-slate-500",
-    border: "border-slate-300",
-    bg: "bg-slate-50"
-  },
-  "text-blue-500": {
-    text: "text-blue-600",
-    border: "border-blue-300",
-    bg: "bg-blue-50"
-  },
-  "text-green-500": {
-    text: "text-emerald-600",
-    border: "border-emerald-300",
-    bg: "bg-emerald-50"
-  },
-  "text-orange-500": {
-    text: "text-orange-600",
-    border: "border-orange-300",
-    bg: "bg-orange-50"
-  },
-  "text-purple-500": {
-    text: "text-violet-600",
-    border: "border-violet-300",
-    bg: "bg-violet-50"
-  },
-  "text-red-500": {
-    text: "text-red-600",
-    border: "border-red-300",
-    bg: "bg-red-50"
-  },
-  // Eski renk yedekleri
-  "text-lime-600": {
-    text: "text-lime-600",
-    border: "border-lime-300",
-    bg: "bg-lime-50"
-  },
-  "text-sky-600": {
-    text: "text-sky-600",
-    border: "border-sky-300",
-    bg: "bg-sky-50"
-  },
-  "text-amber-600": {
-    text: "text-amber-600",
-    border: "border-amber-300",
-    bg: "bg-amber-50"
-  },
-  "text-cyan-600": {
-    text: "text-cyan-600",
-    border: "border-cyan-300",
-    bg: "bg-cyan-50"
-  },
-  "text-violet-600": {
-    text: "text-violet-600",
-    border: "border-violet-300",
-    bg: "bg-violet-50"
-  },
-  "text-yellow-700": {
-    text: "text-yellow-700",
-    border: "border-yellow-300",
-    bg: "bg-yellow-50"
-  }
-};
+const AUTO_TONES: { text: string; border: string; bg: string }[] = [
+  { text: "text-logistics-orange", border: "border-logistics-orange", bg: "bg-orange-50" },
+  { text: "text-blue-600",         border: "border-blue-300",         bg: "bg-blue-50"   },
+  { text: "text-emerald-600",      border: "border-emerald-300",      bg: "bg-emerald-50"},
+  { text: "text-violet-600",       border: "border-violet-300",       bg: "bg-violet-50" },
+  { text: "text-amber-600",        border: "border-amber-300",        bg: "bg-amber-50"  },
+  { text: "text-red-600",          border: "border-red-300",          bg: "bg-red-50"    },
+  { text: "text-sky-600",          border: "border-sky-300",          bg: "bg-sky-50"    },
+  { text: "text-lime-600",         border: "border-lime-300",         bg: "bg-lime-50"   },
+  { text: "text-cyan-600",         border: "border-cyan-300",         bg: "bg-cyan-50"   },
+  { text: "text-yellow-700",       border: "border-yellow-300",       bg: "bg-yellow-50" },
+];
 
-function getCategoryTone(iconTone: string) {
-  return categoryToneClassNames[iconTone] ?? categoryToneClassNames["text-logistics-orange"];
+function getAutoTone(index: number) {
+  return AUTO_TONES[index % AUTO_TONES.length];
 }
 
 function norm(s?: string | null) {
@@ -693,16 +637,16 @@ function HomeCategoryButton({
   label,
   active,
   icon: Icon,
-  iconTone,
+  colorIndex,
   onClick
 }: {
   label: string;
   active: boolean;
   icon: React.ComponentType<{ className?: string }>;
-  iconTone: string;
+  colorIndex: number;
   onClick: () => void;
 }) {
-  const activeTone = getCategoryTone(iconTone);
+  const activeTone = getAutoTone(colorIndex);
 
   return (
     <button
@@ -1619,13 +1563,13 @@ export function CatalogPageClient({
           <div className="mt-8 border-t border-slate-200 pt-5">
             <h2 className="text-base font-semibold text-navy-900">{t("categories_title", "Kateqoriyalara baxın")}</h2>
             <div className="-mx-1 mt-3 flex max-w-full gap-2 overflow-x-auto px-1 py-2 pb-1 no-scrollbar sm:mx-0 sm:px-0 sm:gap-3">
-              {homeCategoryViews.map((category) => (
+              {homeCategoryViews.map((category, index) => (
                 <HomeCategoryButton
                   key={category.id}
                   label={category.label}
                   active={homeCategory === category.id}
                   icon={category.icon}
-                  iconTone={category.iconTone}
+                  colorIndex={index}
                   onClick={() => setHomeCategory(category.id)}
                 />
               ))}

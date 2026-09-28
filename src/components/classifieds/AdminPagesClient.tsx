@@ -7,9 +7,12 @@ import {
   CheckCircle2,
   ChevronDown,
   Clock3,
+  Copy,
   Megaphone,
   ShieldCheck,
-  UserRound
+  UserPlus,
+  UserRound,
+  X
 } from "lucide-react";
 import {
   DashboardShell,
@@ -55,10 +58,68 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+type DemoAccount = {
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string;
+    role: string;
+    companyName: string | null;
+  };
+  password: string;
+};
+
+function CopyField({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+        <p className="mt-0.5 truncate font-mono text-sm font-medium text-navy-900">{value}</p>
+      </div>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="shrink-0 rounded-md p-1.5 text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+        title="Kopyala"
+      >
+        {copied ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
 export function AdminDashboardPageClient() {
   const { owners, listings, banners } = useClassifieds();
   const publicCount = getPublicListings(listings).length;
   const pending = listings.filter((item) => effectiveStatus(item) === "PENDING").length;
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [demoAccount, setDemoAccount] = useState<DemoAccount | null>(null);
+
+  async function createDemoAccount() {
+    setDemoLoading(true);
+    try {
+      const res = await fetch("/api/admin/demo-account", { method: "POST" });
+      const payload = await res.json();
+      if (payload.ok) {
+        setDemoAccount(payload.data);
+      } else {
+        alert(payload.message ?? "Xəta baş verdi.");
+      }
+    } finally {
+      setDemoLoading(false);
+    }
+  }
 
   return (
     <RequireAdmin>
@@ -73,6 +134,24 @@ export function AdminDashboardPageClient() {
           <MetricCard label="Public elanlar" value={String(publicCount)} icon={<ShieldCheck className="h-5 w-5" />} />
           <MetricCard label="Aktiv bannerlər" value={String(banners.filter((item) => item.isActive).length)} icon={<Megaphone className="h-5 w-5" />} />
         </div>
+
+        <div className="surface-panel p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold text-navy-900">Test hesabı</h2>
+            <Button
+              type="button"
+              onClick={createDemoAccount}
+              disabled={demoLoading}
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              {demoLoading ? "Yaradılır..." : "Test hesabı yarat"}
+            </Button>
+          </div>
+          <p className="mt-2 text-sm text-slate-500">
+            Yeni CARGO_OWNER rollu test istifadəçisi yaradır. Giriş məlumatları dərhal göstəriləcək.
+          </p>
+        </div>
+
         <div className="surface-panel p-6">
           <h2 className="text-xl font-semibold text-navy-900">Son əlavə olunan elanlar</h2>
           <div className="mt-5 space-y-3">
@@ -94,6 +173,42 @@ export function AdminDashboardPageClient() {
           </div>
         </div>
       </DashboardShell>
+
+      {demoAccount ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-bold text-navy-900">Test hesabı yaradıldı</h3>
+                <p className="mt-1 text-sm text-slate-500">Bu məlumatları indi kopyalayın — sonra şifrəyə baxmaq olmayacaq.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDemoAccount(null)}
+                className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <CopyField label="Ad Soyad" value={`${demoAccount.user.firstName} ${demoAccount.user.lastName}`} />
+              <CopyField label="E-poçt" value={demoAccount.user.email} />
+              <CopyField label="Telefon" value={demoAccount.user.phone} />
+              <CopyField label="Şifrə" value={demoAccount.password} />
+              <CopyField label="Rol" value={demoAccount.user.role} />
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button type="button" variant="secondary" onClick={() => setDemoAccount(null)}>
+                Bağla
+              </Button>
+              <Button type="button" onClick={createDemoAccount} disabled={demoLoading}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                {demoLoading ? "Yaradılır..." : "Yeni hesab yarat"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </RequireAdmin>
   );
 }
@@ -213,15 +328,7 @@ export function AdminCategoriesPageClient() {
               ))}
             </select>
           </label>
-          <label className="form-label">
-            Rəng class
-            <input
-              className="form-field"
-              value={draft.iconTone}
-              onChange={(event) => setDraft((current) => ({ ...current, iconTone: event.target.value }))}
-              placeholder="text-sky-600"
-            />
-          </label>
+          
           <label className="form-label">
             Cargo type filter
             <input

@@ -1,10 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "remixicon/fonts/remixicon.css";
 import "@/app/globals.css";
 import { ClassifiedsProvider } from "@/components/providers/ClassifiedsProvider";
 import { LocaleProvider } from "@/components/providers/LocaleProvider";
+import { GlobalLoader } from "@/components/GlobalLoader";
 import { appName } from "@/lib/constants";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 0.9,
+  minimumScale: 0.9,
+};
 
 export const metadata: Metadata = {
   title: {
@@ -29,6 +36,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="az">
       <body className="min-h-screen">
         <LocaleProvider><ClassifiedsProvider>{children}</ClassifiedsProvider></LocaleProvider>
+        <GlobalLoader />
       </body>
     </html>
   );

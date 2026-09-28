@@ -17,9 +17,14 @@
     <h5>İstifadəçilər</h5>
     <p>Rolları idarə edin və yeni istifadəçi yaradın</p>
   </div>
-  <button type="button" class="btn btn-primary px-3 py-2" data-bs-toggle="modal" data-bs-target="#newUserModal" style="border-radius: 10px; font-weight: 600;">
-    <i class="bi bi-person-plus me-1"></i> Yeni İstifadəçi
-  </button>
+  <div class="d-flex gap-2 flex-wrap">
+    <button type="button" id="btnCreateDemo" class="btn btn-outline-secondary px-3 py-2" style="border-radius: 10px; font-weight: 600;">
+      <i class="bi bi-lightning-charge me-1"></i> Test Hesabı
+    </button>
+    <button type="button" class="btn btn-primary px-3 py-2" data-bs-toggle="modal" data-bs-target="#newUserModal" style="border-radius: 10px; font-weight: 600;">
+      <i class="bi bi-person-plus me-1"></i> Yeni İstifadəçi
+    </button>
+  </div>
 </div>
 
 <% if(typeof req !== 'undefined' && req.query) { %>
@@ -319,6 +324,79 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+</script>
+
+<!-- Demo Hesab Modal -->
+<div class="modal fade" id="demoAccountModal" tabindex="-1" aria-labelledby="demoAccountModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 16px; border: none;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="demoAccountModalLabel"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Test Hesabı Yaradıldı</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-3">
+        <p class="text-muted small mb-3">Bu məlumatları indi kopyalayın — şifrə yalnız bir dəfə göstərilir.</p>
+        <div id="demoAccountInfo" class="d-flex flex-column gap-2"></div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-light border" data-bs-dismiss="modal" style="border-radius: 8px;">Bağla</button>
+        <button type="button" id="btnCreateDemoAgain" class="btn btn-outline-secondary px-4" style="font-weight: 600; border-radius: 8px;">
+          <i class="bi bi-arrow-repeat me-1"></i> Yeni Hesab Yarat
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  function copyField(label, value) {
+    return `<div class="d-flex align-items-center justify-content-between gap-2 rounded-3 border px-3 py-2" style="background:#f8fafc;">
+      <div class="min-w-0">
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;">${label}</div>
+        <div style="font-family:monospace;font-weight:600;color:#0f172a;font-size:0.93rem;word-break:break-all;">${value}</div>
+      </div>
+      <button type="button" onclick="navigator.clipboard.writeText('${value.replace(/'/g, "\\'")}');this.innerHTML='<i class=\\'bi bi-check-lg text-success\\'></i>';setTimeout(()=>this.innerHTML='<i class=\\'bi bi-copy\\'></i>',2000);" class="btn btn-sm btn-light border flex-shrink-0" title="Kopyala" style="border-radius:8px;">
+        <i class="bi bi-copy"></i>
+      </button>
+    </div>`;
+  }
+
+  async function createDemo() {
+    const btn = document.getElementById('btnCreateDemo');
+    const btn2 = document.getElementById('btnCreateDemoAgain');
+    [btn, btn2].forEach(b => { if(b) { b.disabled = true; b.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Yaradılır...'; } });
+
+    try {
+      const res = await fetch('/dashboard/istifadeci/demo-yarat', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const data = await res.json();
+
+      if (data.success) {
+        const u = data.user;
+        document.getElementById('demoAccountInfo').innerHTML =
+          copyField('Ad Soyad', (u.firstName || '') + ' ' + (u.lastName || '')) +
+          copyField('E-poçt', u.email || '') +
+          copyField('Telefon', u.phone || '') +
+          copyField('Şifrə', data.password || '');
+
+        const modal = new bootstrap.Modal(document.getElementById('demoAccountModal'));
+        modal.show();
+      } else {
+        alert(data.message || 'Xəta baş verdi.');
+      }
+    } catch(e) {
+      alert('Server xətası: ' + e.message);
+    } finally {
+      if(btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-lightning-charge me-1"></i> Test Hesabı'; }
+      if(btn2) { btn2.disabled = false; btn2.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Yeni Hesab Yarat'; }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('btnCreateDemo').addEventListener('click', createDemo);
+    document.getElementById('btnCreateDemoAgain').addEventListener('click', createDemo);
+  });
+})();
 </script>
 
 <%- include('partials/footer') %>

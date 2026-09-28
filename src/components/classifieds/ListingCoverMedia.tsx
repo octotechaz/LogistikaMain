@@ -26,6 +26,8 @@ export function ListingCoverMedia({
         src={photo}
         alt={listing.title}
         className={imageClassName}
+        loading="lazy"
+        decoding="async"
       />
     );
   }

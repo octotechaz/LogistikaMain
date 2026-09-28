@@ -115,11 +115,10 @@ type VehicleOption = { id: string; plateNumber: string; vehicleType: string; bra
 
 export function LoadDetailsPageClient({ id }: { id: string }) {
   const { t, locale } = useLocale();
-  const { user: currentApiUser, legacyUser, isLoading: isAuthLoading } = useApiAuthUser();
+  const { user: currentApiUser, legacyUser } = useApiAuthUser();
   const isAuthorized = !!(currentApiUser || legacyUser);
   const isCarrier = currentApiUser?.role === "CARRIER";
   const [sqliteListing, setSqliteListing] = useState<CargoListing | null | undefined>(undefined);
-  const [allListings, setAllListings] = useState<CargoListing[]>([]);
 
   // Müraciət forması state-ləri
   const [applyVehicleId, setApplyVehicleId] = useState("");
@@ -171,27 +170,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
     }
   }
 
-  // Fetch all listings to ensure we have data if Context is empty (like on page load)
-  useEffect(() => {
-    async function fetchListings() {
-      try {
-        const res = await fetch("/api/public/listings");
-        if (res.ok) {
-          const payload = await res.json();
-          if (payload.data) {
-            setAllListings(payload.data);
-          }
-        }
-      } catch (e) {
-        console.error("Failed to load listings", e);
-      }
-    }
-    fetchListings();
-  }, []);
-
-  const listing =
-    sqliteListing ??
-    allListings.find((item) => item.id === id);
+  const listing = sqliteListing ?? null;
 
   const localizedTitle = (locale !== "az" && listing?.translations?.[locale]?.title) || listing?.title || "";
   const localizedDescription = (locale !== "az" && listing?.translations?.[locale]?.description) || listing?.description || "";
@@ -242,7 +221,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
     };
   }, [id]);
 
-  if (sqliteListing === undefined || isAuthLoading) {
+  if (sqliteListing === undefined) {
     return (
       <PublicPage emphasizeBackground>
         <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-4">

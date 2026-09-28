@@ -144,10 +144,10 @@ export function ClassifiedsProvider({ children }: { children: React.ReactNode })
         : [payload, ...currentItems];
 
       setStoredListings(nextItems);
-      hydrate();
+      setListingsState(nextItems);
       return payload;
     },
-    [hydrate]
+    []
   );
 
   const restoreListing = useCallback(
@@ -164,20 +164,19 @@ export function ClassifiedsProvider({ children }: { children: React.ReactNode })
             }
           : item
       );
-
       setStoredListings(nextItems);
-      hydrate();
+      setListingsState(nextItems);
     },
-    [hydrate]
+    []
   );
 
   const softDeleteListing = useCallback(
     (listingId: string) => {
       const nextItems = getStoredListings().filter((item) => item.id !== listingId);
       setStoredListings(nextItems);
-      hydrate();
+      setListingsState(nextItems);
     },
-    [hydrate]
+    []
   );
 
   const setOwnerStatus = useCallback(
@@ -186,9 +185,9 @@ export function ClassifiedsProvider({ children }: { children: React.ReactNode })
         owner.id === ownerId ? { ...owner, status } : owner
       );
       setStoredOwners(nextOwners);
-      hydrate();
+      setOwnersState(nextOwners);
     },
-    [hydrate]
+    []
   );
 
   const approveListing = useCallback(
@@ -196,40 +195,26 @@ export function ClassifiedsProvider({ children }: { children: React.ReactNode })
       const approvedAt = nowIso();
       const nextItems = getStoredListings().map((item) =>
         item.id === listingId
-          ? {
-              ...item,
-              status: "ACTIVE" as const,
-              approvedAt,
-              expiresAt: resolveListingExpiresAt(item),
-              deactivatedAt: null,
-              rejectionReason: null
-            }
+          ? { ...item, status: "ACTIVE" as const, approvedAt, expiresAt: resolveListingExpiresAt(item), deactivatedAt: null, rejectionReason: null }
           : item
       );
       setStoredListings(nextItems);
-      hydrate();
+      setListingsState(nextItems);
     },
-    [hydrate]
+    []
   );
 
   const rejectListing = useCallback(
     (listingId: string, reason: string) => {
       const nextItems = getStoredListings().map((item) =>
         item.id === listingId
-          ? {
-              ...item,
-              status: "REJECTED" as const,
-              rejectionReason: reason.trim(),
-              approvedAt: null,
-              expiresAt: null,
-              deactivatedAt: null
-            }
+          ? { ...item, status: "REJECTED" as const, rejectionReason: reason.trim(), approvedAt: null, expiresAt: null, deactivatedAt: null }
           : item
       );
       setStoredListings(nextItems);
-      hydrate();
+      setListingsState(nextItems);
     },
-    [hydrate]
+    []
   );
 
   const activateListing = useCallback(
@@ -237,45 +222,32 @@ export function ClassifiedsProvider({ children }: { children: React.ReactNode })
       const nextItems = getStoredListings().map((item) => {
         if (item.id !== listingId) return item;
         const approvedAt = item.approvedAt || nowIso();
-        return {
-          ...item,
-          status: "ACTIVE" as const,
-          approvedAt,
-          expiresAt: resolveListingExpiresAt(item),
-          deactivatedAt: null,
-          rejectionReason: null
-        };
+        return { ...item, status: "ACTIVE" as const, approvedAt, expiresAt: resolveListingExpiresAt(item), deactivatedAt: null, rejectionReason: null };
       });
       setStoredListings(nextItems);
-      hydrate();
+      setListingsState(nextItems);
     },
-    [hydrate]
+    []
   );
 
   const deactivateListing = useCallback(
     (listingId: string) => {
       const nextItems = getStoredListings().map((item) =>
-        item.id === listingId
-          ? {
-              ...item,
-              status: "INACTIVE" as const,
-              deactivatedAt: nowIso()
-            }
-          : item
+        item.id === listingId ? { ...item, status: "INACTIVE" as const, deactivatedAt: nowIso() } : item
       );
       setStoredListings(nextItems);
-      hydrate();
+      setListingsState(nextItems);
     },
-    [hydrate]
+    []
   );
 
   const adminDeleteListing = useCallback(
     (listingId: string) => {
       const nextItems = getStoredListings().filter((item) => item.id !== listingId);
       setStoredListings(nextItems);
-      hydrate();
+      setListingsState(nextItems);
     },
-    [hydrate]
+    []
   );
 
   const saveBanner = useCallback(
@@ -285,17 +257,18 @@ export function ClassifiedsProvider({ children }: { children: React.ReactNode })
         ? currentItems.map((item) => (item.id === banner.id ? banner : item))
         : [...currentItems, banner];
       setStoredBanners(nextItems);
-      hydrate();
+      setBannersState(nextItems);
     },
-    [hydrate]
+    []
   );
 
   const deleteBanner = useCallback(
     (bannerId: string) => {
-      setStoredBanners(getStoredBanners().filter((banner) => banner.id !== bannerId));
-      hydrate();
+      const nextItems = getStoredBanners().filter((banner) => banner.id !== bannerId);
+      setStoredBanners(nextItems);
+      setBannersState(nextItems);
     },
-    [hydrate]
+    []
   );
 
   const toggleBanner = useCallback(
@@ -304,9 +277,9 @@ export function ClassifiedsProvider({ children }: { children: React.ReactNode })
         banner.id === bannerId ? { ...banner, isActive: !banner.isActive } : banner
       );
       setStoredBanners(nextItems);
-      hydrate();
+      setBannersState(nextItems);
     },
-    [hydrate]
+    []
   );
 
   const value = useMemo<ClassifiedsContextValue>(
@@ -329,25 +302,7 @@ export function ClassifiedsProvider({ children }: { children: React.ReactNode })
       deleteBanner,
       toggleBanner
     }),
-    [
-      ready,
-      owners,
-      listings,
-      banners,
-      hydrate,
-      saveListing,
-      restoreListing,
-      softDeleteListing,
-      setOwnerStatus,
-      approveListing,
-      rejectListing,
-      activateListing,
-      deactivateListing,
-      adminDeleteListing,
-      saveBanner,
-      deleteBanner,
-      toggleBanner
-    ]
+    [ready, owners, listings, banners, hydrate]
   );
 
   return <ClassifiedsContext.Provider value={value}>{children}</ClassifiedsContext.Provider>;

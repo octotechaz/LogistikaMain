@@ -141,7 +141,8 @@ function listingIdWhere(id: string): Prisma.CargoPostWhereInput {
 }
 
 export async function getPublicListingsFromPostgres(): Promise<CargoListing[]> {
-  await deactivateExpiredCargoPosts();
+  // Fire-and-forget — expiration güncellemesi yanıtı bloklamaz
+  deactivateExpiredCargoPosts().catch(() => {});
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const posts = await (prisma.cargoPost.findMany as any)({
@@ -154,7 +155,7 @@ export async function getPublicListingsFromPostgres(): Promise<CargoListing[]> {
 }
 
 export async function getPublicListingsByOwnerFromPostgres(ownerId: string): Promise<CargoListing[]> {
-  await deactivateExpiredCargoPosts();
+  deactivateExpiredCargoPosts().catch(() => {});
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const posts = await (prisma.cargoPost.findMany as any)({
     where: {
@@ -168,7 +169,8 @@ export async function getPublicListingsByOwnerFromPostgres(ownerId: string): Pro
 }
 
 export async function getPublicListingByIdFromPostgres(id: string): Promise<CargoListing | null> {
-  await deactivateExpiredCargoPosts();
+  // Fire-and-forget — expiration ve view counter yanıtı bloklamaz
+  deactivateExpiredCargoPosts().catch(() => {});
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const post = await (prisma.cargoPost.findFirst as any)({
@@ -182,10 +184,11 @@ export async function getPublicListingByIdFromPostgres(id: string): Promise<Carg
     return null;
   }
 
-  await prisma.cargoPost.update({
+  // View counter fire-and-forget — kullanıcıyı beklettirmez
+  prisma.cargoPost.update({
     where: { id: post.id },
     data: { legacyViewCount: { increment: 1 } },
-  });
+  }).catch(() => {});
 
   return mapCargoPostToPublicListing({
     ...post,
