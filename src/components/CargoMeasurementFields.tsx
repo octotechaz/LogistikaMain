@@ -112,14 +112,14 @@ export function CargoMeasurementFields({
           error={errors?.quantity}
         />
         <UnitInput
-          label="Həcm"
+          label="Həcm (ümumi)"
           name="volume"
           value={values.volume}
           unit="m³"
           placeholder=""
           readOnly
           type="text"
-          helperText="Uzunluq, en və hündürlük əsasında avtomatik hesablanır."
+          helperText="Say × (uzunluq × en × hündürlük) əsasında avtomatik hesablanır."
         />
       </div>
 

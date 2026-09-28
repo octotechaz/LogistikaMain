@@ -21,6 +21,7 @@ import { useClassifieds } from "@/components/providers/ClassifiedsProvider";
 import { useLocale } from "@/hooks/useLocale";
 import { cn } from "@/lib/utils";
 import {
+  calculateTotalVolume,
   formatVolume,
   normalizeQuantityValue,
   validateCargoMeasurements
@@ -397,10 +398,15 @@ export function OwnerLoadFormPageClient({ sessionUser }: { sessionUser: SessionU
     () => validateCargoMeasurements(measurements),
     [measurements]
   );
-  const volumeValue =
-    measurementValidation.volume !== null
-      ? formatVolume(measurementValidation.volume)
-      : "";
+  const volumeValue = useMemo(() => {
+    const total = calculateTotalVolume(
+      measurements.length,
+      measurements.width,
+      measurements.height,
+      measurements.quantity
+    );
+    return total !== null ? formatVolume(total) : "";
+  }, [measurements.length, measurements.width, measurements.height, measurements.quantity]);
 
   useEffect(() => {
     setMeasurements(editingMeasurementDefaults);

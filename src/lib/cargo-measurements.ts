@@ -133,6 +133,20 @@ export function calculateVolumeFromDimensions(length: unknown, width: unknown, h
   return Number(volume.toFixed(6));
 }
 
+/** 1 ədədin həcmi × say = ümumi həcm */
+export function calculateTotalVolume(
+  length: unknown,
+  width: unknown,
+  height: unknown,
+  quantity: unknown
+): number | null {
+  const unitVolume = calculateVolumeFromDimensions(length, width, height);
+  if (unitVolume === null) return null;
+  const qty = parsePositiveInteger(quantity);
+  if (qty === null) return unitVolume; // say yoxdursa 1 ədəd kimi qəbul et
+  return Number((unitVolume * qty).toFixed(6));
+}
+
 export function formatVolume(value: unknown) {
   return formatMeasurementNumber(value, 3);
 }
