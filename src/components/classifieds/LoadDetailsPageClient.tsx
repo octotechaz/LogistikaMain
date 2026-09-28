@@ -483,11 +483,22 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                   label={t("ld_deadline", "Ən gec götürülmə tarixi")}
                   value={formatDateNumeric(listing.pickupDeadlineDate || listing.pickupDate || listing.createdAt)}
                 />
-                <DetailFactItem
-                  icon={<Phone className="h-5 w-5" />}
-                  label={t("ld_contact", "Əlaqə nömrəsi")}
-                  value={listing.ownerPhone}
-                />
+                <button
+                  type="button"
+                  data-no-loader
+                  onClick={() => setContactSheetOpen(true)}
+                  className="grid grid-cols-[22px,1fr] gap-3 w-full text-left group"
+                >
+                  <div className="pt-0.5 text-logistics-orange">
+                    <Phone className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm text-slate-500">{t("ld_contact", "Əlaqə nömrəsi")}</p>
+                    <p className="mt-1 text-[1rem] font-semibold text-logistics-orange underline-offset-2 group-hover:underline">
+                      {listing.ownerPhone}
+                    </p>
+                  </div>
+                </button>
                 {quantityLabel ? (
                   <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_qty", "Say")} value={quantityLabel} />
                 ) : null}
