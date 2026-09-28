@@ -5,8 +5,8 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 // DOM'u doğrudan manipüle ediyoruz — React state/re-render yok, anında tepki
 const OVERLAY_ID = "__gl_overlay__";
-const MIN_MS = 300;
-const MAX_MS = 6000;
+const MIN_MS = 0;
+const MAX_MS = 4000;
 
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
 let shownAt = 0;
@@ -80,8 +80,9 @@ function GlobalLoaderInner() {
 
     function handleClick(e: MouseEvent) {
       const target = e.target as HTMLElement;
-      const anchor = target.closest("a");
 
+      // Sadece internal navigation link'lerinde loader göster
+      const anchor = target.closest("a");
       if (anchor) {
         const href = anchor.getAttribute("href") ?? "";
         if (
@@ -90,21 +91,12 @@ function GlobalLoaderInner() {
           href.startsWith("//") ||
           href.startsWith("#") ||
           anchor.hasAttribute("download") ||
-          anchor.getAttribute("target") === "_blank"
-        ) return;
-        showLoader();
-        return;
-      }
-
-      const button = target.closest("button");
-      if (button) {
-        if (
-          button.getAttribute("type") === "reset" ||
-          button.hasAttribute("data-no-loader") ||
-          button.disabled
+          anchor.getAttribute("target") === "_blank" ||
+          anchor.hasAttribute("data-no-loader")
         ) return;
         showLoader();
       }
+      // Butonlar için loader yok — sadece linkler
     }
 
     document.addEventListener("click", handleClick, true);
