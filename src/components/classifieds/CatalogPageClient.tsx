@@ -57,6 +57,7 @@ import { resolveCategoryIcon } from "@/lib/category-icons";
 import { effectiveStatus } from "@/lib/status/classifieds";
 import { listingVisualTone } from "@/lib/listing-visual";
 import { cn } from "@/lib/utils";
+import { AdBanner } from "@/components/classifieds/AdBanner";
 import { fetchJsonWithRetry } from "@/lib/fetch-json";
 import type { CargoListing, ListingFilters, PublicListingCategory } from "@/types/classifieds";
 import { useLocale } from "@/hooks/useLocale";
@@ -1701,7 +1702,12 @@ export function CatalogPageClient({
           </button>
         </div>
 
-        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr),428px]">
+        <div className="mt-5 flex gap-5 items-start">
+          {/* Sol reklam alanı */}
+          <AdBanner slot="catalog-left" />
+
+          {/* Orta — ilanlar + sağ aside */}
+          <div className="min-w-0 flex-1 grid gap-5 xl:grid-cols-[minmax(0,1fr),400px]">
           <div className="overflow-hidden rounded-[18px] border border-slate-200/90 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
             <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-[1.1rem] font-semibold text-navy-900">
@@ -1819,6 +1825,10 @@ export function CatalogPageClient({
               </div>
             </div>
           </aside>
+          </div>{/* end orta grid */}
+
+          {/* Sağ reklam alanı */}
+          <AdBanner slot="catalog-right" />
         </div>
 
         <div className="mt-5 overflow-hidden rounded-[18px] border border-slate-200/90 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
