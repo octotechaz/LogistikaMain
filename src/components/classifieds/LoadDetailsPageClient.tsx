@@ -583,8 +583,6 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
               <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
                 <DetailInfoRow label={t("ld_post_date", "Elan tarixi")} value={formatListingDate(listing.createdAt)} />
                 <DetailInfoRow label={t("ld_listing_type", "Elan növü")} value={t("ld_listing_type_cargo", "Yük")} />
-                <DetailInfoRow label={t("ld_cargo_category", "Kateqoriya")} value={listing.cargoType} />
-                <DetailInfoRow label={t("ld_price", "Qiymət")} value={listing.price ? `${listing.price} AZN` : t("ld_negotiable", "Razılaşma ilə")} />
                 <DetailInfoRow label={t("ld_listing_id", "Elan ID")} value={detailId} />
                 <DetailInfoRow label={t("ld_status", "Status")} value={<StatusBadge status={effectiveStatus(listing)} />} />
               </div>
