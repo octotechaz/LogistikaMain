@@ -81,9 +81,16 @@ function GlobalLoaderInner() {
     function handleClick(e: MouseEvent) {
       const target = e.target as HTMLElement;
 
+      // data-no-loader olan bir elementin içindeyse hiç loader gösterme
+      if (target.closest("[data-no-loader]")) return;
+
+      // Tıklanan veya üst elementlerinde button varsa loader gösterme
+      if (target.closest("button")) return;
+
       // Sadece internal navigation link'lerinde loader göster
       const anchor = target.closest("a");
       if (anchor) {
+        if (anchor.closest("[data-no-loader]")) return;
         const href = anchor.getAttribute("href") ?? "";
         if (
           !href ||
@@ -96,7 +103,6 @@ function GlobalLoaderInner() {
         ) return;
         showLoader();
       }
-      // Butonlar için loader yok — sadece linkler
     }
 
     document.addEventListener("click", handleClick, true);
