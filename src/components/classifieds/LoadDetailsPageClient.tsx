@@ -332,10 +332,25 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
           <span className="text-navy-900">{listing.pickupCity} → {listing.deliveryCity}</span>
         </div>
 
-        {/* Title */}
-        <h1 className="mt-3 text-2xl font-bold tracking-tight text-navy-900 sm:text-[1.75rem]">
-          {localizedTitle}
-        </h1>
+        {/* Title + Qiymət */}
+        <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-2xl font-bold tracking-tight text-navy-900 sm:text-[1.75rem]">
+            {localizedTitle}
+          </h1>
+          <div className="shrink-0 rounded-[14px] border border-logistics-orange/30 bg-orange-50 px-4 py-2 text-right">
+            {listing.price ? (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-wide text-logistics-orange/70">{t("ld_price", "Qiymət")}</p>
+                <p className="text-[1.4rem] font-extrabold leading-tight text-logistics-orange">{listing.price} <span className="text-base font-bold">AZN</span></p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{t("ld_price", "Qiymət")}</p>
+                <p className="text-[1.1rem] font-bold text-slate-600">{t("ld_negotiable", "Razılaşma ilə")}</p>
+              </>
+            )}
+          </div>
+        </div>
         <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[0.93rem] text-slate-500">
           <span className="inline-flex items-center gap-1.5">
             <MapPin className="h-4 w-4 text-slate-400" />
