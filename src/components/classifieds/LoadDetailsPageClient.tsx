@@ -297,354 +297,268 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
 
   return (
     <PublicPage emphasizeBackground>
-      <section className="mx-auto max-w-[1680px] px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center gap-2 text-[0.95rem] text-slate-500">
-          <Link href="/" className="transition hover:text-navy-900">
-            {t("ld_breadcrumb_home", "Ana səhifə")}
-          </Link>
+      {/* Floating CTA bar — mobilde sabit altta, desktopda gizli */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex gap-2 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-md xl:hidden"
+        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom,0px))" }}>
+        <a
+          href={`tel:${listing.ownerPhone}`}
+          data-no-loader
+          className="flex flex-1 items-center justify-center gap-2 rounded-[14px] bg-logistics-orange py-3.5 text-[1rem] font-bold text-white shadow-[0_4px_16px_rgba(249,115,22,0.35)]"
+        >
+          <PhoneCall className="h-5 w-5" />
+          Zəng et
+        </a>
+        <a
+          href={`https://wa.me/${listing.ownerPhone?.replace(/[^0-9]/g, "")}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-no-loader
+          className="flex flex-1 items-center justify-center gap-2 rounded-[14px] bg-[#25d366] py-3.5 text-[1rem] font-bold text-white shadow-[0_4px_16px_rgba(37,211,102,0.35)]"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+          </svg>
+          WhatsApp
+        </a>
+      </div>
+
+      <section className="mx-auto max-w-[1280px] px-4 pb-28 pt-5 sm:px-6 xl:pb-6 lg:px-8">
+        {/* Breadcrumb */}
+        <div className="flex flex-wrap items-center gap-2 text-[0.88rem] text-slate-400">
+          <Link href="/" className="transition hover:text-navy-900">{t("ld_breadcrumb_home", "Ana səhifə")}</Link>
           <span>›</span>
-          <Link href="/loads" className="transition hover:text-navy-900">
-            {t("ld_breadcrumb_listings", "Elanlar")}
-          </Link>
+          <Link href="/loads" className="transition hover:text-navy-900">{t("ld_breadcrumb_listings", "Elanlar")}</Link>
           <span>›</span>
-          <span>{t("ld_breadcrumb_loads", "Yüklər")}</span>
-          <span>›</span>
-          <span>{t("ld_breadcrumb_dry", "Quru yük")}</span>
-          <span>›</span>
-          <span className="text-navy-900">
-            {listing.pickupCity} → {listing.deliveryCity}
+          <span className="text-navy-900">{listing.pickupCity} → {listing.deliveryCity}</span>
+        </div>
+
+        {/* Title */}
+        <h1 className="mt-3 text-2xl font-bold tracking-tight text-navy-900 sm:text-[1.75rem]">
+          {localizedTitle}
+        </h1>
+        <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[0.93rem] text-slate-500">
+          <span className="inline-flex items-center gap-1.5">
+            <MapPin className="h-4 w-4 text-slate-400" />
+            {listing.pickupCity}
+            <ArrowRight className="h-3.5 w-3.5 text-slate-300" />
+            {listing.deliveryCity}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Package2 className="h-4 w-4 text-slate-400" />
+            {listing.cargoType}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Scale className="h-4 w-4 text-slate-400" />
+            {formatWeightKg(listing.weight)}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <CalendarDays className="h-4 w-4 text-slate-400" />
+            {formatDateNumeric(listing.pickupDeadlineDate || listing.pickupDate || listing.createdAt)}
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-slate-400">
+            <Eye className="h-4 w-4" />
+            {views} {t("ld_views", "baxış")}
           </span>
         </div>
 
-        <h1 className="mt-5 text-2xl font-bold tracking-tight text-navy-900 sm:text-3xl">
-          {localizedTitle} – {listing.pickupCity} → {listing.deliveryCity}
-        </h1>
-
-        <div className="mt-4 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-wrap items-center gap-x-7 gap-y-3 text-[1rem] text-slate-600">
-            <span className="inline-flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-slate-400" />
-              {listing.pickupAddress || listing.pickupCity}
-              <ArrowRight className="h-4 w-4 text-slate-400" />
-              {listing.deliveryCity}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Package2 className="h-5 w-5 text-slate-400" />
-              {listing.cargoType}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Scale className="h-5 w-5 text-slate-400" />
-              {formatWeightKg(listing.weight)}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <CalendarDays className="h-5 w-5 text-slate-400" />
-              {formatDateNumeric(
-                listing.pickupDeadlineDate || listing.pickupDate || listing.createdAt
+        {/* ── GALLERY — full width ── */}
+        <div className="mt-5 overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+          {gallery.length > 0 ? (
+            <div className="grid gap-2 p-2 sm:grid-cols-[minmax(0,1fr),160px] lg:grid-cols-[minmax(0,1fr),200px]">
+              {/* Ana görsel */}
+              <div className="relative overflow-hidden rounded-[14px] bg-slate-100" style={{ minHeight: 320 }}>
+                <img src={activeImage} alt={listing.title} loading="eager" className="absolute inset-0 h-full w-full object-cover" />
+                {gallery.length > 1 && (
+                  <>
+                    <button type="button" data-no-loader onClick={() => moveGallery(-1)}
+                      className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-navy-900 shadow-md transition hover:bg-white">
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                    <button type="button" data-no-loader onClick={() => moveGallery(1)}
+                      className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-navy-900 shadow-md transition hover:bg-white">
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                    <div className="absolute bottom-3 left-3 rounded-lg bg-black/60 px-2.5 py-1 text-xs font-semibold text-white">
+                      {activeImageIndex + 1} / {gallery.length}
+                    </div>
+                  </>
+                )}
+              </div>
+              {/* Thumbnail'lar */}
+              {gallery.length > 1 && (
+                <div className="flex flex-row gap-2 sm:flex-col">
+                  {gallery.slice(1, 5).map((image, index) => {
+                    const actualIndex = index + 1;
+                    const extraCount = Math.max(gallery.length - 5, 0);
+                    return (
+                      <button key={`${image}-${index}`} type="button" data-no-loader
+                        onClick={() => setActiveImageIndex(actualIndex)}
+                        className={cn(
+                          "relative flex-1 overflow-hidden rounded-[12px] bg-slate-100 transition sm:flex-none sm:h-[calc(25%-6px)]",
+                          activeImageIndex === actualIndex && "ring-2 ring-logistics-orange ring-offset-1"
+                        )}>
+                        <div className="relative aspect-[4/3]">
+                          <img src={image} alt={listing.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                        </div>
+                        {index === 3 && extraCount > 0 ? (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
+                            <span className="text-xl font-bold">+{extraCount}</span>
+                          </div>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
               )}
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="grow rounded-[14px] border border-slate-200 bg-white px-4 py-2.5 text-[0.96rem] font-semibold text-slate-600 sm:grow-0">
-              ID: {detailId}
             </div>
-            <div className="grow rounded-[14px] border border-slate-200 bg-white px-4 py-2.5 text-[0.96rem] font-semibold text-slate-600 sm:grow-0">
-              <span className="inline-flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                {views} {t("ld_views", "baxış")}
-              </span>
+          ) : (
+            <div className={cn("flex items-center justify-center rounded-[18px]", listingPlaceholderTone?.panel ?? "bg-slate-100")} style={{ minHeight: 280 }}>
+              {ListingPlaceholderIcon ? <ListingPlaceholderIcon className="h-20 w-20" /> : <Package2 className="h-20 w-20 text-slate-300" />}
             </div>
-            <FavoriteToggleButton
-              listingId={listing.id}
-              showLabel
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[14px] border border-slate-200 bg-white px-4 text-[0.96rem] font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 sm:w-auto"
-              iconClassName="h-4 w-4"
-              labelClassName="leading-none"
-            />
-          </div>
+          )}
         </div>
 
-        <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.62fr),408px]">
-          <div className="space-y-5">
-            <div className="overflow-hidden rounded-[16px] border border-slate-200 bg-white shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-                <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr),174px]">
-                  {gallery.length > 0 ? (
-                    <>
-                      <div className="relative min-h-[408px] overflow-hidden rounded-[14px] bg-slate-100">
-                        <img src={activeImage} alt={listing.title} loading="eager" className="absolute inset-0 h-full w-full object-cover" />
+        {/* ── MAIN GRID ── */}
+        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr),380px]">
 
-                        {gallery.length > 1 && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => moveGallery(-1)}
-                              className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-navy-900 shadow-lg"
-                            >
-                              <ArrowLeft className="h-5 w-5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => moveGallery(1)}
-                              className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-navy-900 shadow-lg"
-                            >
-                              <ArrowRight className="h-5 w-5" />
-                            </button>
-                            <div className="absolute bottom-4 left-4 rounded-xl bg-black/72 px-3 py-2 text-[0.94rem] font-semibold text-white">
-                              {activeImageIndex + 1} / {gallery.length}
-                            </div>
-                          </>
-                        )}
-                      </div>
+          {/* Sol kolon — bilgiler */}
+          <div className="space-y-4">
 
-                      {gallery.length > 1 && (
-                        <div className="grid grid-cols-3 gap-3 lg:grid-cols-1">
-                          {gallery.slice(1, 4).map((image, index) => {
-                            const actualIndex = index + 1;
-                            const extraCount = Math.max(gallery.length - 4, 0);
-
-                            return (
-                              <button
-                                key={`${image}-${index}`}
-                                type="button"
-                                onClick={() => setActiveImageIndex(actualIndex)}
-                                className={cn(
-                                  "relative overflow-hidden rounded-[14px] bg-slate-100 text-left transition",
-                                  activeImageIndex === actualIndex && "ring-2 ring-logistics-orange ring-offset-2 ring-offset-white"
-                                )}
-                              >
-                                <div className="relative aspect-[4/3] lg:aspect-[6/4.7]">
-                                  <img src={image} alt={listing.title} loading="eager" className="absolute inset-0 h-full w-full object-cover" />
-                                </div>
-                                {index === 2 && extraCount > 0 ? (
-                                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-center text-white">
-                                    <span className="text-3xl font-bold">+{extraCount}</span>
-                                    <span className="mt-1 text-sm font-semibold">{t("ld_more", "daha çox")}</span>
-                                  </div>
-                                ) : null}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div
-                      className={cn(
-                        "relative flex min-h-[408px] items-center justify-center overflow-hidden rounded-[14px] lg:col-span-2",
-                        listingPlaceholderTone?.panel ?? "bg-slate-100"
-                      )}
-                    >
-                      {ListingPlaceholderIcon ? (
-                        <ListingPlaceholderIcon className="h-20 w-20" />
-                      ) : (
-                        <Package2 className="h-20 w-20 text-slate-300" />
-                      )}
-                    </div>
-                  )}
-                </div>
-            </div>
-
-            <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)] mb-6">
-              <h2 className="text-xl font-bold text-navy-900 mb-4">{t("ld_map_title", "Xəritədə marşrut")}</h2>
-              <RouteMap 
-                fromCity={listing.pickupCity} 
-                fromAddress={listing.pickupAddress} 
-                toCity={listing.deliveryCity} 
-                toAddress={listing.deliveryAddress} 
-              />
-            </div>
-
-            <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-              <h2 className="text-xl font-bold text-navy-900">{t("ld_desc_title", "Elanın təsviri")}</h2>
-              <div className="mt-4 space-y-2 text-[0.95rem] leading-7 text-slate-600">
-                <p>{localizedDescription}</p>
-                <p>
-                  {t("ld_desc_cargo", "Yük")}{" "}
-                  {quantityLabel ? quantityLabel.toLocaleLowerCase("az") : t("ld_desc_std_batch", "standart partiya")}{" "}
-                  {t("ld_desc_ready", "şəklində daşınmaya hazırdır. Etibarlı, vaxtında çatdırılma təmin edən daşıyıcılarla əməkdaşlıq etmək istərdik.")}
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-              <h2 className="text-xl font-bold text-navy-900">{t("ld_info_title", "Yük məlumatları")}</h2>
-              <div className="mt-6 grid gap-5 lg:grid-cols-2">
+            {/* Yük bilgileri */}
+            <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+              <h2 className="text-[1.05rem] font-bold text-navy-900">{t("ld_info_title", "Yük məlumatları")}</h2>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_cargo_type", "Yük növü")} value={listing.cargoType} />
                 <DetailFactItem icon={<MapPin className="h-5 w-5" />} label={t("ld_pickup", "Yükləmə yeri")} value={listing.pickupAddress || listing.pickupCity} />
                 <DetailFactItem icon={<Scale className="h-5 w-5" />} label={t("ld_weight", "Çəki")} value={formatWeightKg(listing.weight)} />
                 <DetailFactItem icon={<MapPin className="h-5 w-5" />} label={t("ld_delivery", "Çatdırılma yeri")} value={listing.deliveryAddress || listing.deliveryCity} />
-                <DetailFactItem
-                  icon={<Truck className="h-5 w-5" />}
-                  label={t("ld_vehicle_type", "Ehtimal olunan nəqliyyat növü")}
-                  value={listing.vehicleType || t("ld_any_vehicle", "Fərq etmir")}
-                />
-                <DetailFactItem
-                  icon={<CalendarDays className="h-5 w-5" />}
-                  label={t("ld_deadline", "Ən gec götürülmə tarixi")}
-                  value={formatDateNumeric(listing.pickupDeadlineDate || listing.pickupDate || listing.createdAt)}
-                />
-                <button
-                  type="button"
-                  data-no-loader
-                  onClick={() => setContactSheetOpen(true)}
-                  className="grid grid-cols-[22px,1fr] gap-3 w-full text-left group"
-                >
-                  <div className="pt-0.5 text-logistics-orange">
-                    <Phone className="h-5 w-5" />
-                  </div>
+                <DetailFactItem icon={<Truck className="h-5 w-5" />} label={t("ld_vehicle_type", "Nəqliyyat növü")} value={listing.vehicleType || t("ld_any_vehicle", "Fərq etmir")} />
+                <DetailFactItem icon={<CalendarDays className="h-5 w-5" />} label={t("ld_deadline", "Ən gec götürülmə")} value={formatDateNumeric(listing.pickupDeadlineDate || listing.pickupDate || listing.createdAt)} />
+                {quantityLabel ? <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_qty", "Say")} value={quantityLabel} /> : null}
+                {volumeLabel ? <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_volume", "Həcm")} value={volumeLabel} /> : null}
+                {dimensionsLabel ? <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_dims", "Ölçülər")} value={dimensionsLabel} /> : null}
+                <button type="button" data-no-loader onClick={() => setContactSheetOpen(true)} className="grid grid-cols-[22px,1fr] gap-3 w-full text-left group">
+                  <div className="pt-0.5 text-logistics-orange"><Phone className="h-5 w-5" /></div>
                   <div className="min-w-0">
                     <p className="text-sm text-slate-500">{t("ld_contact", "Əlaqə nömrəsi")}</p>
-                    <p className="mt-1 text-[1rem] font-semibold text-logistics-orange underline-offset-2 group-hover:underline">
-                      {listing.ownerPhone}
-                    </p>
+                    <p className="mt-1 text-[1rem] font-semibold text-logistics-orange group-hover:underline">{listing.ownerPhone}</p>
                   </div>
                 </button>
-                {quantityLabel ? (
-                  <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_qty", "Say")} value={quantityLabel} />
-                ) : null}
-                {volumeLabel ? (
-                  <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_volume", "Həcm")} value={volumeLabel} />
-                ) : null}
-                {dimensionsLabel ? (
-                  <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_dims", "Ölçülər")} value={dimensionsLabel} />
-                ) : null}
-              </div>
-
-              <div className="mt-6 border-t border-slate-200 pt-5">
-                <h3 className="text-lg font-bold text-navy-900">{t("ld_extra_info", "Əlavə məlumat")}</h3>
-                <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  <div>
-                    <p className="text-sm text-slate-500">{t("ld_loading_help", "Yükləmə ilə bağlı yardım")}</p>
-                    <p className="mt-1 font-semibold text-navy-900">{listing.needsLoadingHelp || t("ld_no_data", "Məlumat yoxdur")}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{t("ld_unloading_help", "Boşaltma ilə bağlı yardım")}</p>
-                    <p className="mt-1 font-semibold text-navy-900">{listing.needsUnloadingHelp || t("ld_no_data", "Məlumat yoxdur")}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{t("ld_invoice", "Faktura tələb olunur")}</p>
-                    <p className="mt-1 font-semibold text-navy-900">{listing.requiresInvoice || t("ld_no", "Xeyr")}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{t("ld_roundtrip", "Gediş-dönüş yük imkanı")}</p>
-                    <p className="mt-1 font-semibold text-navy-900">{listing.roundTrip || t("ld_no", "Xeyr")}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{t("ld_special_req", "Xüsusi tələblər")}</p>
-                    <p className="mt-1 font-semibold text-navy-900">{listing.note || t("ld_none", "Yoxdur")}</p>
-                  </div>
-                </div>
               </div>
             </div>
-          </div>
 
-          <aside className="space-y-4">
-            <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-              <h2 className="text-[1.3rem] font-bold text-navy-900">{t("ld_seller_title", "Satıcı / Elanı yerləşdirən")}</h2>
-
-              <div className="mt-5 flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 overflow-hidden">
-                  {listing.ownerProfilePicture ? (
-                    <img src={listing.ownerProfilePicture} alt={ownerDisplayName} className="h-full w-full object-cover" />
-                  ) : (
-                    <Building2 className="h-6 w-6" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-lg font-bold text-navy-900">{ownerDisplayName}</p>
-                    <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                  </div>
-                  <p className="mt-1 text-[0.95rem] text-slate-600">{t("ld_user_role", "İstifadəçi")}</p>
-                  {isAuthorized && listing.ownerEmail ? (
-                    <p className="mt-1 text-sm text-slate-500">{listing.ownerEmail}</p>
-                  ) : null}
-                  <p className="mt-1 text-sm text-slate-500">{membershipText}</p>
+            {/* Açıqlama */}
+            {localizedDescription ? (
+              <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+                <h2 className="text-[1.05rem] font-bold text-navy-900">{t("ld_desc_title", "Elanın təsviri")}</h2>
+                <div className="mt-3 space-y-2 text-[0.93rem] leading-7 text-slate-600">
+                  <p>{localizedDescription}</p>
                 </div>
               </div>
+            ) : null}
 
-              <div className="mt-5 rounded-[14px] border border-logistics-orange/65 px-5 py-4">
-                <button
-                  type="button"
-                  data-no-loader
-                  onClick={() => setContactSheetOpen(true)}
-                  className="flex w-full items-center justify-center gap-2 rounded-[14px] bg-logistics-orange py-3 text-[1.05rem] font-semibold text-white shadow-[0_6px_20px_rgba(249,115,22,0.25)] transition hover:-translate-y-1 hover:bg-orange-600"
-                >
-                  <PhoneCall className="h-5 w-5" />
-                  {listing.ownerPhone}
-                </button>
+            {/* Əlavə məlumat */}
+            <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+              <h3 className="text-[1.05rem] font-bold text-navy-900">{t("ld_extra_info", "Əlavə məlumat")}</h3>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                <div><p className="text-xs text-slate-500">{t("ld_loading_help", "Yükləmə yardımı")}</p><p className="mt-0.5 text-sm font-semibold text-navy-900">{listing.needsLoadingHelp || t("ld_no_data", "Məlumat yoxdur")}</p></div>
+                <div><p className="text-xs text-slate-500">{t("ld_unloading_help", "Boşaltma yardımı")}</p><p className="mt-0.5 text-sm font-semibold text-navy-900">{listing.needsUnloadingHelp || t("ld_no_data", "Məlumat yoxdur")}</p></div>
+                <div><p className="text-xs text-slate-500">{t("ld_invoice", "Faktura")}</p><p className="mt-0.5 text-sm font-semibold text-navy-900">{listing.requiresInvoice || t("ld_no", "Xeyr")}</p></div>
+                <div><p className="text-xs text-slate-500">{t("ld_roundtrip", "Gediş-dönüş")}</p><p className="mt-0.5 text-sm font-semibold text-navy-900">{listing.roundTrip || t("ld_no", "Xeyr")}</p></div>
+                <div><p className="text-xs text-slate-500">{t("ld_special_req", "Xüsusi tələb")}</p><p className="mt-0.5 text-sm font-semibold text-navy-900">{listing.note || t("ld_none", "Yoxdur")}</p></div>
+              </div>
+            </div>
+
+            {/* Xəritə — solda, aşağıda */}
+            <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+              <h2 className="mb-4 text-[1.05rem] font-bold text-navy-900">{t("ld_map_title", "Xəritədə marşrut")}</h2>
+              <RouteMap fromCity={listing.pickupCity} fromAddress={listing.pickupAddress} toCity={listing.deliveryCity} toAddress={listing.deliveryAddress} />
+            </div>
+
+          </div>
+
+          {/* Sağ kolon — satıcı + iletişim (sticky) */}
+          <aside className="space-y-4">
+
+            {/* Satıcı + iletişim */}
+            <div className="sticky top-20 space-y-4">
+              <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 overflow-hidden">
+                    {listing.ownerProfilePicture ? (
+                      <img src={listing.ownerProfilePicture} alt={ownerDisplayName} className="h-full w-full object-cover" />
+                    ) : (
+                      <Building2 className="h-5 w-5" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-bold text-navy-900">{ownerDisplayName}</p>
+                      <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <p className="text-sm text-slate-500">{membershipText}</p>
+                    {isAuthorized && listing.ownerEmail ? (
+                      <p className="text-sm text-slate-500">{listing.ownerEmail}</p>
+                    ) : null}
+                  </div>
+                </div>
+
+                {/* Desktop iletişim butonları */}
+                <div className="mt-4 flex flex-col gap-2">
+                  <button type="button" data-no-loader onClick={() => setContactSheetOpen(true)}
+                    className="flex w-full items-center justify-center gap-2 rounded-[13px] bg-logistics-orange py-3 text-[1rem] font-bold text-white shadow-[0_4px_16px_rgba(249,115,22,0.28)] transition hover:bg-orange-600">
+                    <PhoneCall className="h-5 w-5" />
+                    {listing.ownerPhone}
+                  </button>
+                  <a href={`https://wa.me/${listing.ownerPhone?.replace(/[^0-9]/g, "")}`}
+                    target="_blank" rel="noopener noreferrer" data-no-loader
+                    className="flex w-full items-center justify-center gap-2 rounded-[13px] bg-[#25d366] py-3 text-[1rem] font-bold text-white shadow-[0_4px_16px_rgba(37,211,102,0.28)] transition hover:bg-[#20bc5a]">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+                    </svg>
+                    WhatsApp ilə yaz
+                  </a>
+                </div>
 
                 <div className="mt-3 text-center">
-                  <Link
-                    href={ownerListingHref}
-                    className="mt-1 inline-block text-[0.95rem] font-medium text-logistics-orange transition hover:text-orange-600 hover:underline"
-                  >
+                  <Link href={ownerListingHref} className="text-sm font-medium text-logistics-orange hover:underline">
                     {t("ld_all_listings", "İstifadəçinin bütün elanları")}
                   </Link>
                 </div>
               </div>
 
-              <ContactBottomSheet
-                phone={listing.ownerPhone || ""}
-                open={contactSheetOpen}
-                onClose={() => setContactSheetOpen(false)}
-              />
+              <ContactBottomSheet phone={listing.ownerPhone || ""} open={contactSheetOpen} onClose={() => setContactSheetOpen(false)} />
 
-              {/* CARRIER üçün müraciət forması */}
+              {/* CARRIER müraciət forması */}
               {isCarrier && (
-                <div className="mt-4 rounded-[14px] border border-slate-200 bg-slate-50 p-4">
-                  <h3 className="text-base font-bold text-navy-900 mb-3">Müraciət göndər</h3>
+                <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+                  <h3 className="font-bold text-navy-900 mb-3">Müraciət göndər</h3>
                   {applySuccess ? (
                     <div className="rounded-[10px] bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800 font-medium">
-                      Müraciətiniz uğurla göndərildi! Elan sahibi sizinlə əlaqə saxlayacaq.
+                      Müraciətiniz uğurla göndərildi!
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {applyVehicles.length === 0 ? (
-                        <p className="text-sm text-slate-500">Müraciət etmək üçün təsdiqlənmiş avtomobiliniz olmalıdır. <Link href="/carrier/vehicles/new" className="text-logistics-orange underline">Avtomobil əlavə et</Link></p>
+                        <p className="text-sm text-slate-500">Təsdiqlənmiş avtomobiliniz yoxdur. <Link href="/carrier/vehicles/new" className="text-logistics-orange underline">Avtomobil əlavə et</Link></p>
                       ) : (
                         <>
                           <div>
                             <label className="block text-xs font-semibold text-slate-500 mb-1">Avtomobil</label>
-                            <select
-                              value={applyVehicleId}
-                              onChange={e => setApplyVehicleId(e.target.value)}
-                              className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm text-navy-900 outline-none focus:border-logistics-orange"
-                            >
-                              {applyVehicles.map(v => (
-                                <option key={v.id} value={v.id}>{v.brand} {v.model} — {v.plateNumber}</option>
-                              ))}
+                            <select value={applyVehicleId} onChange={e => setApplyVehicleId(e.target.value)} className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-logistics-orange">
+                              {applyVehicles.map(v => <option key={v.id} value={v.id}>{v.brand} {v.model} — {v.plateNumber}</option>)}
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs font-semibold text-slate-500 mb-1">Təklif qiymət (AZN, istəyə görə)</label>
-                            <input
-                              type="number"
-                              value={applyPrice}
-                              onChange={e => setApplyPrice(e.target.value)}
-                              placeholder="məs. 350"
-                              className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm text-navy-900 outline-none focus:border-logistics-orange"
-                            />
+                            <label className="block text-xs font-semibold text-slate-500 mb-1">Qiymət (AZN, istəyə görə)</label>
+                            <input type="number" value={applyPrice} onChange={e => setApplyPrice(e.target.value)} placeholder="məs. 350" className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-logistics-orange" />
                           </div>
                           <div>
                             <label className="block text-xs font-semibold text-slate-500 mb-1">Mesaj (istəyə görə)</label>
-                            <textarea
-                              value={applyMessage}
-                              onChange={e => setApplyMessage(e.target.value)}
-                              placeholder="Salam, bu yükü daşıya bilərəm..."
-                              rows={3}
-                              className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm text-navy-900 outline-none focus:border-logistics-orange resize-none"
-                            />
+                            <textarea value={applyMessage} onChange={e => setApplyMessage(e.target.value)} placeholder="Salam, bu yükü daşıya bilərəm..." rows={3} className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-logistics-orange resize-none" />
                           </div>
-                          {applyError && (
-                            <p className="text-xs text-red-600">{applyError}</p>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleApply(listing.id)}
-                            disabled={applyLoading}
-                            className="w-full rounded-[10px] bg-logistics-orange py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 disabled:opacity-60"
-                          >
+                          {applyError && <p className="text-xs text-red-600">{applyError}</p>}
+                          <button type="button" onClick={() => handleApply(listing.id)} disabled={applyLoading} data-no-loader className="w-full rounded-[10px] bg-logistics-orange py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60">
                             {applyLoading ? "Göndərilir..." : "Müraciət göndər"}
                           </button>
                         </>
@@ -653,54 +567,51 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                   )}
                 </div>
               )}
-            </div>
 
-            <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-              <DetailInfoRow label={t("ld_post_date", "Elan tarixi")} value={formatListingDate(listing.createdAt)} />
-              <DetailInfoRow label={t("ld_updated_date", "Yenilənmə tarixi")} value={formatListingDate(listing.createdAt)} />
-              <DetailInfoRow label={t("ld_listing_type", "Elan növü")} value={t("ld_listing_type_cargo", "Yük")} />
-              <DetailInfoRow label={t("ld_cargo_category", "Yük kateqoriyası")} value={listing.cargoType} />
-              <DetailInfoRow
-                label={t("ld_price", "Təklif olunan qiymət")}
-                value={listing.price ? `${listing.price} AZN` : t("ld_negotiable", "Razılaşma ilə")}
-              />
-              <DetailInfoRow label={t("ld_listing_id", "Elan ID")} value={detailId} />
-              <DetailInfoRow label={t("ld_status", "Status")} value={<StatusBadge status={effectiveStatus(listing)} />} />
-            </div>
-
-            <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-              <div className="flex items-center gap-3 text-navy-900">
-                <ShieldCheck className="h-6 w-6" />
-                <h3 className="text-lg font-bold">{t("ld_safety_title", "Təhlükəsizlik tövsiyələri")}</h3>
+              {/* Elan meta */}
+              <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+                <DetailInfoRow label={t("ld_post_date", "Elan tarixi")} value={formatListingDate(listing.createdAt)} />
+                <DetailInfoRow label={t("ld_listing_type", "Elan növü")} value={t("ld_listing_type_cargo", "Yük")} />
+                <DetailInfoRow label={t("ld_cargo_category", "Kateqoriya")} value={listing.cargoType} />
+                <DetailInfoRow label={t("ld_price", "Qiymət")} value={listing.price ? `${listing.price} AZN` : t("ld_negotiable", "Razılaşma ilə")} />
+                <DetailInfoRow label={t("ld_listing_id", "Elan ID")} value={detailId} />
+                <DetailInfoRow label={t("ld_status", "Status")} value={<StatusBadge status={effectiveStatus(listing)} />} />
               </div>
-              <div className="mt-4 space-y-3 text-sm leading-7 text-slate-600">
-                <p>{t("ld_safety_1", "Ödənişləri yalnız rəsmi qaydada edin.")}</p>
-                <p>{t("ld_safety_2", "Şəxsi məlumatlarınızı paylaşmayın.")}</p>
-                <p>{t("ld_safety_3", "Şübhəli hallarda dəstək xidmətimizlə əlaqə saxlayın.")}</p>
-              </div>
-              <Link href="/how-it-works" className="mt-4 inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700">
-                {t("ld_more_info", "Daha ətraflı")}
-              </Link>
-            </div>
 
-            <div className="grid grid-cols-3 gap-0 overflow-hidden rounded-[16px] border border-slate-200 bg-white text-sm font-semibold text-slate-600 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
-              <button type="button" onClick={() => alert(t("ld_report_success", "Şikayətiniz uğurla qeydə alındı. Təşəkkür edirik!"))} className="flex min-h-14 items-center justify-center gap-2 border-r border-slate-200 transition hover:bg-slate-50">
-                <Flag className="h-4 w-4" />
-                {t("ld_report", "Şikayət et")}
-              </button>
-              <button type="button" onClick={() => setIsShareModalOpen(true)} className="flex min-h-14 items-center justify-center gap-2 border-r border-slate-200 transition hover:bg-slate-50">
-                <Share2 className="h-4 w-4" />
-                {t("ld_share", "Paylaş")}
-              </button>
-              <button type="button" onClick={() => window.print()} className="flex min-h-14 items-center justify-center gap-2 transition hover:bg-slate-50">
-                <Printer className="h-4 w-4" />
-                {t("ld_print", "Çap et")}
-              </button>
+              {/* Favori + Paylaş + Çap */}
+              <div className="flex items-center gap-2">
+                <FavoriteToggleButton listingId={listing.id} showLabel
+                  className="flex flex-1 items-center justify-center gap-2 rounded-[13px] border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                  iconClassName="h-4 w-4" labelClassName="leading-none" />
+                <button type="button" data-no-loader onClick={() => setIsShareModalOpen(true)} className="flex h-[42px] w-[42px] items-center justify-center rounded-[13px] border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50">
+                  <Share2 className="h-4 w-4" />
+                </button>
+                <button type="button" data-no-loader onClick={() => window.print()} className="flex h-[42px] w-[42px] items-center justify-center rounded-[13px] border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50">
+                  <Printer className="h-4 w-4" />
+                </button>
+                <button type="button" data-no-loader onClick={() => alert(t("ld_report_success", "Şikayətiniz qeydə alındı."))} className="flex h-[42px] w-[42px] items-center justify-center rounded-[13px] border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50">
+                  <Flag className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Güvenlik */}
+              <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+                <div className="flex items-center gap-2 text-navy-900">
+                  <ShieldCheck className="h-5 w-5" />
+                  <h3 className="font-bold">{t("ld_safety_title", "Təhlükəsizlik")}</h3>
+                </div>
+                <div className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
+                  <p>{t("ld_safety_1", "Ödənişləri yalnız rəsmi qaydada edin.")}</p>
+                  <p>{t("ld_safety_2", "Şəxsi məlumatlarınızı paylaşmayın.")}</p>
+                  <p>{t("ld_safety_3", "Şübhəli hallarda dəstək ilə əlaqə saxlayın.")}</p>
+                </div>
+              </div>
             </div>
           </aside>
         </div>
+      </section>
 
-        {isShareModalOpen && (
+      {isShareModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 transition-opacity" onClick={() => setIsShareModalOpen(false)}>
             <div className="w-full max-w-sm rounded-[20px] bg-white p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-5">
@@ -770,7 +681,6 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
             </div>
           </div>
         )}
-      </section>
     </PublicPage>
   );
 }
