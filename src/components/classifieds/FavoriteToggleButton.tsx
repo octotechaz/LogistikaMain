@@ -33,6 +33,7 @@ export function FavoriteToggleButton({
   return (
     <button
       type="button"
+      data-no-loader
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
