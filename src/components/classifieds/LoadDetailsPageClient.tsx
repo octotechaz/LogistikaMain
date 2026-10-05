@@ -192,6 +192,25 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
   // Rastgele ama tutarlı bir görüntülenme sayısı (id bazlı seed)
   const views = (listing as { views?: number })?.views || 0;
 
+  // Format phone number logic
+  const formattedPhone = useMemo(() => {
+    if (!listing?.ownerPhone) return "";
+    const digits = listing.ownerPhone.replace(/[^0-9]/g, "");
+    // If it starts with 994
+    if (digits.startsWith("994") && digits.length === 12) {
+       return `+994 ${digits.substring(3,5)} ${digits.substring(5,8)} ${digits.substring(8,10)} ${digits.substring(10,12)}`;
+    }
+    // If it starts with 0 (e.g. 050)
+    if (digits.startsWith("0") && digits.length === 10) {
+        return `+994 ${digits.substring(1,3)} ${digits.substring(3,6)} ${digits.substring(6,8)} ${digits.substring(8,10)}`;
+    }
+    // If it's just 9 digits (e.g. 501234567)
+    if (digits.length === 9) {
+        return `+994 ${digits.substring(0,2)} ${digits.substring(2,5)} ${digits.substring(5,7)} ${digits.substring(7,9)}`;
+    }
+    return listing.ownerPhone;
+  }, [listing?.ownerPhone]);
+
   useEffect(() => {
     setActiveImageIndex(0);
   }, [id]);
@@ -452,7 +471,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                   <div className="pt-0.5 text-logistics-orange"><Phone className="h-5 w-5" /></div>
                   <div className="min-w-0">
                     <p className="text-sm text-slate-500">{t("ld_contact", "Əlaqə nömrəsi")}</p>
-                    <p className="mt-1 text-[1rem] font-semibold text-logistics-orange group-hover:underline">{listing.ownerPhone}</p>
+                    <p className="mt-1 text-[1rem] font-semibold text-logistics-orange group-hover:underline">{formattedPhone}</p>
                   </div>
                 </button>
               </div>
@@ -519,7 +538,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                   <button type="button" data-no-loader onClick={() => setContactSheetOpen(true)}
                     className="flex w-full items-center justify-center gap-2 rounded-[13px] bg-logistics-orange py-3 text-[1rem] font-bold text-white shadow-[0_4px_16px_rgba(249,115,22,0.28)] transition hover:bg-orange-600">
                     <PhoneCall className="h-5 w-5" />
-                    {listing.ownerPhone}
+                    {formattedPhone}
                   </button>
                   <a href={`https://wa.me/${listing.ownerPhone?.replace(/[^0-9]/g, "")}`}
                     target="_blank" rel="noopener noreferrer" data-no-loader
