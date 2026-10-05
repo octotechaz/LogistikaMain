@@ -514,10 +514,8 @@ export function PublicFooter() {
             <p className="mt-1 text-sm text-slate-500">{t("footer_work_hours", fs.workHours)}</p>
             <div className="mt-4 flex items-center gap-2.5">
               <a
-                href={`https://wa.me/${fs.whatsapp}`}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="WhatsApp"
+                href={`tel:${fs.phone}`}
+                aria-label="Telefon"
                 className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-emerald-50 text-emerald-600 transition hover:bg-emerald-100"
               >
                 <PhoneCall className="h-[18px] w-[18px]" />
