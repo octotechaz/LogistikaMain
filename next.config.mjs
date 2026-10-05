@@ -44,6 +44,7 @@ const nextConfig = {
     // Listing photos can be up to 150 MB; default middleware limit is 10 MB.
     middlewareClientMaxBodySize: "150mb",
   },
+  output: "standalone",
   serverExternalPackages: ["better-sqlite3"],
   images: {
     remotePatterns: [

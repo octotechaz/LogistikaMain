@@ -13,7 +13,7 @@ COPY prisma ./prisma
 # Do not disable install scripts here. better-sqlite3 (used by the public
 # catalogue fallback) needs its native binding built for this exact Node ABI.
 # The build image already contains the compiler toolchain required for it.
-RUN npm ci --include=dev
+RUN npm ci --include=dev --prefer-offline --no-audit
 RUN npm rebuild better-sqlite3 --build-from-source
 RUN npx prisma generate
 

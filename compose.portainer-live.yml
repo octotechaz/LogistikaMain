@@ -18,11 +18,12 @@ services:
       - logistika-internal
 
   app:
+    container_name: logistika-app
     build:
       context: .
       dockerfile: Dockerfile
-    # Do NOT set a public image name like logistika-app:latest — Portainer
-    # "Pull and redeploy" would try Docker Hub and fail with pull access denied.
+    image: logistika-app:latest
+    pull_policy: build
     restart: unless-stopped
     init: true
     stop_grace_period: 30s
@@ -72,55 +73,31 @@ services:
       retries: 5
       start_period: 60s
     networks:
-      - octobot-net
+      - edge
       - logistika-internal
     labels:
       - traefik.enable=true
-      - traefik.docker.network=octobot-net
-      # Cloudflare must use Full/Full (strict) so the origin redirect does not loop.
-      - traefik.http.middlewares.tranzit-force-https.redirectscheme.scheme=https
-      - traefik.http.middlewares.tranzit-force-https.redirectscheme.permanent=true
-      # All public hosts hit Next (:3001). Admin UI is proxied to octo-admin
-      # on 127.0.0.1:3005 via next.config rewrites (/dashboard, /octo-admin).
-      # Routing admin Host directly to :3005 caused Cloudflare 502 when
-      # octo-admin was still starting or briefly unavailable.
+      - traefik.docker.network=edge
       - traefik.http.services.tranzit-next.loadbalancer.server.port=3001
 
-      # HTTP :80 — redirect to HTTPS before reaching the application.
-      - traefik.http.routers.tranzit-main-http.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
+      # Force HTTPS
+      - traefik.http.middlewares.tranzit-force-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.tranzit-force-https.redirectscheme.permanent=true
+
+      # HTTP :80
+      - traefik.http.routers.tranzit-main-http.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`) || Host(`portal.tranzit.az`) || Host(`admin.tranzit.az`)
       - traefik.http.routers.tranzit-main-http.entrypoints=web
       - traefik.http.routers.tranzit-main-http.middlewares=tranzit-force-https
-      - traefik.http.routers.tranzit-main-http.service=noop@internal
-      - traefik.http.routers.tranzit-portal-http.rule=Host(`portal.tranzit.az`)
-      - traefik.http.routers.tranzit-portal-http.entrypoints=web
-      - traefik.http.routers.tranzit-portal-http.middlewares=tranzit-force-https
-      - traefik.http.routers.tranzit-portal-http.service=noop@internal
-      - traefik.http.routers.tranzit-admin-http.rule=Host(`admin.tranzit.az`)
-      - traefik.http.routers.tranzit-admin-http.entrypoints=web
-      - traefik.http.routers.tranzit-admin-http.middlewares=tranzit-force-https
-      - traefik.http.routers.tranzit-admin-http.service=noop@internal
 
-      # HTTPS :443 — Cloudflare Full / direct TLS
-      - traefik.http.routers.tranzit-main-https.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`)
+      # HTTPS :443
+      - traefik.http.routers.tranzit-main-https.rule=Host(`tranzit.az`) || Host(`www.tranzit.az`) || Host(`portal.tranzit.az`) || Host(`admin.tranzit.az`)
       - traefik.http.routers.tranzit-main-https.entrypoints=websecure
       - traefik.http.routers.tranzit-main-https.tls=true
-      - traefik.http.routers.tranzit-main-https.tls.certresolver=letsencrypt
       - traefik.http.routers.tranzit-main-https.service=tranzit-next
-      - traefik.http.routers.tranzit-portal-https.rule=Host(`portal.tranzit.az`)
-      - traefik.http.routers.tranzit-portal-https.entrypoints=websecure
-      - traefik.http.routers.tranzit-portal-https.tls=true
-      - traefik.http.routers.tranzit-portal-https.tls.certresolver=letsencrypt
-      - traefik.http.routers.tranzit-portal-https.service=tranzit-next
-      - traefik.http.routers.tranzit-admin-https.rule=Host(`admin.tranzit.az`)
-      - traefik.http.routers.tranzit-admin-https.entrypoints=websecure
-      - traefik.http.routers.tranzit-admin-https.tls=true
-      - traefik.http.routers.tranzit-admin-https.tls.certresolver=letsencrypt
-      - traefik.http.routers.tranzit-admin-https.service=tranzit-next
 
 networks:
-  octobot-net:
+  edge:
     external: true
-    name: octobot-net
   logistika-internal:
     name: logistika-internal
     internal: true
