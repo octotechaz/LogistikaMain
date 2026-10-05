@@ -639,7 +639,7 @@ function CatalogListingRow({ listing }: { listing: CargoListing }) {
 
 function CatalogListingRowSkeleton() {
   return (
-    <div className="grid animate-pulse gap-4 px-5 py-[18px] sm:grid-cols-[128px,minmax(0,1fr),174px]">
+    <div className="grid animate-pulse gap-4 px-5 py-[18px] sm:grid-cols-[128px,minmax(0,1fr),220px]">
       <div className="h-24 w-24 rounded-2xl bg-slate-100" />
       <div className="space-y-3">
         <div className="h-6 w-2/3 rounded-full bg-slate-100" />
@@ -1754,9 +1754,9 @@ export function CatalogPageClient({
             </div>
 
             {sortedListings.length ? (
-              <div className="grid gap-5 grid-cols-1 xl:grid-cols-2">
+              <div className="grid gap-5 grid-cols-1">
                 {loadsInfinite.visibleItems.map((listing) => (
-                  <div key={listing.id} className="xl:col-span-1">
+                  <div key={listing.id} className="col-span-1">
                     <CatalogListingRow listing={listing} />
                   </div>
                 ))}
@@ -1766,7 +1766,7 @@ export function CatalogPageClient({
                     ))
                   : null}
                 {loadsInfinite.hasMore ? (
-                  <div ref={loadsInfinite.sentinelRef} className="xl:col-span-2 h-6 w-full" aria-hidden="true" />
+                  <div ref={loadsInfinite.sentinelRef} className="col-span-1 h-6 w-full" aria-hidden="true" />
                 ) : null}
               </div>
             ) : (
