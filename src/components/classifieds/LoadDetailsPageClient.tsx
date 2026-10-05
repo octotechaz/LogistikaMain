@@ -381,13 +381,13 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
         </div>
 
         {/* Gallery and seller contact share the top row on listing detail pages. */}
-        <div className="mt-5 grid items-stretch gap-5 xl:grid-cols-[minmax(0,1fr),380px]">
+        <div className="mt-5 grid items-stretch gap-5 xl:grid-cols-[minmax(0,1fr),360px]">
           <div className="min-w-0">
             <div className="overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
           {gallery.length > 0 ? (
-            <div className="grid gap-2 p-2 sm:grid-cols-[minmax(0,1fr),160px] lg:grid-cols-[minmax(0,1fr),200px]">
+            <div className="grid gap-2 p-2 sm:grid-cols-[minmax(0,1fr),120px] lg:grid-cols-[minmax(0,1fr),148px]">
               {/* Ana görsel */}
-              <div className="relative overflow-hidden rounded-[14px] bg-slate-100" style={{ minHeight: 320 }}>
+              <div className="relative overflow-hidden rounded-[14px] bg-slate-100" style={{ minHeight: 380 }}>
                 <img src={activeImage} alt={listing.title} loading="eager" className="absolute inset-0 h-full w-full object-cover" />
                 {gallery.length > 1 && (
                   <>
@@ -415,7 +415,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                       <button key={`${image}-${index}`} type="button" data-no-loader
                         onClick={() => setActiveImageIndex(actualIndex)}
                         className={cn(
-                          "relative flex-1 overflow-hidden rounded-[12px] bg-slate-100 transition sm:flex-none sm:h-[calc(25%-6px)]",
+                          "relative flex-1 overflow-hidden rounded-[12px] bg-slate-100 transition sm:flex-none sm:h-[calc(25%-4.5px)]",
                           activeImageIndex === actualIndex && "ring-2 ring-logistics-orange ring-offset-1"
                         )}>
                         <div className="relative aspect-[4/3]">
@@ -465,7 +465,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
         </div>
 
         {/* ── MAIN GRID ── */}
-        <div className="mt-5 grid gap-5">
+        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr),360px]">
 
           {/* Sol kolon — bilgiler */}
           <div className="space-y-4">
