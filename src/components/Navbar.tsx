@@ -3,10 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { LogOut, Truck, UserRound } from "lucide-react";
-import { ButtonLink } from "@/components/ui/Button";
 import { useApiAuthUser } from "@/hooks/useApiAuthUser";
 import { cn } from "@/lib/utils";
-import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { useLocale } from "@/hooks/useLocale";
 
 export function Navbar({
@@ -62,43 +60,37 @@ export function Navbar({
     : t("nav_new_listing", "Yeni elan");
 
   return (
-    <header className="sticky top-0 z-[60] border-b border-navy-100 bg-white/95 backdrop-blur">
-      <div className="relative mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3 font-bold text-navy-900">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-900 text-white">
-            <Truck className="h-5 w-5" aria-hidden />
+    <header className="sticky top-0 z-[60] w-full bg-logistics-orange shadow-sm">
+      <div className="relative mx-auto flex min-h-16 w-full max-w-[1280px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <Link href="/" className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/20">
+            <Truck className="h-5 w-5 text-white" aria-hidden />
           </span>
-          <span className="text-xl font-extrabold tracking-tight">
-            Tranzit.<span className="text-logistics-orange">AZ</span>
+          <span className="text-xl font-extrabold tracking-tight text-white">
+            Tranzit.AZ
           </span>
         </Link>
 
-        <div className="flex items-center gap-2 sm:hidden">
-          <LocaleSwitcher />
-        </div>
-
-        <nav className="hidden items-center gap-3 sm:flex">
-          <Link className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900" href="/">
+        <nav className="hidden items-center gap-1 sm:flex">
+          <Link className="rounded-lg px-3 py-2 text-sm font-semibold text-white/90 transition-colors hover:bg-white/15 hover:text-white" href="/">
             {t("nav_home", "Ana səhifə")}
           </Link>
-          <Link className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900" href={primaryHref}>
+          <Link className="rounded-lg px-3 py-2 text-sm font-semibold text-white/90 transition-colors hover:bg-white/15 hover:text-white" href={primaryHref}>
             {primaryLabel}
           </Link>
-          <Link className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900" href="/how-it-works">
+          <Link className="rounded-lg px-3 py-2 text-sm font-semibold text-white/90 transition-colors hover:bg-white/15 hover:text-white" href="/how-it-works">
             {t("nav_howitworks", "Necə işləyir")}
           </Link>
-
-          <LocaleSwitcher />
 
           {user ? (
             <div className="relative hidden sm:block" ref={dropdownRef}>
               <button type="button" aria-expanded={dropdownOpen} aria-haspopup="menu" aria-label="Profil menyusu"
                 onClick={() => setDropdownOpen((open) => !open)}
                 className={cn(
-                  "inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-[14px] border bg-white px-[18px] py-2 text-sm font-semibold text-navy-900 transition duration-200 hover:-translate-y-px hover:bg-navy-50",
-                  dropdownOpen ? "border-logistics-orange text-logistics-orange shadow-sm" : "border-[#d9e4f4]"
+                  "inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-white/30 bg-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/25",
+                  dropdownOpen && "bg-white/25"
                 )}>
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-logistics-orange/10 text-xs font-bold text-logistics-orange">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/30 text-xs font-bold text-white">
                   {userInitial}
                 </span>
                 <span className="max-w-[150px] truncate">{user.email || user.name}</span>
@@ -106,7 +98,7 @@ export function Navbar({
 
               {dropdownOpen ? (
                 <div role="menu" className="absolute right-0 top-full z-[70] w-56 pt-2">
-                  <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]">
+                  <div className="rounded-xl border border-slate-100 bg-white p-2 shadow-lg">
                     <div className="mb-1 flex items-center gap-3 border-b border-slate-100 px-3 py-3">
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-logistics-orange/10 text-lg font-bold text-logistics-orange">
                         {userInitial}
@@ -121,14 +113,14 @@ export function Navbar({
                       href={role === "ADMIN" ? "/octo-admin" : role === "CARRIER" ? "/carrier/cargo-posts" : "/cargo-owner/dashboard"}
                       role="menuitem"
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-logistics-orange">
+                      className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-logistics-orange">
                       {role === "ADMIN" ? t("nav_admin_panel", "Admin Paneli") : role === "CARRIER" ? t("nav_active_loads", "Aktiv yüklər") : t("nav_my_listings", "Mənim elanlarım")}
                     </Link>
 
                     <div className="my-1 border-t border-slate-100" />
 
                     <button type="button" role="menuitem" onClick={handleLogout}
-                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50">
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50">
                       <LogOut className="h-[18px] w-[18px]" />
                       <span>{t("nav_logout", "Çıxış et")}</span>
                     </button>
@@ -139,15 +131,15 @@ export function Navbar({
           ) : (
             <>
               <Link href="/login"
-                className="hidden h-11 min-h-11 items-center justify-center gap-2 rounded-[14px] border border-[#d9e4f4] bg-white px-[18px] py-2 text-sm font-semibold text-navy-900 transition duration-200 hover:-translate-y-px hover:bg-navy-50 sm:inline-flex">
+                className="hidden h-10 items-center justify-center gap-2 rounded-lg border border-white/30 bg-white/15 px-4 text-sm font-semibold text-white transition hover:bg-white/25 sm:inline-flex">
                 <UserRound className="h-[18px] w-[18px]" />
                 {t("login_btn", "Daxil ol")}
               </Link>
-              <ButtonLink href="/cargo-owner/cargo-posts/new"
-                className="group h-11 min-h-11 rounded-[14px] border-none bg-logistics-orange px-[18px] shadow-sm hover:bg-orange-600">
-                <Truck className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden />
+              <Link href="/cargo-owner/cargo-posts/new"
+                className="hidden h-10 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-logistics-orange transition hover:bg-orange-50 sm:inline-flex">
+                <Truck className="h-4 w-4" aria-hidden />
                 {t("nav_new_listing", "Yeni elan")}
-              </ButtonLink>
+              </Link>
             </>
           )}
         </nav>

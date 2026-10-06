@@ -31,7 +31,7 @@ function Flag({ locale, className }: { locale: Locale; className?: string }) {
   );
 }
 
-export function LocaleSwitcher({ className }: { className?: string }) {
+export function LocaleSwitcher({ className, floating = false }: { className?: string; floating?: boolean }) {
   const { locale, setLocale } = useLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -48,18 +48,60 @@ export function LocaleSwitcher({ className }: { className?: string }) {
     };
   }, []);
 
+  if (floating) {
+    return (
+      <div ref={ref} className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg border border-slate-200 transition hover:scale-105 focus:outline-none"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-label="Dil seçin"
+        >
+          <Flag locale={locale} className="h-7 w-7" />
+        </button>
+        {open && (
+          <div className="absolute bottom-full right-0 z-[200] mb-2 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl py-1">
+            {SUPPORTED_LOCALES.map((l) => (
+              <button
+                key={l}
+                type="button"
+                role="option"
+                aria-selected={locale === l}
+                onClick={() => { setLocale(l as Locale); setOpen(false); }}
+                className={cn(
+                  "flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors",
+                  locale === l ? "bg-orange-50 font-semibold text-logistics-orange" : "text-slate-700 hover:bg-slate-50"
+                )}
+              >
+                <Flag locale={l as Locale} className="h-5 w-5 shrink-0" />
+                <span className="flex-1">{LOCALE_NAMES[l as Locale]}</span>
+                {locale === l && (
+                  <svg className="h-4 w-4 text-logistics-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div ref={ref} className={cn("relative", className)}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 sm:h-10 items-center gap-1.5 sm:gap-2 rounded-[10px] sm:rounded-[12px] border border-slate-200 bg-white px-2 sm:px-2.5 text-xs sm:text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none"
+        className="flex h-9 sm:h-10 items-center gap-1.5 sm:gap-2 rounded-[10px] sm:rounded-[12px] border border-white/30 bg-white/15 px-2 sm:px-2.5 text-xs sm:text-sm font-semibold text-white transition hover:bg-white/25 focus:outline-none"
         aria-haspopup="listbox"
         aria-expanded={open}
       >
         <Flag locale={locale} className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
         <span>{LOCALE_LABELS[locale]}</span>
-        <svg className={cn("h-3.5 w-3.5 text-slate-400 transition-transform", open && "rotate-180")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg className={cn("h-3.5 w-3.5 text-white/70 transition-transform", open && "rotate-180")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>

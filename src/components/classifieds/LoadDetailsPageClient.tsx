@@ -322,7 +322,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
         <a
           href={`tel:${listing.ownerPhone}`}
           data-no-loader
-          className="flex flex-1 items-center justify-center gap-2 rounded-[14px] bg-logistics-orange py-3.5 text-[1rem] font-bold text-white shadow-[0_4px_16px_rgba(249,115,22,0.35)]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-logistics-orange py-3.5 text-[1rem] font-bold text-white"
         >
           <PhoneCall className="h-5 w-5" />
           Zəng et
@@ -332,7 +332,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
           target="_blank"
           rel="noopener noreferrer"
           data-no-loader
-          className="flex flex-1 items-center justify-center gap-2 rounded-[14px] bg-[#25d366] py-3.5 text-[1rem] font-bold text-white shadow-[0_4px_16px_rgba(37,211,102,0.35)]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#25d366] py-3.5 text-[1rem] font-bold text-white"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
@@ -380,14 +380,18 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
           </span>
         </div>
 
-        {/* Gallery and seller contact share the top row on listing detail pages. */}
-        <div className="mt-5 grid items-stretch gap-5 xl:grid-cols-[minmax(0,1fr),360px]">
-          <div className="min-w-0">
-            <div className="overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+        {/* ── MAIN GRID: sol = galeri + bilgiler, sağ = satıcı paneli ── */}
+        <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr),360px]">
+
+          {/* Sol kolon — galeri + bilgiler */}
+          <div className="space-y-4">
+
+            {/* Galeri */}
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           {gallery.length > 0 ? (
-            <div className="grid gap-2 p-2 sm:grid-cols-[minmax(0,1fr),120px] lg:grid-cols-[minmax(0,1fr),148px]">
-              {/* Ana görsel */}
-              <div className="relative overflow-hidden rounded-[14px] bg-slate-100" style={{ minHeight: 380 }}>
+            <div className="p-2 space-y-2">
+              {/* Ana görsel — tam genişlik */}
+              <div className="relative w-full overflow-hidden rounded-[14px] bg-slate-100 aspect-[16/9]">
                 <img src={activeImage} alt={listing.title} loading="eager" className="absolute inset-0 h-full w-full object-cover" />
                 {gallery.length > 1 && (
                   <>
@@ -405,25 +409,22 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                   </>
                 )}
               </div>
-              {/* Thumbnail'lar */}
+              {/* Thumbnail'lar — altta yatay şerit */}
               {gallery.length > 1 && (
-                <div className="flex flex-row gap-2 sm:flex-col">
-                  {gallery.slice(1, 5).map((image, index) => {
-                    const actualIndex = index + 1;
-                    const extraCount = Math.max(gallery.length - 5, 0);
+                <div className="flex gap-2 overflow-x-auto pb-0.5">
+                  {gallery.slice(0, 6).map((image, index) => {
+                    const extraCount = Math.max(gallery.length - 6, 0);
                     return (
                       <button key={`${image}-${index}`} type="button" data-no-loader
-                        onClick={() => setActiveImageIndex(actualIndex)}
+                        onClick={() => setActiveImageIndex(index)}
                         className={cn(
-                          "relative flex-1 overflow-hidden rounded-[12px] bg-slate-100 transition sm:flex-none sm:h-[calc(25%-4.5px)]",
-                          activeImageIndex === actualIndex && "ring-2 ring-logistics-orange ring-offset-1"
+                          "relative shrink-0 w-20 h-14 overflow-hidden rounded-lg bg-slate-100 transition",
+                          activeImageIndex === index && "ring-2 ring-logistics-orange ring-offset-1"
                         )}>
-                        <div className="relative aspect-[4/3]">
-                          <img src={image} alt={listing.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-                        </div>
-                        {index === 3 && extraCount > 0 ? (
+                        <img src={image} alt={listing.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                        {index === 5 && extraCount > 0 ? (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
-                            <span className="text-xl font-bold">+{extraCount}</span>
+                            <span className="text-base font-bold">+{extraCount}</span>
                           </div>
                         ) : null}
                       </button>
@@ -433,56 +434,16 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
               )}
             </div>
           ) : (
-            <div className={cn("flex items-center justify-center rounded-[18px]", listingPlaceholderTone?.panel ?? "bg-slate-100")} style={{ minHeight: 280 }}>
+            <div className={cn("flex items-center justify-center rounded-xl", listingPlaceholderTone?.panel ?? "bg-slate-100")} style={{ minHeight: 280 }}>
               {ListingPlaceholderIcon ? <ListingPlaceholderIcon className="h-20 w-20" /> : <Package2 className="h-20 w-20 text-slate-300" />}
             </div>
           )}
             </div>
-          </div>
-          <aside className="space-y-4">
-            <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
-              <div className="flex items-start gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-50 text-slate-500">
-                  {listing.ownerProfilePicture ? <img src={listing.ownerProfilePicture} alt={ownerDisplayName} className="h-full w-full object-cover" /> : <Building2 className="h-5 w-5" />}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2"><p className="font-bold text-navy-900">{ownerDisplayName}</p><ShieldCheck className="h-4 w-4 text-emerald-500" /></div>
-                  <p className="text-sm text-slate-500">{membershipText}</p>
-                  {isAuthorized && listing.ownerEmail ? <p className="text-sm text-slate-500">{listing.ownerEmail}</p> : null}
-                </div>
-              </div>
-              <div className="mt-4 flex flex-col gap-2">
-                <button type="button" data-no-loader onClick={() => setContactSheetOpen(true)} className="flex w-full items-center justify-center gap-2 rounded-[13px] bg-logistics-orange py-3 text-[1rem] font-bold text-white shadow-[0_4px_16px_rgba(249,115,22,0.28)] transition hover:bg-orange-600"><PhoneCall className="h-5 w-5" />{formattedPhone}</button>
-                <a href={`https://wa.me/${listing.ownerPhone?.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer" data-no-loader className="flex w-full items-center justify-center gap-2 rounded-[13px] bg-[#25d366] py-3 text-[1rem] font-bold text-white shadow-[0_4px_16px_rgba(37,211,102,0.28)] transition hover:bg-[#20bc5a]">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 1 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" /></svg>
-                  WhatsApp ilə yaz
-                </a>
-              </div>
-              <div className="mt-3 text-center"><Link href={ownerListingHref} className="text-sm font-medium text-logistics-orange hover:underline">{t("ld_all_listings", "İstifadəçinin bütün elanları")}</Link></div>
-            </div>
-            <ContactBottomSheet phone={listing.ownerPhone || ""} open={contactSheetOpen} onClose={() => setContactSheetOpen(false)} />
-          </aside>
-        </div>
-
-        {/* ── MAIN GRID ── */}
-        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr),360px]">
-
-          {/* Sol kolon — bilgiler */}
-          <div className="space-y-4">
 
             {/* Yük bilgileri */}
-            <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
-              <div className="flex items-center justify-between gap-3">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center gap-3">
                 <h2 className="text-[1.05rem] font-bold text-navy-900">{t("ld_info_title", "Yük məlumatları")}</h2>
-                {listing.price ? (
-                  <span className="text-[1.35rem] font-extrabold tracking-tight text-logistics-orange" style={{ fontVariantNumeric: "tabular-nums" }}>
-                    {listing.price} <span className="text-sm font-semibold text-slate-400">AZN</span>
-                  </span>
-                ) : (
-                  <span className="text-[0.95rem] font-semibold italic text-slate-400">
-                    {t("ld_negotiable", "Razılaşma ilə")}
-                  </span>
-                )}
               </div>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <DetailFactItem icon={<Package2 className="h-5 w-5" />} label={t("ld_cargo_type", "Yük növü")} value={listing.cargoType} />
@@ -506,7 +467,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
 
             {/* Açıqlama */}
             {localizedDescription ? (
-              <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <h2 className="text-[1.05rem] font-bold text-navy-900">{t("ld_desc_title", "Elanın təsviri")}</h2>
                 <div className="mt-3 space-y-2 text-[0.93rem] leading-7 text-slate-600">
                   <p>{localizedDescription}</p>
@@ -515,7 +476,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
             ) : null}
 
             {/* Əlavə məlumat */}
-            <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <h3 className="text-[1.05rem] font-bold text-navy-900">{t("ld_extra_info", "Əlavə məlumat")}</h3>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
                 <div><p className="text-xs text-slate-500">{t("ld_loading_help", "Yükləmə yardımı")}</p><p className="mt-0.5 text-sm font-semibold text-navy-900">{listing.needsLoadingHelp || t("ld_no_data", "Məlumat yoxdur")}</p></div>
@@ -527,8 +488,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
             </div>
 
             {/* Xəritə — solda, aşağıda */}
-            <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
-              <h2 className="mb-4 text-[1.05rem] font-bold text-navy-900">{t("ld_map_title", "Xəritədə marşrut")}</h2>
+            <div className="rounded-xl overflow-hidden border-0">
               <RouteMap fromCity={listing.pickupCity} fromAddress={listing.pickupAddress} toCity={listing.deliveryCity} toAddress={listing.deliveryAddress} />
             </div>
 
@@ -539,7 +499,18 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
             
             {/* Satıcı + iletişim */}
             <div className="sticky top-20 space-y-4">
-              <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                {/* Fiyat */}
+                <div className="mb-4 pb-4 border-b border-slate-100">
+                  {listing.price ? (
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-2xl font-extrabold tracking-tight text-logistics-orange" style={{ fontVariantNumeric: "tabular-nums" }}>{listing.price}</span>
+                      <span className="text-sm font-semibold text-slate-400">AZN</span>
+                    </div>
+                  ) : (
+                    <span className="text-[0.95rem] font-semibold italic text-slate-400">{t("ld_negotiable", "Razılaşma ilə")}</span>
+                  )}
+                </div>
                 <div className="flex items-start gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 overflow-hidden">
                     {listing.ownerProfilePicture ? (
@@ -563,13 +534,13 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                 {/* Desktop iletişim butonları */}
                 <div className="mt-4 flex flex-col gap-2">
                   <button type="button" data-no-loader onClick={() => setContactSheetOpen(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-[13px] bg-logistics-orange py-3 text-[1rem] font-bold text-white shadow-[0_4px_16px_rgba(249,115,22,0.28)] transition hover:bg-orange-600">
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-logistics-orange py-3 text-[1rem] font-bold text-white transition hover:bg-orange-600">
                     <PhoneCall className="h-5 w-5" />
                     {formattedPhone}
                   </button>
                   <a href={`https://wa.me/${listing.ownerPhone?.replace(/[^0-9]/g, "")}`}
                     target="_blank" rel="noopener noreferrer" data-no-loader
-                    className="flex w-full items-center justify-center gap-2 rounded-[13px] bg-[#25d366] py-3 text-[1rem] font-bold text-white shadow-[0_4px_16px_rgba(37,211,102,0.28)] transition hover:bg-[#20bc5a]">
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#25d366] py-3 text-[1rem] font-bold text-white transition hover:bg-[#20bc5a]">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
                     </svg>
@@ -588,10 +559,10 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
 
               {/* CARRIER müraciət forması */}
               {isCarrier && (
-                <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                   <h3 className="font-bold text-navy-900 mb-3">Müraciət göndər</h3>
                   {applySuccess ? (
-                    <div className="rounded-[10px] bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800 font-medium">
+                    <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800 font-medium">
                       Müraciətiniz uğurla göndərildi!
                     </div>
                   ) : (
@@ -602,20 +573,20 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                         <>
                           <div>
                             <label className="block text-xs font-semibold text-slate-500 mb-1">Avtomobil</label>
-                            <select value={applyVehicleId} onChange={e => setApplyVehicleId(e.target.value)} className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-logistics-orange">
+                            <select value={applyVehicleId} onChange={e => setApplyVehicleId(e.target.value)} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-logistics-orange">
                               {applyVehicles.map(v => <option key={v.id} value={v.id}>{v.brand} {v.model} — {v.plateNumber}</option>)}
                             </select>
                           </div>
                           <div>
                             <label className="block text-xs font-semibold text-slate-500 mb-1">Qiymət (AZN, istəyə görə)</label>
-                            <input type="number" value={applyPrice} onChange={e => setApplyPrice(e.target.value)} placeholder="məs. 350" className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-logistics-orange" />
+                            <input type="number" value={applyPrice} onChange={e => setApplyPrice(e.target.value)} placeholder="məs. 350" className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-logistics-orange" />
                           </div>
                           <div>
                             <label className="block text-xs font-semibold text-slate-500 mb-1">Mesaj (istəyə görə)</label>
-                            <textarea value={applyMessage} onChange={e => setApplyMessage(e.target.value)} placeholder="Salam, bu yükü daşıya bilərəm..." rows={3} className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-logistics-orange resize-none" />
+                            <textarea value={applyMessage} onChange={e => setApplyMessage(e.target.value)} placeholder="Salam, bu yükü daşıya bilərəm..." rows={3} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-logistics-orange resize-none" />
                           </div>
                           {applyError && <p className="text-xs text-red-600">{applyError}</p>}
-                          <button type="button" onClick={() => handleApply(listing.id)} disabled={applyLoading} data-no-loader className="w-full rounded-[10px] bg-logistics-orange py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60">
+                          <button type="button" onClick={() => handleApply(listing.id)} disabled={applyLoading} data-no-loader className="w-full rounded-lg bg-logistics-orange py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60">
                             {applyLoading ? "Göndərilir..." : "Müraciət göndər"}
                           </button>
                         </>
@@ -626,7 +597,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
               )}
 
               {/* Elan meta */}
-              <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <DetailInfoRow label={t("ld_post_date", "Elan tarixi")} value={formatListingDate(listing.createdAt)} />
                 <DetailInfoRow label={t("ld_listing_type", "Elan növü")} value={t("ld_listing_type_cargo", "Yük")} />
                 <DetailInfoRow label={t("ld_listing_id", "Elan ID")} value={detailId} />
@@ -636,21 +607,21 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
               {/* Favori + Paylaş + Çap */}
               <div className="flex items-center gap-2">
                 <FavoriteToggleButton listingId={listing.id} showLabel
-                  className="flex flex-1 items-center justify-center gap-2 rounded-[13px] border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                   iconClassName="h-4 w-4" labelClassName="leading-none" />
-                <button type="button" data-no-loader onClick={() => setIsShareModalOpen(true)} className="flex h-[42px] w-[42px] items-center justify-center rounded-[13px] border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50">
+                <button type="button" data-no-loader onClick={() => setIsShareModalOpen(true)} className="flex h-[42px] w-[42px] items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50">
                   <Share2 className="h-4 w-4" />
                 </button>
-                <button type="button" data-no-loader onClick={() => window.print()} className="flex h-[42px] w-[42px] items-center justify-center rounded-[13px] border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50">
+                <button type="button" data-no-loader onClick={() => window.print()} className="flex h-[42px] w-[42px] items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50">
                   <Printer className="h-4 w-4" />
                 </button>
-                <button type="button" data-no-loader onClick={() => alert(t("ld_report_success", "Şikayətiniz qeydə alındı."))} className="flex h-[42px] w-[42px] items-center justify-center rounded-[13px] border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50">
+                <button type="button" data-no-loader onClick={() => alert(t("ld_report_success", "Şikayətiniz qeydə alındı."))} className="flex h-[42px] w-[42px] items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50">
                   <Flag className="h-4 w-4" />
                 </button>
               </div>
 
               {/* Güvenlik */}
-              <div className="rounded-[16px] border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-navy-900">
                   <ShieldCheck className="h-5 w-5" />
                   <h3 className="font-bold">{t("ld_safety_title", "Təhlükəsizlik")}</h3>
@@ -668,7 +639,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
 
       {isShareModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 transition-opacity" onClick={() => setIsShareModalOpen(false)}>
-            <div className="w-full max-w-sm rounded-[20px] bg-white p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-bold text-navy-900">{t("ld_share_title", "Elanı paylaş")}</h3>
                 <button 
@@ -716,7 +687,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                 </LinkedinShareButton>
               </div>
 
-              <div className="mt-6 flex items-center gap-2 rounded-[12px] border border-slate-200 bg-slate-50 p-2">
+              <div className="mt-6 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
                 <input 
                   type="text" 
                   readOnly 
@@ -728,7 +699,7 @@ export function LoadDetailsPageClient({ id }: { id: string }) {
                     navigator.clipboard.writeText(window.location.href);
                     alert(t("ld_link_copied", "Link kopyalandı!"));
                   }}
-                  className="rounded-[8px] bg-white px-3 py-1.5 text-sm font-semibold text-logistics-orange shadow-sm border border-slate-200 hover:bg-orange-50 transition"
+                  className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-logistics-orange border border-slate-200 hover:bg-orange-50 transition"
                 >
                   Kopyala
                 </button>

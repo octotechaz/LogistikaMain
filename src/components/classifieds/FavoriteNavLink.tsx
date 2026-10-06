@@ -21,8 +21,8 @@ export function FavoriteNavLink({
     <FastLink
       href="/favorites"
       className={cn(
-        "inline-flex h-[36px] sm:h-11 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-2.5 sm:px-4 text-[0.95rem] font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-navy-500",
-        compact && "w-[36px] sm:w-11 px-0",
+        "inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-white px-3 text-sm font-semibold text-logistics-orange transition hover:bg-orange-50 focus:outline-none",
+        compact && "w-9 px-0",
         className
       )}
       aria-label={`${t("fav_label", "Seçilmişlər")}, ${badgeCount} ${t("fav_listing_unit", "elan")}`}
@@ -31,10 +31,10 @@ export function FavoriteNavLink({
         <Heart
           className={cn(
             "h-[18px] w-[18px] sm:h-[20px] sm:w-[20px]",
-            badgeCount > 0 ? "text-logistics-orange fill-logistics-orange" : "text-slate-500"
+            badgeCount > 0 ? "text-logistics-orange fill-logistics-orange" : "text-logistics-orange"
           )}
         />
-        <span className="absolute -right-[7px] -top-[7px] inline-flex min-w-[15px] h-[15px] items-center justify-center rounded-full bg-navy-900 px-1 text-[9px] font-bold leading-none text-white shadow-sm ring-1 ring-white">
+        <span className="absolute -right-[7px] -top-[7px] inline-flex min-w-[15px] h-[15px] items-center justify-center rounded-full bg-white px-1 text-[9px] font-bold leading-none text-logistics-orange shadow-sm">
           {badgeCount > 99 ? "99+" : badgeCount}
         </span>
       </span>

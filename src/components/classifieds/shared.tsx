@@ -56,9 +56,9 @@ const pageTransition: Transition = {
 
 export function AppLogo() {
   return (
-    <Link href="/" className="flex shrink-0 items-center leading-none text-navy-900">
+    <Link href="/" className="flex shrink-0 items-center leading-none">
       <span className="whitespace-nowrap text-[1.15rem] sm:text-xl md:text-2xl font-extrabold tracking-tight">
-        Tranzit.<span className="text-logistics-orange">AZ</span>
+        <span className="text-navy-900">Tranzit</span><span className="text-white">.AZ</span>
       </span>
     </Link>
   );
@@ -278,12 +278,12 @@ export function PublicNavbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-[60] w-full min-w-0 max-w-full px-0 md:px-4 md:pt-3 lg:px-6">
-        <div className="relative mx-auto w-full min-w-0 max-w-[1780px] border-b border-slate-200 bg-white/96 shadow-[0_8px_24px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-shadow duration-200 md:rounded-[24px] md:border md:border-white/70 md:bg-white/88 md:shadow-[0_14px_34px_rgba(15,23,42,0.07)]">
-          <div className="flex h-16 min-w-0 items-center justify-between gap-2 px-4 md:h-auto md:gap-5 md:px-5 md:py-2 lg:px-7">
+      <header className="sticky top-0 z-[60] w-full min-w-0 max-w-full bg-logistics-orange shadow-sm">
+        <div className="relative mx-auto w-full min-w-0 max-w-[1280px]">
+          <div className="flex h-16 min-w-0 items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
             <AppLogo />
 
-            <nav className="hidden items-center gap-1 text-[0.9rem] font-semibold text-navy-900 md:flex xl:gap-1.5 xl:text-[0.98rem]">
+            <nav className="hidden items-center gap-1 text-[0.9rem] font-semibold md:flex xl:gap-1.5 xl:text-[0.98rem]">
               <LayoutGroup id="public-topbar-tabs">
                 {topbarNavItems.map((item) => {
                   const isActive = item.id === activeTopbarItemId;
@@ -295,15 +295,15 @@ export function PublicNavbar() {
                       aria-current={isActive ? "page" : undefined}
                       onClick={(event) => handleTopbarClick(item.id, item.href, event)}
                       className={cn(
-                        "relative isolate inline-flex min-h-11 items-center gap-1.5 px-2.5 text-slate-600 transition-colors duration-200 ease-out hover:text-navy-900 xl:px-3.5",
-                        isActive ? "text-navy-900" : ""
+                        "relative isolate inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-white/90 transition-colors duration-200 ease-out hover:bg-white/15 hover:text-white xl:px-3.5",
+                        isActive ? "text-white" : ""
                       )}
                     >
                       <span className="relative z-10">{t(NAV_LABEL_KEYS[item.id] ?? "", item.label)}</span>
                       {isActive ? (
                         <motion.span
                           layoutId="topbar-active-underline"
-                          className="absolute inset-x-3 bottom-[7px] h-[2px] rounded-full bg-logistics-orange/90"
+                          className="absolute inset-x-3 bottom-[7px] h-[2px] rounded-full bg-white/80"
                           transition={topbarTabTransition}
                         />
                       ) : null}
@@ -314,7 +314,6 @@ export function PublicNavbar() {
             </nav>
 
             <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-              <LocaleSwitcher className="shrink-0" />
               {showFavorites ? <FavoriteNavLink /> : null}
 
               {user ? (
@@ -324,13 +323,11 @@ export function PublicNavbar() {
                     onClick={() => setDropdownOpen(!dropdownOpen)}
                     aria-label="Profil menyusunu ac"
                     className={cn(
-                      "inline-flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-white text-sm font-bold transition duration-200 hover:-translate-y-px hover:bg-navy-50",
-                      dropdownOpen
-                        ? "border-logistics-orange text-logistics-orange shadow-sm"
-                        : "border-[#d9e4f4] text-navy-900"
+                      "inline-flex h-9 w-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-white/30 bg-white/20 text-sm font-bold text-white transition hover:bg-white/30",
+                      dropdownOpen && "bg-white/30"
                     )}
                   >
-                    <span className="flex h-full w-full items-center justify-center bg-logistics-orange/10 text-logistics-orange">
+                    <span className="flex h-full w-full items-center justify-center text-white font-bold">
                       {userInitial}
                     </span>
                   </button>
@@ -383,7 +380,7 @@ export function PublicNavbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="hidden h-11 min-h-11 items-center justify-center gap-2 rounded-[14px] border border-[#d9e4f4] bg-white px-[18px] py-2 text-sm font-semibold text-navy-900 transition duration-200 hover:-translate-y-px hover:bg-navy-50 md:inline-flex"
+                  className="hidden h-9 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-logistics-orange transition hover:bg-orange-50 md:inline-flex"
                 >
                   <UserRound className="h-[18px] w-[18px]" />
                   {t("nav_login", "Daxil ol")}
@@ -392,25 +389,10 @@ export function PublicNavbar() {
 
               <button
                 type="button"
-                onClick={goPublish}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] bg-logistics-orange px-0 text-white md:hidden"
-              >
-                <Plus className="h-5 w-5" />
-              </button>
-              <Button
-                onClick={goPublish}
-                className="hidden min-h-11 rounded-[14px] bg-logistics-orange px-5 shadow-sm hover:bg-orange-600 md:inline-flex"
-              >
-                <Plus className="mr-1.5 h-[18px] w-[18px] opacity-90" />
-                {publishLabel}
-              </Button>
-
-              <button
-                type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-expanded={mobileMenuOpen}
                 aria-label={mobileMenuOpen ? "Menyunu bağla" : "Menyunu aç"}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] bg-slate-100 px-0 text-slate-700 transition-colors hover:bg-slate-200 md:hidden"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 px-0 text-white transition hover:bg-white/30 md:hidden"
               >
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
@@ -453,94 +435,61 @@ export function PublicFooter() {
   }, []);
 
   return (
-    <footer className="shrink-0 border-t border-slate-200 bg-white px-3 pb-4 pt-4 sm:px-4 lg:px-6 lg:pb-6">
-      <div className="mx-auto max-w-[1780px] overflow-hidden rounded-[22px] border border-slate-200/80 bg-white text-[0.95rem] text-slate-500 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-        <div className="grid gap-8 px-5 py-6 sm:px-7 lg:grid-cols-[1.3fr,0.75fr,0.75fr,1fr] lg:px-8">
+    <footer className="shrink-0 bg-slate-900 px-4 pb-6 pt-10 text-slate-400 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1280px]">
+        <div className="grid gap-8 lg:grid-cols-[1.4fr,1fr,1fr,1fr]">
           <div>
-            <Link href="/" className="flex shrink-0 items-center text-navy-900">
-              <span className="text-2xl font-extrabold leading-none">
-                Tranzit.<span className="text-logistics-orange">AZ</span>
-              </span>
+            <Link href="/" className="flex shrink-0 items-center">
+              <span className="text-xl font-extrabold leading-none text-white">Tranzit.AZ</span>
             </Link>
-            <p className="mt-3 max-w-sm text-sm leading-6 text-slate-500">
+            <p className="mt-3 max-w-sm text-sm leading-6">
               {t("footer_tagline_static", "Yük sahibləri və daşıyıcılar üçün sadə, şəffaf və birbaşa əlaqə yaradan elan platforması.")}
             </p>
           </div>
 
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">{t("footer_platform", "Platforma")}</h3>
-            <div className="mt-4 grid gap-2.5">
-              {platformLinks.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className={cn("w-fit transition", isActive ? "font-semibold text-logistics-orange" : "hover:text-navy-900")}
-                  >
-                    {t(FOOTER_NAV_LABEL_KEYS[item.id] ?? "", item.label)}
-                  </Link>
-                );
-              })}
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">{t("footer_platform", "Platforma")}</h3>
+            <div className="grid gap-2">
+              {platformLinks.map((item) => (
+                <Link key={item.id} href={item.href} className="text-sm transition hover:text-white">
+                  {t(FOOTER_NAV_LABEL_KEYS[item.id] ?? "", item.label)}
+                </Link>
+              ))}
             </div>
           </div>
 
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">{t("footer_legal", "Hüquqi")}</h3>
-            <div className="mt-4 grid gap-2.5">
-              {legalLinks.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className={cn("w-fit transition", isActive ? "font-semibold text-logistics-orange" : "hover:text-navy-900")}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">{t("footer_legal", "Hüquqi")}</h3>
+            <div className="grid gap-2">
+              {legalLinks.map((item) => (
+                <Link key={item.id} href={item.href} className="text-sm transition hover:text-white">
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
 
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">{t("footer_support", "Dəstək")}</h3>
-            <a
-              href={`tel:${fs.phone}`}
-              className="mt-4 inline-block font-semibold text-navy-900 transition hover:text-logistics-orange"
-            >
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">{t("footer_support", "Dəstək")}</h3>
+            <a href={`tel:${fs.phone}`} className="text-sm font-semibold text-white transition hover:text-logistics-orange">
               {fs.phone}
             </a>
-            <p className="mt-1 text-sm text-slate-500">{t("footer_work_hours", fs.workHours)}</p>
-            <div className="mt-4 flex items-center gap-2.5">
-              <a
-                href={`tel:${fs.phone}`}
-                aria-label="Telefon"
-                className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-emerald-50 text-emerald-600 transition hover:bg-emerald-100"
-              >
-                <PhoneCall className="h-[18px] w-[18px]" />
+            <p className="mt-1 text-xs">{t("footer_work_hours", fs.workHours)}</p>
+            <div className="mt-4 flex items-center gap-2">
+              <a href={`tel:${fs.phone}`} aria-label="Telefon" className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition hover:bg-white/20">
+                <PhoneCall className="h-4 w-4" />
               </a>
-              <a
-                href={`mailto:${fs.email}`}
-                aria-label="E-poçt"
-                className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-sky-50 text-sky-600 transition hover:bg-sky-100"
-              >
-                <MessageCircleMore className="h-[18px] w-[18px]" />
+              <a href={`mailto:${fs.email}`} aria-label="E-poçt" className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition hover:bg-white/20">
+                <MessageCircleMore className="h-4 w-4" />
               </a>
-              <a
-                href={`https://t.me/${fs.telegram}`}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Telegram"
-                className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-blue-50 text-blue-600 transition hover:bg-blue-100"
-              >
-                <Send className="h-[18px] w-[18px]" />
+              <a href={`https://t.me/${fs.telegram}`} target="_blank" rel="noreferrer" aria-label="Telegram" className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition hover:bg-white/20">
+                <Send className="h-4 w-4" />
               </a>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-slate-200/80 px-5 py-4 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-7 lg:px-8">
+        <div className="mt-8 flex flex-col gap-1 border-t border-white/10 pt-5 text-xs sm:flex-row sm:items-center sm:justify-between">
           <p>{t("footer_copyright", fs.copyright)}</p>
           <p>{t("footer_tagline", fs.tagline)}</p>
         </div>
@@ -573,6 +522,17 @@ export function PublicPage({
         {children}
       </motion.main>
       <PublicFooter />
+      {/* Floating butonlar — sağ alt köşe */}
+      <div className="fixed bottom-6 right-6 z-[999] flex flex-col items-center gap-3">
+        <NextLink
+          href="/cargo-owner/cargo-posts/new"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-logistics-orange text-white shadow-lg transition hover:scale-105 hover:bg-orange-600"
+          aria-label="Yeni elan"
+        >
+          <Plus className="h-6 w-6" />
+        </NextLink>
+        <LocaleSwitcher floating />
+      </div>
     </div>
   );
 }

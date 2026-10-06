@@ -15,6 +15,7 @@ import {
   CircleEllipsis,
   Droplets,
   FilePlus2,
+  Gift,
   LayoutGrid,
   List,
   MapPin,
@@ -26,6 +27,7 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Snowflake,
+  TrendingUp,
   Truck,
   Users,
   LoaderCircle,
@@ -384,31 +386,31 @@ function CatalogSelectCard({
   }
 
   return (
-    <div ref={rootRef} className={cn("relative h-[60px] min-w-0 shrink-0", className)}>
+    <div ref={rootRef} className={cn("relative h-[52px] min-w-0 shrink-0", className)}>
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
         className={cn(
-          "relative flex h-full w-full min-w-0 flex-col items-start justify-start rounded-[13px] border bg-white px-4 pb-[11px] pt-[11px] text-left shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition duration-200 hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)]",
-          open ? "border-slate-400" : "border-slate-200 hover:border-slate-300"
+          "relative flex h-full w-full min-w-0 flex-col items-start justify-center rounded-lg border bg-white px-3 text-left transition hover:border-slate-300",
+          open ? "border-slate-400" : "border-slate-200"
         )}
         aria-expanded={open}
         aria-haspopup="listbox"
       >
-        <span className="max-w-full pr-9 whitespace-nowrap text-[14px] font-semibold leading-none text-navy-900">
+        <span className="max-w-full pr-7 whitespace-nowrap text-[11px] font-semibold leading-none text-slate-400">
           {label}
         </span>
         <span
           className={cn(
-            "mt-1 block max-w-full pr-9 text-[13px] font-medium leading-none",
-            value ? "text-slate-700" : "text-slate-400"
+            "mt-0.5 block max-w-full pr-7 text-[13px] font-medium leading-none",
+            value ? "text-navy-900" : "text-slate-400"
           )}
         >
           {selectedLabel}
         </span>
         <ChevronDown
           className={cn(
-            "pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition",
+            "pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 transition",
             open && "rotate-180 text-logistics-orange"
           )}
         />
@@ -476,29 +478,18 @@ function CatalogInputCard({
   return (
     <div
       className={cn(
-          "relative h-[60px] min-w-0 shrink-0 rounded-[13px] border bg-white px-4 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition duration-200 hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)]",
-        focused ? "border-slate-400" : "border-slate-200 hover:border-slate-300"
-        ,
+        "relative h-[52px] min-w-0 shrink-0 rounded-lg border bg-white px-3 transition",
+        focused ? "border-slate-400" : "border-slate-200 hover:border-slate-300",
         className
       )}
     >
-      <div
-        className={cn(
-          "pointer-events-none absolute left-4 origin-left text-[14px] font-semibold leading-none transition-all duration-200 ease-out",
-          isFloating
-            ? "top-[11px] scale-100 text-navy-900"
-            : "top-1/2 -translate-y-1/2 scale-100 text-slate-500"
-        )}
-      >
+      <div className="pointer-events-none absolute left-3 top-[9px] text-[11px] font-semibold leading-none text-slate-400">
         {label}
       </div>
       <input
         type={type}
         inputMode={inputMode}
-        className={cn(
-          "h-full w-full bg-transparent pb-[11px] pt-[29px] text-[13px] font-medium leading-none text-slate-700 outline-none transition",
-          isFloating ? "placeholder:text-slate-400" : "placeholder:text-transparent"
-        )}
+        className="h-full w-full bg-transparent pb-1 pt-5 text-[13px] font-medium leading-none text-navy-900 outline-none placeholder:text-slate-300"
         placeholder={placeholder}
         value={value}
         onFocus={() => setFocused(true)}
@@ -572,87 +563,56 @@ function CatalogListingRow({ listing }: { listing: CargoListing }) {
   const Icon = tone.icon;
   const { locale } = useLocale();
   const localizedTitle = (locale !== "az" && (listing.translations as Record<string, { title?: string }>)?.[locale]?.title) || listing.title;
+  const thumbUrl = listing.photos?.[0] || listing.photo || null;
 
   return (
-    <div className="grid gap-4 px-5 py-[18px] transition duration-200 hover:bg-slate-50 sm:grid-cols-[128px,minmax(0,1fr),220px]">
-      <Link
-        href={`/loads/${listing.id}`}
-        className="contents"
-      >
-        <div className={cn("flex h-24 w-24 items-center justify-center rounded-2xl", tone.panel)}>
-          <Icon className="h-11 w-11" />
-        </div>
-
-        <div className="min-w-0">
-          <h3 className="truncate text-[1.22rem] font-bold leading-tight text-navy-900">{localizedTitle}</h3>
-          <p className="mt-2 flex flex-wrap items-center gap-2 text-[1.02rem] font-medium text-slate-700">
-            <span>{listing.pickupCity}</span>
-            <ChevronRight className="h-4 w-4 text-slate-400" />
-            <span>{listing.deliveryCity}</span>
-          </p>
-          <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 text-[0.96rem] text-slate-500">
-            <span className="inline-flex items-center gap-2">
-              <Truck className="h-4 w-4 text-slate-400" />
-              {listing.cargoType}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Scale className="h-4 w-4 text-slate-400" />
-              {formatWeight(listing.weight)}
-            </span>
-          </div>
-        </div>
-      </Link>
-
-      <div className="flex flex-col items-center justify-between gap-3 border-l border-slate-100 pl-4 sm:items-stretch sm:justify-start">
-        <div className="flex w-full flex-col items-center justify-center rounded-xl bg-slate-50 py-2">
-          <p className="text-[1.02rem] font-bold text-navy-900 sm:text-[1.12rem]">{formatPriceCompact(listing.price)}</p>
-          <p className="text-[0.85rem] text-slate-500">Qiymət</p>
-        </div>
-        
-        <div className="flex w-full flex-col gap-2">
-            <button 
-            type="button" 
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25d366] py-2 text-sm font-semibold text-white transition hover:bg-[#20bc5a]"
-            onClick={(e) => {
-                e.preventDefault();
-                window.open(`https://wa.me/${listing.ownerPhone?.replace(/[^0-9]/g, "")}`, "_blank");
-            }}
-            >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
-            </svg>
-            WhatsApp ilə yaz
-            </button>
-            <Link 
-            href={`/loads/${listing.id}`}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2 text-sm font-semibold text-navy-900 transition hover:bg-slate-50"
-            >
-            <Search className="h-4 w-4" />
-            Detallı bax
-            </Link>
-        </div>
-        <p className="mt-1 text-[0.85rem] text-slate-400 text-center w-full">{formatListingDateTimeShort(listing.createdAt)}</p>
+    <Link href={`/loads/${listing.id}`} className="flex items-center gap-4 px-4 py-3.5 transition hover:bg-slate-50 group">
+      {/* Görsel / İkon */}
+      <div className={cn("hidden shrink-0 h-[72px] w-[96px] overflow-hidden rounded-lg sm:flex items-center justify-center", thumbUrl ? "bg-slate-100" : tone.panel)}>
+        {thumbUrl
+          ? <img src={thumbUrl} alt={localizedTitle} className="h-full w-full object-cover" />
+          : <Icon className="h-8 w-8" />}
       </div>
-    </div>
+
+      {/* Bilgiler */}
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="truncate text-[0.97rem] font-semibold text-navy-900 group-hover:text-logistics-orange transition-colors">{localizedTitle}</h3>
+        </div>
+        <p className="mt-0.5 flex items-center gap-1.5 text-sm font-medium text-slate-600">
+          <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+          {listing.pickupCity}
+          <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
+          {listing.deliveryCity}
+        </p>
+        <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400">
+          {listing.cargoType && <span className="inline-flex items-center gap-1"><Truck className="h-3 w-3" />{listing.cargoType}</span>}
+          {listing.weight && <span className="inline-flex items-center gap-1"><Scale className="h-3 w-3" />{formatWeight(listing.weight)}</span>}
+          <span className="inline-flex items-center gap-1"><Clock3 className="h-3 w-3" />{formatListingDateTimeShort(listing.createdAt)}</span>
+        </div>
+      </div>
+
+      {/* Fiyat */}
+      <div className="shrink-0 text-right">
+        <p className="text-base font-bold text-logistics-orange">{formatPriceCompact(listing.price)}</p>
+      </div>
+    </Link>
   );
-}
-
-function CatalogListingRowSkeleton() {
+}function CatalogListingRowSkeleton() {
   return (
-    <div className="grid animate-pulse gap-4 px-5 py-[18px] sm:grid-cols-[128px,minmax(0,1fr),220px]">
-      <div className="h-24 w-24 rounded-2xl bg-slate-100" />
-      <div className="space-y-3">
-        <div className="h-6 w-2/3 rounded-full bg-slate-100" />
-        <div className="h-4 w-1/2 rounded-full bg-slate-100" />
-        <div className="flex flex-wrap gap-3 pt-1">
-          <div className="h-4 w-28 rounded-full bg-slate-100" />
-          <div className="h-4 w-20 rounded-full bg-slate-100" />
+    <div className="flex animate-pulse items-center gap-4 px-4 py-3.5">
+      <div className="hidden h-[72px] w-[96px] shrink-0 rounded-lg bg-slate-100 sm:block" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="h-4 w-2/3 rounded-full bg-slate-100" />
+        <div className="h-3 w-1/2 rounded-full bg-slate-100" />
+        <div className="flex gap-3">
+          <div className="h-3 w-20 rounded-full bg-slate-100" />
+          <div className="h-3 w-16 rounded-full bg-slate-100" />
         </div>
       </div>
-      <div className="flex flex-col items-start gap-3 sm:items-end">
-        <div className="h-7 w-20 rounded-full bg-slate-100" />
-        <div className="h-6 w-24 rounded-full bg-slate-100" />
-        <div className="h-4 w-20 rounded-full bg-slate-100" />
+      <div className="shrink-0 space-y-1.5 text-right">
+        <div className="h-5 w-16 rounded-full bg-slate-100" />
+        <div className="h-3 w-8 rounded-full bg-slate-100" />
       </div>
     </div>
   );
@@ -696,71 +656,34 @@ function HomeCategoryButton({
 }
 
 function HomeListingCard({ listing }: { listing: CargoListing }) {
-  const quantityLabel = listingQuantity(listing);
-  const volumeLabel = listingVolume(listing);
-  const dimensionsLabel = listingDimensions(listing);
-  const { t, locale } = useLocale();
+  const tone = listingVisualTone(listing);
+  const Icon = tone.icon;
+  const { locale } = useLocale();
   const localizedTitle = (locale !== "az" && (listing.translations as Record<string, { title?: string }>)?.[locale]?.title) || listing.title;
+  const thumbUrl = listing.photos?.[0] || listing.photo || null;
 
   return (
-    <Link
-      href={`/loads/${listing.id}`}
-      className="group overflow-hidden rounded-[22px] border border-slate-200/90 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_18px_36px_rgba(15,23,42,0.09)]"
-    >
-      <div className="relative aspect-[1/0.84] bg-[#f5f7fb]">
-        <ListingCoverMedia
-          listing={listing}
-          imageClassName="h-full w-full object-cover transition duration-300 group-hover:scale-[1.035]"
-          placeholderClassName="h-full w-full"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/12 via-transparent to-transparent" />
-        <div className="absolute right-3 top-3 z-10 flex items-start justify-end">
-          <FavoriteToggleButton
-            listingId={listing.id}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/92 text-slate-500 shadow-[0_8px_18px_rgba(15,23,42,0.10)] backdrop-blur-sm transition duration-200 hover:bg-white"
-            iconClassName="h-[18px] w-[18px] stroke-[2.1]"
-          />
+    <Link href={`/loads/${listing.id}`} className="group flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md">
+      {/* Görsel */}
+      <div className={cn("relative h-[140px] w-full overflow-hidden", thumbUrl ? "bg-slate-100" : tone.panel)}>
+        {thumbUrl
+          ? <img src={thumbUrl} alt={localizedTitle} className="h-full w-full object-cover transition group-hover:scale-105 duration-300" />
+          : <div className="flex h-full w-full items-center justify-center"><Icon className="h-12 w-12 opacity-60" /></div>}
+        <div className="absolute bottom-2 left-2">
+          <span className="rounded bg-black/60 px-1.5 py-0.5 text-xs font-bold text-white">{formatPriceCompact(listing.price)}</span>
         </div>
       </div>
-      <div className="px-4 pb-4 pt-3.5">
-        <p className="text-[17px] font-bold leading-none tracking-[-0.01em] text-logistics-orange">{formatPriceCompact(listing.price)}</p>
-        <h3 className="mt-2 line-clamp-2 min-h-[2.5em] text-[16px] font-semibold leading-[1.24] text-[#171717]">
-          {localizedTitle}
-        </h3>
-        <p className="mt-1 text-[12.5px] font-medium text-slate-400">{listing.cargoType}</p>
-        <div className="mt-2 space-y-1 text-[12.5px] font-medium text-slate-500">
-          <p className="flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-            {listing.pickupCity} - {listing.deliveryCity}
-          </p>
-          <p className="flex items-center gap-1.5">
-            <Clock3 className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-            {listingDateWindow(listing)}
-          </p>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-slate-100 pt-2.5 text-[12px] leading-[1.28]">
-          {quantityLabel ? (
-            <div>
-              <p className="text-slate-400">{t("catalog_metric_qty", "Say")}</p>
-              <p className="mt-0.5 font-semibold text-navy-900">{quantityLabel}</p>
-            </div>
-          ) : null}
-          {volumeLabel ? (
-            <div>
-              <p className="text-slate-400">{t("catalog_metric_volume", "Həcm")}</p>
-              <p className="mt-0.5 font-semibold text-navy-900">{volumeLabel}</p>
-            </div>
-          ) : null}
-          <div>
-            <p className="text-slate-400">{t("catalog_metric_weight", "Çəki")}</p>
-            <p className="mt-0.5 font-semibold text-navy-900">{formatWeight(listing.weight)}</p>
-          </div>
-          {dimensionsLabel ? (
-            <div className="col-span-2">
-              <p className="text-slate-400">{t("catalog_metric_dims", "Ölçü")}</p>
-              <p className="mt-0.5 font-semibold text-navy-900">{dimensionsLabel}</p>
-            </div>
-          ) : null}
+      {/* Bilgiler */}
+      <div className="flex flex-1 flex-col gap-1 p-3">
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-navy-900 group-hover:text-logistics-orange transition-colors">{localizedTitle}</h3>
+        <p className="flex items-center gap-1 text-xs text-slate-500">
+          <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
+          {listing.pickupCity} → {listing.deliveryCity}
+        </p>
+        <div className="mt-auto flex flex-wrap gap-x-3 gap-y-0.5 pt-1 text-[11px] text-slate-400">
+          {listing.cargoType && <span className="inline-flex items-center gap-0.5"><Truck className="h-3 w-3" />{listing.cargoType}</span>}
+          {listing.weight && <span className="inline-flex items-center gap-0.5"><Scale className="h-3 w-3" />{formatWeight(listing.weight)}</span>}
+          <span className="inline-flex items-center gap-0.5 ml-auto"><Clock3 className="h-3 w-3" />{formatListingDateTimeShort(listing.createdAt)}</span>
         </div>
       </div>
     </Link>
@@ -773,39 +696,14 @@ function SkeletonLine({ className }: { className: string }) {
 
 function HomeListingCardSkeleton({ index = 0 }: { index?: number }) {
   return (
-    <div
-      className="overflow-hidden rounded-[22px] border border-slate-200/90 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
-      style={{ "--skeleton-delay": `${index * 90}ms` } as CSSProperties}
-    >
-      <div className="relative aspect-[1/0.84] bg-[#f7f9fc]">
-        <div className="absolute inset-0 skeleton-shimmer" />
-        <div className="absolute right-3 top-3 h-9 w-9 rounded-full bg-white/80 shadow-[0_8px_18px_rgba(15,23,42,0.08)]" />
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white/70 to-transparent" />
-      </div>
-      <div className="px-4 pb-4 pt-3.5">
-        <SkeletonLine className="h-5 w-24" />
-        <div className="mt-3 space-y-2">
-          <SkeletonLine className="h-4.5 w-[86%]" />
-          <SkeletonLine className="h-4.5 w-[68%]" />
-          <SkeletonLine className="h-3.5 w-32" />
-        </div>
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center gap-2">
-            <SkeletonLine className="h-3.5 w-3.5" />
-            <SkeletonLine className="h-3.5 w-36" />
-          </div>
-          <div className="flex items-center gap-2">
-            <SkeletonLine className="h-3.5 w-3.5" />
-            <SkeletonLine className="h-3.5 w-28" />
-          </div>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-slate-100 pt-2.5">
-          {Array.from({ length: 4 }).map((_, metricIndex) => (
-            <div key={metricIndex} className={metricIndex === 3 ? "col-span-2" : ""}>
-              <SkeletonLine className="h-3 w-10" />
-              <SkeletonLine className="mt-1.5 h-3.5 w-16" />
-            </div>
-          ))}
+    <div className="flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white" style={{ "--skeleton-delay": `${index * 90}ms` } as CSSProperties}>
+      <div className="h-[140px] w-full animate-pulse bg-slate-100" />
+      <div className="flex flex-col gap-2 p-3">
+        <div className="h-3.5 w-3/4 animate-pulse rounded-full bg-slate-100" />
+        <div className="h-3 w-1/2 animate-pulse rounded-full bg-slate-100" />
+        <div className="flex gap-2 pt-1">
+          <div className="h-2.5 w-16 animate-pulse rounded-full bg-slate-100" />
+          <div className="h-2.5 w-12 animate-pulse rounded-full bg-slate-100" />
         </div>
       </div>
     </div>
@@ -813,73 +711,32 @@ function HomeListingCardSkeleton({ index = 0 }: { index?: number }) {
 }
 
 function HomeListingRow({ listing }: { listing: CargoListing }) {
-  const quantityLabel = listingQuantity(listing);
-  const volumeLabel = listingVolume(listing);
-  const dimensionsLabel = listingDimensions(listing);
-  const { t, locale } = useLocale();
+  const tone = listingVisualTone(listing);
+  const Icon = tone.icon;
+  const { locale } = useLocale();
   const localizedTitle = (locale !== "az" && (listing.translations as Record<string, { title?: string }>)?.[locale]?.title) || listing.title;
+  const thumbUrl = listing.photos?.[0] || listing.photo || null;
 
   return (
-    <Link
-      href={`/loads/${listing.id}`}
-      className="grid gap-4 rounded-[20px] border border-slate-200 bg-white p-3.5 shadow-[0_6px_18px_rgba(15,23,42,0.04)] transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_28px_rgba(15,23,42,0.08)] sm:grid-cols-[192px,minmax(0,1fr),120px]"
-    >
-      <div className="relative overflow-hidden rounded-[14px] bg-slate-100">
-        <ListingCoverMedia
-          listing={listing}
-          imageClassName="h-[142px] w-full object-cover transition duration-300 group-hover:scale-[1.03] sm:h-full"
-          placeholderClassName="h-[142px] w-full sm:h-full"
-          placeholderIconClassName="h-12 w-12"
-        />
-      </div>
-
-      <div className="min-w-0 py-0.5">
-        <h3 className="line-clamp-2 text-[1.03rem] font-semibold leading-[1.24] text-navy-900">{localizedTitle}</h3>
-        <p className="mt-2 flex flex-wrap items-center gap-2 text-[0.93rem] font-medium text-slate-700">
-          <span>{listing.pickupCity}</span>
-          <ChevronRight className="h-4 w-4 text-slate-400" />
-          <span>{listing.deliveryCity}</span>
-        </p>
-        <p className="mt-2 text-[0.84rem] text-slate-500">{listingDateWindow(listing)}</p>
-        <div className="mt-2.5 grid gap-x-4 gap-y-1.5 text-[0.84rem] text-slate-500 sm:grid-cols-2">
-          <span className="inline-flex items-center gap-2">
-            <Truck className="h-4 w-4 text-slate-400" />
-            {listing.cargoType}
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <Scale className="h-4 w-4 text-slate-400" />
-            {formatWeight(listing.weight)}
-          </span>
-          {quantityLabel ? (
-            <span>
-              <span className="text-slate-400">{t("catalog_metric_qty", "Say")}:</span>{" "}
-              <span className="font-medium text-navy-900">{quantityLabel}</span>
-            </span>
-          ) : null}
-          {volumeLabel ? (
-            <span>
-              <span className="text-slate-400">{t("catalog_metric_volume", "Həcm")}:</span>{" "}
-              <span className="font-medium text-navy-900">{volumeLabel}</span>
-            </span>
-          ) : null}
-          {dimensionsLabel ? (
-            <span className={cn(quantityLabel || volumeLabel ? "" : "sm:col-span-2")}>
-              <span className="text-slate-400">{t("catalog_metric_dims", "Ölçü")}:</span>{" "}
-              <span className="font-medium text-navy-900">{dimensionsLabel}</span>
-            </span>
-          ) : null}
+    <Link href={`/loads/${listing.id}`} className="group flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md">
+      <div className={cn("relative h-[140px] w-full overflow-hidden", thumbUrl ? "bg-slate-100" : tone.panel)}>
+        {thumbUrl
+          ? <img src={thumbUrl} alt={localizedTitle} className="h-full w-full object-cover transition group-hover:scale-105 duration-300" />
+          : <div className="flex h-full w-full items-center justify-center"><Icon className="h-12 w-12 opacity-60" /></div>}
+        <div className="absolute bottom-2 left-2">
+          <span className="rounded bg-black/60 px-1.5 py-0.5 text-xs font-bold text-white">{formatPriceCompact(listing.price)}</span>
         </div>
       </div>
-
-      <div className="flex items-start justify-between gap-4 sm:flex-col sm:items-end sm:justify-between sm:text-right">
-        <FavoriteToggleButton
-          listingId={listing.id}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition duration-200 hover:scale-[1.04] hover:border-slate-300"
-          iconClassName="h-[18px] w-[18px] stroke-[2.1]"
-        />
-        <div>
-          <p className="text-[1.05rem] font-bold tracking-[-0.01em] text-logistics-orange">{formatPriceCompact(listing.price)}</p>
-          <p className="mt-2 text-[0.85rem] text-slate-500">{formatListingDateTimeShort(listing.createdAt)}</p>
+      <div className="flex flex-1 flex-col gap-1 p-3">
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-navy-900 group-hover:text-logistics-orange transition-colors">{localizedTitle}</h3>
+        <p className="flex items-center gap-1 text-xs text-slate-500">
+          <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
+          {listing.pickupCity} → {listing.deliveryCity}
+        </p>
+        <div className="mt-auto flex flex-wrap gap-x-3 gap-y-0.5 pt-1 text-[11px] text-slate-400">
+          {listing.cargoType && <span className="inline-flex items-center gap-0.5"><Truck className="h-3 w-3" />{listing.cargoType}</span>}
+          {listing.weight && <span className="inline-flex items-center gap-0.5"><Scale className="h-3 w-3" />{formatWeight(listing.weight)}</span>}
+          <span className="inline-flex items-center gap-0.5 ml-auto"><Clock3 className="h-3 w-3" />{formatListingDateTimeShort(listing.createdAt)}</span>
         </div>
       </div>
     </Link>
@@ -1196,10 +1053,28 @@ export function CatalogPageClient({
     if (!isDataLoaded) {
       return (
         <PublicPage emphasizeBackground>
-          <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-4">
-            <LoaderCircle className="h-10 w-10 animate-spin text-logistics-orange" />
-            <p className="text-lg font-medium text-slate-500">{t("catalog_loading", "Məlumatlar yüklənir...")}</p>
-          </div>
+          <section className="mx-auto w-full max-w-[1280px] px-4 py-4 sm:px-6 lg:px-8">
+            {/* Kart skeletonları */}
+            <div className="grid gap-3 sm:grid-cols-3 mb-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-[110px] animate-pulse rounded-xl bg-slate-100" />
+              ))}
+            </div>
+            {/* Filtre skeleton */}
+            <div className="mb-4 h-[60px] animate-pulse rounded-xl bg-slate-100" />
+            {/* Liste skeleton */}
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                <div className="h-4 w-24 animate-pulse rounded-full bg-slate-100" />
+                <div className="h-4 w-20 animate-pulse rounded-full bg-slate-100" />
+              </div>
+              <div className="divide-y divide-slate-100">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <HomeListingCardSkeleton key={i} index={i} />
+                ))}
+              </div>
+            </div>
+          </section>
         </PublicPage>
       );
     }
@@ -1226,81 +1101,69 @@ export function CatalogPageClient({
             </div>
           ) : null}
 
-          <section className="relative isolate w-full overflow-hidden rounded-[24px] bg-navy-900 px-5 pb-8 pt-8 text-white sm:px-10 sm:pb-14 sm:pt-12 lg:px-12">
-            <svg
-              className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-white/15"
-              viewBox="0 0 1240 520"
-              preserveAspectRatio="xMidYMid slice"
-              aria-hidden="true"
-            >
-              <path
-                d="M-40 362C178 188 284 482 510 312S812 76 1040 212s248 18 330-132"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+          <div className="grid gap-3 sm:grid-cols-3">
+            {/* Kart 1 — Kampaniya */}
+            <div className="relative overflow-hidden rounded-xl bg-logistics-orange px-5 py-5 text-white">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
+                <Gift className="h-5 w-5 text-white" />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-white/70">Kampaniya</p>
+              <h3 className="mt-1 text-base font-bold leading-snug">İlk elanınız — Pulsuz!</h3>
+              <p className="mt-1 text-sm text-white/80">Qeydiyyatdan keçib ilk elanınızı yerləşdirin, ödəniş tələb olunmur.</p>
+              <Gift className="pointer-events-none absolute -right-3 -bottom-3 h-20 w-20 opacity-10" />
+            </div>
+
+            {/* Kart 2 — Qazanc */}
+            <div className="relative overflow-hidden rounded-xl bg-navy-900 px-5 py-5 text-white">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+                <TrendingUp className="h-5 w-5 text-white" />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-white/50">Qazanc</p>
+              <h3 className="mt-1 text-base font-bold leading-snug">Hər daşımadan qazanın</h3>
+              <p className="mt-1 text-sm text-white/70">Yük sahibləri ilə birbaşa əlaqə qurun, vasitəçisiz daha çox qazanın.</p>
+              <TrendingUp className="pointer-events-none absolute -right-3 -bottom-3 h-20 w-20 opacity-[0.07]" />
+            </div>
+
+            {/* Kart 3 — Güvən */}
+            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white px-5 py-5">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50">
+                <ShieldCheck className="h-5 w-5 text-emerald-500" />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Güvən</p>
+              <h3 className="mt-1 text-base font-bold leading-snug text-navy-900">Təsdiqlənmiş elanlar</h3>
+              <p className="mt-1 text-sm text-slate-500">Bütün elanlar moderasiyadan keçir. Etibarlı daşıyıcı və yük sahibi ilə işləyin.</p>
+              <ShieldCheck className="pointer-events-none absolute -right-3 -bottom-3 h-20 w-20 text-emerald-500 opacity-[0.06]" />
+            </div>
+          </div>
+
+          <div className="mt-4 overflow-visible rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="grid w-full gap-2 p-3 sm:grid-cols-2 min-[1100px]:grid-cols-[1fr_40px_1fr_1fr_1fr_1fr_120px]">
+              <CatalogSelectCard
+                label={t("search_pickup_city", "Yükləmə şəhəri")}
+                value={draftFilters.pickupCity}
+                onChange={(value) => updateFilter("pickupCity", value)}
+                options={dynCities}
+                className="w-full"
+                placeholder={t("catalog_select_placeholder", "Seçin")}
               />
-              <circle cx="510" cy="312" r="8" fill="#f97316" />
-              <circle cx="1040" cy="212" r="6" fill="#f97316" />
-            </svg>
-            <div className="mx-auto max-w-[1240px]">
-              <div className="max-w-2xl">
-                <h1 className="max-w-xl text-4xl font-bold leading-[1.08] tracking-[-0.035em] sm:text-5xl lg:text-[3.65rem]">
-                  {t("home_hero_title", "Daşımalarınızı bizimlə asanlaşdırın")}
-                </h1>
-                <p className="mt-5 max-w-lg text-base leading-7 text-slate-200 sm:text-lg">
-                  {t("home_hero_subtitle", "Yükünüz üçün doğru marşrutu, nəqliyyatı və daşıyıcını bir yerdə tapın.")}
-                </p>
+              <div className="hidden min-[1100px]:flex min-[1100px]:items-center min-[1100px]:justify-center">
+                <button
+                  type="button"
+                  onClick={() => setDraftFilters((current) => ({ ...current, pickupCity: current.deliveryCity, deliveryCity: current.pickupCity }))}
+                  className="flex h-[52px] w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-400 transition hover:border-slate-300 hover:text-navy-900"
+                  aria-label="Marşrutu dəyiş"
+                >
+                  <ArrowLeftRight className="h-4 w-4" />
+                </button>
               </div>
-            </div>
-          </section>
-
-          <div className="relative z-10 mt-6 min-w-0 overflow-visible rounded-[24px] border border-[var(--planner-outline)] bg-[var(--planner-surface-raised)] p-3 sm:mt-8 sm:p-5">
-            <div className="border-b border-[var(--planner-outline)] pb-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--planner-primary)]">{t("search_eyebrow", "Axtarış planı")}</p>
-              <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-[var(--planner-text)]">{t("search_title", "Marşrutunuzu planlayın")}</h2>
-            </div>
-
-            <div className="mt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.1em] text-[var(--planner-text-muted)]">
-                {t("search_route_label", "Yükləmə və çatdırılma nöqtələri")}
-              </p>
-              <div className="grid min-w-0 gap-3 overflow-visible lg:grid-cols-[minmax(0,1fr)_48px_minmax(0,1fr)]">
-                <CatalogSelectCard
-                  label={t("search_pickup_city", "Yükləmə şəhəri")}
-                  value={draftFilters.pickupCity}
-                  onChange={(value) => updateFilter("pickupCity", value)}
-                  options={dynCities}
-                  className="w-full"
-                  placeholder={t("catalog_select_placeholder", "Seçin")}
-                />
-                <div className="hidden lg:flex lg:items-start">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setDraftFilters((current) => ({
-                        ...current,
-                        pickupCity: current.deliveryCity,
-                        deliveryCity: current.pickupCity
-                      }))
-                    }
-                    className="flex h-[60px] w-12 items-center justify-center rounded-[13px] border border-[var(--planner-outline)] bg-[var(--planner-surface)] text-[var(--planner-text-muted)] transition-colors duration-200 hover:border-[var(--planner-primary)] hover:text-[var(--planner-primary)]"
-                    aria-label="Marşrutu dəyiş"
-                  >
-                    <ArrowLeftRight className="h-5 w-5" />
-                  </button>
-                </div>
-                <CatalogSelectCard
-                  label={t("search_delivery_city", "Çatdırılma şəhəri")}
-                  value={draftFilters.deliveryCity}
-                  onChange={(value) => updateFilter("deliveryCity", value)}
-                  options={dynCities}
-                  className="w-full"
-                  placeholder={t("catalog_select_placeholder", "Seçin")}
-                />
-              </div>
-            </div>
-
-            <div className="mt-3 grid min-w-0 gap-3 overflow-visible sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.25fr)_148px]">
+              <CatalogSelectCard
+                label={t("search_delivery_city", "Çatdırılma şəhəri")}
+                value={draftFilters.deliveryCity}
+                onChange={(value) => updateFilter("deliveryCity", value)}
+                options={dynCities}
+                className="w-full"
+                placeholder={t("catalog_select_placeholder", "Seçin")}
+              />
               <CatalogSelectCard
                 label={t("search_cargo_type", "Yük növü")}
                 value={draftFilters.cargoType}
@@ -1324,153 +1187,62 @@ export function CatalogPageClient({
                 onChange={(value) => updateFilter("keyword", value)}
                 className="w-full"
               />
-              <div className="flex w-full min-w-0 items-start sm:col-span-2 lg:col-span-1">
+              <div className="flex w-full items-center sm:col-span-2 min-[1100px]:col-span-1">
                 <Button
-                  className="h-[60px] w-full rounded-xl bg-[var(--planner-primary-action)] text-[var(--planner-text)] shadow-none transition-colors duration-200 hover:bg-[var(--planner-primary)] hover:text-white"
+                  className="h-[52px] w-full rounded-lg text-sm"
                   onClick={() => submitFilters()}
                   disabled={isSearching}
                 >
-                  {isSearching ? <LoaderCircle className="h-4.5 w-4.5 animate-spin" /> : <Search className="h-4.5 w-4.5" />}
+                  {isSearching ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                   {isSearching ? t("search_btn_loading", "Axtarılır...") : t("search_btn", "Axtar")}
                 </Button>
               </div>
             </div>
 
-            <div className="mt-4 flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-[var(--planner-outline)] pt-3">
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 px-3 py-2 min-[1100px]:hidden">
+              <button
+                type="button"
+                onClick={() => setShowAdvancedFilters((current) => !current)}
+                className={cn(
+                  "inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-colors",
+                  showAdvancedFilters
+                    ? "border-logistics-orange bg-orange-50 text-logistics-orange"
+                    : "border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700"
+                )}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                {t("search_advanced_btn", "Ətraflı filter")}
+                <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showAdvancedFilters && "rotate-180")} />
+              </button>
+              {hasActiveFilters && (
                 <button
                   type="button"
-                  onClick={() => setShowAdvancedFilters((current) => !current)}
-                  className={cn(
-                    "inline-flex min-h-11 items-center gap-2 rounded-[13px] border px-4 text-sm font-semibold transition-colors duration-200",
-                    showAdvancedFilters
-                      ? "border-[var(--planner-primary)] bg-[var(--planner-primary-tint)] text-[var(--planner-primary)]"
-                      : "border-[var(--planner-outline)] bg-white text-[var(--planner-text-muted)] hover:border-[var(--planner-primary)] hover:text-[var(--planner-primary)]"
-                  )}
+                  onClick={clearFilters}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
                 >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  {t("search_advanced_btn", "Ətraflı filter")}
-                  <ChevronDown className={cn("h-4 w-4 transition-transform", showAdvancedFilters && "rotate-180")} />
+                  <ArrowLeftRight className="h-3.5 w-3.5" />
+                  {t("catalog_reset", "Sıfırla")}
                 </button>
-
-                {hasActiveFilters ? (
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-[13px] border border-[var(--planner-outline)] bg-white px-4 text-sm font-semibold text-[var(--planner-text-muted)] transition-colors duration-200 hover:border-[var(--planner-primary)] hover:text-[var(--planner-primary)]"
-                  >
-                    <ArrowLeftRight className="h-4 w-4" />
-                    {t("catalog_reset", "Sıfırla")}
-                  </button>
-                ) : null}
-              </div>
-
-              <p className="min-w-0 max-w-full text-sm leading-5 text-[var(--planner-text-muted)]">
-                {t("search_advanced_hint", "Ətraflı filtrdən istifadə edərək uyğun nəticələri daha tez tapa bilərsiniz.")}
-              </p>
+              )}
             </div>
 
-            <div
-              className={cn(
-                "grid overflow-hidden transition-all duration-300 ease-out",
-                showAdvancedFilters ? "mt-4 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-              )}
-            >
+            <div className={cn("grid overflow-hidden transition-all duration-300 ease-out", showAdvancedFilters ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
               <div className="overflow-hidden">
-                <div className="grid gap-4 rounded-[18px] border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-2 xl:grid-cols-4">
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_min_price", "Min qiymət (AZN)")}
-                    value={draftFilters.minPrice}
-                    placeholder="100"
-                    type="number"
-                    inputMode="numeric"
-                    onChange={(value) => updateFilter("minPrice", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_max_price", "Max qiymət (AZN)")}
-                    value={draftFilters.maxPrice}
-                    placeholder="5000"
-                    type="number"
-                    inputMode="numeric"
-                    onChange={(value) => updateFilter("maxPrice", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_min_weight", "Min çəki (kg)")}
-                    value={draftFilters.minWeight}
-                    placeholder="1000"
-                    type="number"
-                    inputMode="numeric"
-                    onChange={(value) => updateFilter("minWeight", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_max_weight", "Max çəki (kg)")}
-                    value={draftFilters.maxWeight}
-                    placeholder="25000"
-                    type="number"
-                    inputMode="numeric"
-                    onChange={(value) => updateFilter("maxWeight", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_date_from", "Tarixdən")}
-                    value={draftFilters.dateFrom}
-                    placeholder=""
-                    type="date"
-                    onChange={(value) => updateFilter("dateFrom", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_date_to", "Tarixədək")}
-                    value={draftFilters.dateTo}
-                    placeholder=""
-                    type="date"
-                    onChange={(value) => updateFilter("dateTo", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_min_volume", "Min həcm (m3)")}
-                    value={draftFilters.minVolume}
-                    placeholder="12"
-                    type="number"
-                    inputMode="decimal"
-                    onChange={(value) => updateFilter("minVolume", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_max_volume", "Max həcm (m3)")}
-                    value={draftFilters.maxVolume}
-                    placeholder="120"
-                    type="number"
-                    inputMode="decimal"
-                    onChange={(value) => updateFilter("maxVolume", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_length", "Uzunluq (m)")}
-                    value={draftFilters.length}
-                    placeholder="12"
-                    type="number"
-                    inputMode="decimal"
-                    onChange={(value) => updateFilter("length", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_width", "En (m)")}
-                    value={draftFilters.width}
-                    placeholder="12"
-                    type="number"
-                    inputMode="decimal"
-                    onChange={(value) => updateFilter("width", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_height", "Hündürlük (m)")}
-                    value={draftFilters.height}
-                    placeholder="50"
-                    type="number"
-                    inputMode="decimal"
-                    onChange={(value) => updateFilter("height", value)}
-                  />
+                <div className="grid gap-3 border-t border-slate-100 p-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <AdvancedFilterCell label={t("catalog_filter_min_price", "Min qiymət (AZN)")} value={draftFilters.minPrice} placeholder="100" type="number" inputMode="numeric" onChange={(value) => updateFilter("minPrice", value)} />
+                  <AdvancedFilterCell label={t("catalog_filter_max_price", "Max qiymət (AZN)")} value={draftFilters.maxPrice} placeholder="5000" type="number" inputMode="numeric" onChange={(value) => updateFilter("maxPrice", value)} />
+                  <AdvancedFilterCell label={t("catalog_filter_min_weight", "Min çəki (kg)")} value={draftFilters.minWeight} placeholder="1000" type="number" inputMode="numeric" onChange={(value) => updateFilter("minWeight", value)} />
+                  <AdvancedFilterCell label={t("catalog_filter_max_weight", "Max çəki (kg)")} value={draftFilters.maxWeight} placeholder="25000" type="number" inputMode="numeric" onChange={(value) => updateFilter("maxWeight", value)} />
+                  <AdvancedFilterCell label={t("catalog_filter_date_from", "Tarixdən")} value={draftFilters.dateFrom} placeholder="" type="date" onChange={(value) => updateFilter("dateFrom", value)} />
+                  <AdvancedFilterCell label={t("catalog_filter_date_to", "Tarixədək")} value={draftFilters.dateTo} placeholder="" type="date" onChange={(value) => updateFilter("dateTo", value)} />
+                  <AdvancedFilterCell label={t("catalog_filter_min_volume", "Min həcm (m3)")} value={draftFilters.minVolume} placeholder="12" type="number" inputMode="decimal" onChange={(value) => updateFilter("minVolume", value)} />
+                  <AdvancedFilterCell label={t("catalog_filter_max_volume", "Max həcm (m3)")} value={draftFilters.maxVolume} placeholder="120" type="number" inputMode="decimal" onChange={(value) => updateFilter("maxVolume", value)} />
+                  <AdvancedFilterCell label={t("catalog_filter_length", "Uzunluq (m)")} value={draftFilters.length} placeholder="12" type="number" inputMode="decimal" onChange={(value) => updateFilter("length", value)} />
+                  <AdvancedFilterCell label={t("catalog_filter_width", "En (m)")} value={draftFilters.width} placeholder="12" type="number" inputMode="decimal" onChange={(value) => updateFilter("width", value)} />
+                  <AdvancedFilterCell label={t("catalog_filter_height", "Hündürlük (m)")} value={draftFilters.height} placeholder="50" type="number" inputMode="decimal" onChange={(value) => updateFilter("height", value)} />
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[13px] font-semibold text-slate-500">{t("catalog_filter_locale", "Elan dili")}</span>
-                    <select
-                      value={draftFilters.listingLocale}
-                      onChange={(e) => updateFilter("listingLocale", e.target.value)}
-                      className="h-11 rounded-[12px] border border-slate-200 bg-white px-3 text-[0.95rem] text-slate-700 outline-none transition duration-200 hover:border-slate-300 focus:border-slate-400"
-                    >
+                    <select value={draftFilters.listingLocale} onChange={(e) => updateFilter("listingLocale", e.target.value)} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400">
                       <option value="">{t("catalog_filter_locale_all", "Hamısı")}</option>
                       <option value="az">AZ</option>
                       <option value="ru">RU</option>
@@ -1483,36 +1255,60 @@ export function CatalogPageClient({
             </div>
           </div>
 
-          <div className="mt-8 flex items-center justify-between gap-4">
-            <h2 className="text-[1.9rem] font-bold text-[#171717]">{t("listings_title", "Son elanlar")}</h2>
+          {/* Kategoriler */}
+          <div className="mt-5 flex flex-wrap gap-2">
+            {homeCategoryViews.map((category) => {
+              const CatIcon = category.icon;
+              const isActive = homeCategory === category.id;
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => setHomeCategory(category.id)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                    isActive
+                      ? "border-logistics-orange bg-logistics-orange text-white"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-navy-900"
+                  )}
+                >
+                  <CatIcon className="h-3.5 w-3.5" />
+                  {category.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <h2 className="text-base font-bold text-navy-900">{t("listings_title", "Son elanlar")}</h2>
             <button
               type="button"
               onClick={() => setShowAllHomeListings((current) => !current)}
-              className="inline-flex items-center gap-1.5 text-[0.98rem] font-semibold text-logistics-orange transition hover:opacity-80"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-logistics-orange transition hover:opacity-80"
             >
               {showAllHomeListings ? t("catalog_close", "Bağla") : t("catalog_view_all", "Hamısına bax")}
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
 
-          <div className="mt-4 min-h-[560px] sm:min-h-[520px] xl:min-h-[500px]">
+          <div className="mt-2">
             {categoryLoading ? (
-              <div className="grid gap-5 grid-cols-2 xl:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, index) => (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, index) => (
                   <HomeListingCardSkeleton key={index} index={index} />
                 ))}
               </div>
             ) : hasHomeListings ? (
-              <div className="grid gap-5 grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {latestHomeListings.map((listing) => (
                   <HomeListingCard key={listing.id} listing={listing} />
                 ))}
               </div>
             ) : (
-              <div className="flex min-h-[420px] items-center justify-center rounded-[22px] border border-slate-200 bg-white px-5 py-8 text-center">
+              <div className="flex min-h-[200px] items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-8 text-center">
                 <div>
-                  <h3 className="text-lg font-semibold text-navy-900">{t("catalog_no_category", "Bu kateqoriyada elan yoxdur")}</h3>
-                  <p className="mt-2 text-sm text-slate-500">
+                  <h3 className="text-base font-semibold text-navy-900">{t("catalog_no_category", "Bu kateqoriyada elan yoxdur")}</h3>
+                  <p className="mt-1 text-sm text-slate-500">
                     {selectedHomeCategory?.label} {t("catalog_no_category_hint", "üçün uyğun elan tapılmadı.")}
                   </p>
                 </div>
@@ -1521,85 +1317,25 @@ export function CatalogPageClient({
           </div>
 
           {showAllHomeListings && !categoryLoading ? (
-            <div className="mt-7 rounded-[24px] border border-slate-200/90 bg-white p-4 shadow-sm sm:p-5">
-              <div className="flex flex-col gap-4 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h3 className="text-[1.25rem] font-bold text-navy-900">{t("catalog_all_listings", "Bütün elanlar")}</h3>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {new Intl.NumberFormat("az-AZ").format(homeInfinite.loadedCount)} /{" "}
-                    {new Intl.NumberFormat("az-AZ").format(homeListings.length)} {t("catalog_listings_shown", "elan göstərilir")}
-                  </p>
-                </div>
-
-                <div className="inline-flex w-fit items-center rounded-[14px] border border-slate-200 bg-slate-50 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setHomeView("grid")}
-                    className={cn(
-                      "inline-flex min-h-10 items-center gap-2 rounded-[10px] px-3 text-sm font-semibold transition",
-                      homeView === "grid" ? "bg-white text-navy-900 shadow-sm" : "text-slate-500"
-                    )}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                    {t("catalog_grid", "Kvadratlar")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setHomeView("list")}
-                    className={cn(
-                      "inline-flex min-h-10 items-center gap-2 rounded-[10px] px-3 text-sm font-semibold transition",
-                      homeView === "list" ? "bg-white text-navy-900 shadow-sm" : "text-slate-500"
-                    )}
-                  >
-                    <List className="h-4 w-4" />
-                    {t("catalog_list", "Siyahı")}
-                  </button>
-                </div>
+            <div className="mt-6">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm text-slate-500">
+                  {new Intl.NumberFormat("az-AZ").format(homeInfinite.loadedCount)} / {new Intl.NumberFormat("az-AZ").format(homeListings.length)} {t("catalog_listings_shown", "elan göstərilir")}
+                </p>
               </div>
-
-              {homeView === "grid" ? (
-                <div className="mt-5 grid gap-5 grid-cols-2 xl:grid-cols-4">
-                  {homeInfinite.visibleItems.map((listing) => (
-                    <HomeListingCard key={`all-grid-${listing.id}`} listing={listing} />
-                  ))}
-                  {homeInfinite.isLoadingMore ? (
-                    <div className="flex h-12 w-full items-center justify-center">
-                      <LoaderCircle className="h-6 w-6 animate-spin text-logistics-orange" />
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="mt-5 space-y-3">
-                  {homeInfinite.visibleItems.map((listing) => (
-                    <HomeListingRow key={`all-list-${listing.id}`} listing={listing} />
-                  ))}
-                  {homeInfinite.isLoadingMore ? (
-                    <div className="flex h-12 w-full items-center justify-center">
-                      <LoaderCircle className="h-6 w-6 animate-spin text-logistics-orange" />
-                    </div>
-                  ) : null}
-                </div>
-              )}
-
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {homeInfinite.visibleItems.map((listing) => (
+                  <HomeListingCard key={`all-${listing.id}`} listing={listing} />
+                ))}
+                {homeInfinite.isLoadingMore
+                  ? Array.from({ length: 4 }).map((_, i) => <HomeListingCardSkeleton key={`sk-${i}`} index={i} />)
+                  : null}
+              </div>
               {homeInfinite.hasMore ? <div ref={homeInfinite.sentinelRef} className="h-6 w-full" aria-hidden="true" /> : null}
             </div>
           ) : null}
 
-          <div className="mt-8 border-t border-slate-200 pt-5">
-            <h2 className="text-base font-semibold text-navy-900">{t("categories_title", "Kateqoriyalara baxın")}</h2>
-            <div className="-mx-1 mt-3 flex max-w-full gap-2 overflow-x-auto px-1 py-2 pb-1 no-scrollbar sm:mx-0 sm:px-0 sm:gap-3">
-              {homeCategoryViews.map((category, index) => (
-                <HomeCategoryButton
-                  key={category.id}
-                  label={category.label}
-                  active={homeCategory === category.id}
-                  icon={category.icon}
-                  colorIndex={index}
-                  onClick={() => setHomeCategory(category.id)}
-                />
-              ))}
-            </div>
-          </div>
+          
         </section>
       </PublicPage>
     );
@@ -1618,9 +1354,9 @@ export function CatalogPageClient({
 
   return (
     <PublicPage emphasizeBackground>
-      <section className="mx-auto max-w-[1780px] px-4 py-5 sm:px-6 lg:px-8">
-        <div className="overflow-visible rounded-[18px] border border-slate-200/90 bg-[linear-gradient(180deg,#ffffff_0%,#fbfcfe_100%)] shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
-          <div className="grid w-full gap-3 p-4 sm:grid-cols-2 min-[1180px]:grid-cols-[180px_48px_190px_160px_190px_minmax(220px,1fr)_150px] lg:p-[18px]">
+      <section className="mx-auto max-w-[1280px] px-4 py-4 sm:px-6 lg:px-8">
+        <div className="overflow-visible rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="grid w-full gap-2 p-3 sm:grid-cols-2 min-[1180px]:grid-cols-[180px_44px_180px_150px_180px_minmax(180px,1fr)_130px] lg:p-3">
             <CatalogFilterField label={t("search_pickup_city", "Yükləmə şəhəri")}>
               <CatalogSelectCard
                 label={t("search_pickup_city", "Yükləmə şəhəri")}
@@ -1643,7 +1379,7 @@ export function CatalogPageClient({
                   };
                   setDraftFilters(next);
                 }}
-                className="flex h-[60px] w-12 items-center justify-center rounded-[13px] border border-slate-200 bg-white text-slate-500 transition duration-200 hover:-translate-y-px hover:border-slate-300 hover:text-navy-900 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)]"
+                className="flex h-[52px] w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:text-navy-900"
                 aria-label="Marşrutu dəyiş"
               >
                 <ArrowLeftRight className="h-5 w-5" />
@@ -1695,7 +1431,7 @@ export function CatalogPageClient({
 
             <div className="flex w-full items-start gap-3 sm:col-span-2 min-[1180px]:col-span-1">
               <Button
-                className="h-[60px] w-full rounded-[13px] text-[0.98rem] transition duration-200 hover:-translate-y-px hover:shadow-[0_14px_28px_rgba(249,115,22,0.24)]"
+                className="h-[52px] w-full rounded-lg text-[0.95rem]"
                 onClick={() => submitFilters()}
                 disabled={isSearching}
               >
@@ -1754,11 +1490,9 @@ export function CatalogPageClient({
             </div>
 
             {sortedListings.length ? (
-              <div className="grid gap-5 grid-cols-1">
+              <div className="divide-y divide-slate-100">
                 {loadsInfinite.visibleItems.map((listing) => (
-                  <div key={listing.id} className="col-span-1">
-                    <CatalogListingRow listing={listing} />
-                  </div>
+                  <CatalogListingRow key={listing.id} listing={listing} />
                 ))}
                 {loadsInfinite.isLoadingMore
                   ? Array.from({ length: 3 }).map((_, index) => (
@@ -1766,7 +1500,7 @@ export function CatalogPageClient({
                     ))
                   : null}
                 {loadsInfinite.hasMore ? (
-                  <div ref={loadsInfinite.sentinelRef} className="col-span-1 h-6 w-full" aria-hidden="true" />
+                  <div ref={loadsInfinite.sentinelRef} className="h-6 w-full" aria-hidden="true" />
                 ) : null}
               </div>
             ) : (
