@@ -77,7 +77,7 @@ services:
       - logistika-internal
     labels:
       - traefik.enable=true
-      - traefik.docker.network=edge
+      - traefik.docker.network=octobot-net
       # Normalize all clear-text traffic before it reaches the application.
       # Cloudflare must use Full/Full (strict), otherwise this redirect loops
       # at Cloudflare when its edge talks HTTP to the origin.
