@@ -73,10 +73,11 @@ services:
       start_period: 60s
     networks:
       - octobot-net
+      - edge
       - logistika-internal
     labels:
       - traefik.enable=true
-      - traefik.docker.network=octobot-net
+      - traefik.docker.network=edge
       # Normalize all clear-text traffic before it reaches the application.
       # Cloudflare must use Full/Full (strict), otherwise this redirect loops
       # at Cloudflare when its edge talks HTTP to the origin.
@@ -123,6 +124,9 @@ networks:
   octobot-net:
     external: true
     name: octobot-net
+  edge:
+    external: true
+    name: edge
   logistika-internal:
     name: logistika-internal
     internal: true
