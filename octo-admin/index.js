@@ -1355,6 +1355,99 @@ app.post('/dashboard/footer-ayarlari', requireAuth, requireAdmin, async (req, re
     }
 });
 
+// ─── SEO Ayarları ────────────────────────────────────────────────────────────
+
+const SEO_PAGES = [
+    { id: 'home',       label: 'Ana Səhifə',        path: '/' },
+    { id: 'about',      label: 'Haqqımızda',         path: '/haqqimizda' },
+    { id: 'contact',    label: 'Əlaqə',              path: '/elaqe' },
+    { id: 'howitworks', label: 'Necə işləyir',       path: '/how-it-works' },
+    { id: 'login',      label: 'Giriş',              path: '/login' },
+    { id: 'register',   label: 'Qeydiyyat',          path: '/register' },
+    { id: 'loads',      label: 'Elanlar siyahısı',   path: '/loads' },
+    { id: 'privacy',    label: 'Məxfilik siyasəti',  path: '/mexfilik-siyaseti' },
+    { id: 'terms',      label: 'İstifadə şərtləri',  path: '/istifade-sertleri' },
+    { id: 'rules',      label: 'Qaydalar',           path: '/qaydalar' },
+];
+
+const SEO_GLOBAL_KEYS = [
+    'seo_site_name', 'seo_default_title', 'seo_title_template',
+    'seo_default_description', 'seo_default_keywords', 'seo_site_url',
+    'seo_og_image', 'seo_og_type', 'seo_twitter_card',
+    'seo_twitter_site', 'seo_robots_default',
+];
+
+const SEO_PAGE_FIELDS = ['title', 'description', 'keywords', 'og_title', 'og_description', 'og_image', 'robots', 'canonical'];
+const SEO_SUPPORTED_LOCALES = ['az', 'ru', 'en', 'tr'];
+
+app.get('/dashboard/seo', requireAuth, requireAdmin, async (req, res) => {
+    const lang = SEO_SUPPORTED_LOCALES.includes(req.query.lang) ? req.query.lang : 'az';
+    try {
+        // Load global settings (locale-independent)
+        const globalEntries = await Promise.all(
+            SEO_GLOBAL_KEYS.map(key => settingsRepository.getSetting(key, ''))
+        );
+        const global = {};
+        SEO_GLOBAL_KEYS.forEach((key, i) => { global[key] = globalEntries[i]; });
+
+        // Load per-page settings for locale
+        const pageData = {};
+        for (const page of SEO_PAGES) {
+            pageData[page.id] = {};
+            for (const field of SEO_PAGE_FIELDS) {
+                const dbKey = `seo_page_${page.id}_${field}_${lang}`;
+                pageData[page.id][field] = await settingsRepository.getSetting(dbKey, '');
+            }
+        }
+
+        res.render('seo-ayarlari', {
+            user: req.session.user,
+            path: '/dashboard/seo',
+            saved: req.query.saved === '1',
+            error: req.query.error || null,
+            lang,
+            global,
+            pages: SEO_PAGES,
+            pageData,
+        });
+    } catch (e) {
+        console.error('SEO ayarları yüklənmədi:', e);
+        res.redirect('/dashboard?error=seo');
+    }
+});
+
+app.post('/dashboard/seo', requireAuth, requireAdmin, async (req, res) => {
+    const lang = SEO_SUPPORTED_LOCALES.includes(req.query.lang) ? req.query.lang : 'az';
+    try {
+        const { global: globalFields = {}, pages: pagesFields = {} } = req.body;
+
+        // Save global fields
+        for (const key of SEO_GLOBAL_KEYS) {
+            if (globalFields[key] !== undefined) {
+                await settingsRepository.setSetting(key, (globalFields[key] || '').trim());
+            }
+        }
+
+        // Save per-page fields
+        for (const page of SEO_PAGES) {
+            const fields = pagesFields[page.id] || {};
+            for (const field of SEO_PAGE_FIELDS) {
+                if (fields[field] !== undefined) {
+                    const dbKey = `seo_page_${page.id}_${field}_${lang}`;
+                    await settingsRepository.setSetting(dbKey, (fields[field] || '').trim());
+                }
+            }
+        }
+
+        res.redirect(`/dashboard/seo?saved=1&lang=${lang}`);
+    } catch (e) {
+        console.error('SEO ayarları saxlanmadı:', e);
+        res.redirect(`/dashboard/seo?error=save&lang=${lang}`);
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 app.listen(OCTO_ADMIN_PORT, OCTO_ADMIN_HOST, () => {
     console.log(`Cargo Admin Panel running at http://${OCTO_ADMIN_HOST}:${OCTO_ADMIN_PORT}`);
 });

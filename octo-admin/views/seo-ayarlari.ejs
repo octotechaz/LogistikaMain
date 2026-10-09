@@ -1,0 +1,299 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-bold" style="color: #1e293b;">SEO Ayarları</h4>
+    <div class="d-flex gap-2">
+        <% const locales = ['az','ru','en','tr']; %>
+        <% locales.forEach(loc => { %>
+            <a href="/dashboard/seo?lang=<%= loc %>"
+               class="btn btn-sm <%= lang === loc ? 'btn-primary' : 'btn-outline-secondary' %>"
+               style="border-radius:8px;font-weight:600;">
+                <%= loc.toUpperCase() %>
+            </a>
+        <% }); %>
+    </div>
+</div>
+
+<% if (saved) { %>
+    <div class="alert alert-success mb-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        SEO məlumatları uğurla saxlandı.
+    </div>
+<% } %>
+<% if (error) { %>
+    <div class="alert alert-danger mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        Saxlama zamanı xəta baş verdi. Yenidən cəhd edin.
+    </div>
+<% } %>
+
+<!-- Page tabs -->
+<ul class="nav nav-tabs mb-4" id="seoTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-global" data-bs-toggle="tab" data-bs-target="#pane-global" type="button">
+            <i class="bi bi-globe me-1"></i>Ümumi / Default
+        </button>
+    </li>
+    <% pages.forEach((page, i) => { %>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-<%= page.id %>" data-bs-toggle="tab" data-bs-target="#pane-<%= page.id %>" type="button">
+            <%= page.label %>
+        </button>
+    </li>
+    <% }); %>
+</ul>
+
+<form method="POST" action="/dashboard/seo?lang=<%= lang %>">
+<div class="tab-content">
+
+    <!-- GLOBAL TAB -->
+    <div class="tab-pane fade show active" id="pane-global" role="tabpanel">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0" style="border-radius:12px;">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-gear me-2 text-primary"></i>Sayt Tənzimləmələri</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Sayt adı</label>
+                            <input type="text" name="global[seo_site_name]" class="form-control"
+                                   value="<%= global.seo_site_name %>" placeholder="Tranzit.AZ">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Sayt URL</label>
+                            <input type="text" name="global[seo_site_url]" class="form-control"
+                                   value="<%= global.seo_site_url %>" placeholder="https://tranzit.az">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Default başlıq (title)
+                                <span class="text-muted fw-normal" style="font-size:0.78rem;" id="cnt-default-title"></span>
+                            </label>
+                            <input type="text" name="global[seo_default_title]" class="form-control char-count" data-max="60" data-counter="cnt-default-title"
+                                   value="<%= global.seo_default_title %>" placeholder="Tranzit.AZ - Yük elanları platforması">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Başlıq şablonu
+                                <small class="text-muted fw-normal">(%s — səhifə başlığı)</small>
+                            </label>
+                            <input type="text" name="global[seo_title_template]" class="form-control"
+                                   value="<%= global.seo_title_template %>" placeholder="%s | Tranzit.AZ">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Default açıqlama (meta description)
+                                <span class="text-muted fw-normal" style="font-size:0.78rem;" id="cnt-default-desc"></span>
+                            </label>
+                            <textarea name="global[seo_default_description]" class="form-control char-count" data-max="160" data-counter="cnt-default-desc"
+                                      rows="3" placeholder="Tranzit.AZ yük sahibləri üçün müasir elan platformasıdır..."><%= global.seo_default_description %></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Default açar sözlər
+                                <small class="text-muted fw-normal">(vergüllə ayrılmış)</small>
+                            </label>
+                            <textarea name="global[seo_default_keywords]" class="form-control" rows="2"
+                                      placeholder="yük, daşıma, logistika, tranzit"><%= global.seo_default_keywords %></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 mb-4" style="border-radius:12px;">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-share me-2 text-success"></i>Open Graph</h6>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Default OG şəkili (URL)</label>
+                            <input type="text" name="global[seo_og_image]" class="form-control"
+                                   value="<%= global.seo_og_image %>" placeholder="/og-image.jpg">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">OG növü (og:type)</label>
+                            <select name="global[seo_og_type]" class="form-select">
+                                <% ['website','article','product'].forEach(opt => { %>
+                                <option value="<%= opt %>" <%= global.seo_og_type === opt ? 'selected' : '' %>><%= opt %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4" style="border-radius:12px;">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-twitter-x me-2"></i>Twitter / X Card</h6>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Kart növü</label>
+                            <select name="global[seo_twitter_card]" class="form-select">
+                                <% ['summary','summary_large_image','app','player'].forEach(opt => { %>
+                                <option value="<%= opt %>" <%= global.seo_twitter_card === opt ? 'selected' : '' %>><%= opt %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Twitter saytı (@handle)</label>
+                            <input type="text" name="global[seo_twitter_site]" class="form-control"
+                                   value="<%= global.seo_twitter_site %>" placeholder="@tranzitaz">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0" style="border-radius:12px;">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-robot me-2 text-secondary"></i>Robots</h6>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Default robots direktivası</label>
+                            <select name="global[seo_robots_default]" class="form-select">
+                                <% ['index, follow','noindex, nofollow','noindex, follow','index, nofollow'].forEach(opt => { %>
+                                <option value="<%= opt %>" <%= global.seo_robots_default === opt ? 'selected' : '' %>><%= opt %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="form-text">Bu qlobal default dəyərdir. Hər səhifə üçün ayrıca tənzimləmə mövcuddur.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PER-PAGE TABS -->
+    <% pages.forEach((page) => { %>
+    <div class="tab-pane fade" id="pane-<%= page.id %>" role="tabpanel">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="alert alert-light border" style="font-size:0.85rem;">
+                    <i class="bi bi-link-45deg me-1"></i>
+                    Səhifə: <strong><%= page.label %></strong> &nbsp;—&nbsp;
+                    <code><%= page.path %></code>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0" style="border-radius:12px;">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-file-earmark-text me-2 text-primary"></i>Meta teqlər</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Başlıq (title)
+                                <span class="text-muted fw-normal" style="font-size:0.78rem;" id="cnt-<%= page.id %>-title"></span>
+                            </label>
+                            <input type="text" name="pages[<%= page.id %>][title]"
+                                   class="form-control char-count" data-max="60" data-counter="cnt-<%= page.id %>-title"
+                                   value="<%= pageData[page.id] && pageData[page.id].title || '' %>"
+                                   placeholder="Boş qalsa default başlıq istifadə olunur">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Meta açıqlama (description)
+                                <span class="text-muted fw-normal" style="font-size:0.78rem;" id="cnt-<%= page.id %>-desc"></span>
+                            </label>
+                            <textarea name="pages[<%= page.id %>][description]"
+                                      class="form-control char-count" data-max="160" data-counter="cnt-<%= page.id %>-desc"
+                                      rows="3" placeholder="Boş qalsa default açıqlama istifadə olunur"><%= pageData[page.id] && pageData[page.id].description || '' %></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Açar sözlər <small class="text-muted fw-normal">(vergüllə)</small></label>
+                            <textarea name="pages[<%= page.id %>][keywords]" class="form-control" rows="2"
+                                      placeholder="yük, daşıma, logistika"><%= pageData[page.id] && pageData[page.id].keywords || '' %></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Canonical URL</label>
+                            <input type="text" name="pages[<%= page.id %>][canonical]" class="form-control"
+                                   value="<%= pageData[page.id] && pageData[page.id].canonical || '' %>"
+                                   placeholder="https://tranzit.az<%= page.path %>">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Robots</label>
+                            <select name="pages[<%= page.id %>][robots]" class="form-select">
+                                <option value="">— default istifadə et —</option>
+                                <% ['index, follow','noindex, nofollow','noindex, follow','index, nofollow'].forEach(opt => { %>
+                                <option value="<%= opt %>" <%= (pageData[page.id] && pageData[page.id].robots) === opt ? 'selected' : '' %>><%= opt %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0" style="border-radius:12px;">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3" style="color:#1e293b;"><i class="bi bi-share me-2 text-success"></i>Open Graph</h6>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                OG başlıq (og:title)
+                                <span class="text-muted fw-normal" style="font-size:0.78rem;" id="cnt-<%= page.id %>-ogtitle"></span>
+                            </label>
+                            <input type="text" name="pages[<%= page.id %>][og_title]"
+                                   class="form-control char-count" data-max="60" data-counter="cnt-<%= page.id %>-ogtitle"
+                                   value="<%= pageData[page.id] && pageData[page.id].og_title || '' %>"
+                                   placeholder="Boş qalsa page title istifadə olunur">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                OG açıqlama (og:description)
+                                <span class="text-muted fw-normal" style="font-size:0.78rem;" id="cnt-<%= page.id %>-ogdesc"></span>
+                            </label>
+                            <textarea name="pages[<%= page.id %>][og_description]"
+                                      class="form-control char-count" data-max="200" data-counter="cnt-<%= page.id %>-ogdesc"
+                                      rows="3" placeholder="Boş qalsa meta description istifadə olunur"><%= pageData[page.id] && pageData[page.id].og_description || '' %></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">OG şəkili (og:image URL)</label>
+                            <input type="text" name="pages[<%= page.id %>][og_image]" class="form-control"
+                                   value="<%= pageData[page.id] && pageData[page.id].og_image || '' %>"
+                                   placeholder="/images/og-<%= page.id %>.jpg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% }); %>
+
+</div><!-- tab-content -->
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius:8px;">
+            <i class="bi bi-save me-2"></i>Saxla (<%= lang.toUpperCase() %>)
+        </button>
+        <span class="text-muted ms-3" style="font-size:0.85rem;">Seçilmiş dil üçün saxlanır</span>
+    </div>
+</form>
+
+<script>
+// Char counter
+document.querySelectorAll('.char-count').forEach(el => {
+    const max = parseInt(el.dataset.max);
+    const counter = document.getElementById(el.dataset.counter);
+    if (!counter) return;
+    function update() {
+        const len = el.value.length;
+        counter.textContent = len + '/' + max;
+        counter.style.color = len > max ? '#ef4444' : len > max * 0.85 ? '#f59e0b' : '#94a3b8';
+    }
+    el.addEventListener('input', update);
+    update();
+});
+
+// Keep active tab after submit
+(function() {
+    const hash = sessionStorage.getItem('seoActiveTab');
+    if (hash) {
+        const btn = document.querySelector('[data-bs-target="' + hash + '"]');
+        if (btn) { new bootstrap.Tab(btn).show(); }
+        sessionStorage.removeItem('seoActiveTab');
+    }
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
+        btn.addEventListener('shown.bs.tab', function(e) {
+            sessionStorage.setItem('seoActiveTab', e.target.dataset.bsTarget);
+        });
+    });
+    document.querySelector('form').addEventListener('submit', function() {
+        const active = document.querySelector('[data-bs-toggle="tab"].active');
+        if (active) sessionStorage.setItem('seoActiveTab', active.dataset.bsTarget);
+    });
+})();
+</script>
+
+<%- include('partials/footer') %>
