@@ -645,7 +645,8 @@ export function DashboardShell({
             { href: "/admin/categories", label: t("dashboard_nav_categories", "Kateqoriyalar"), icon: "ri-function-line" },
             { href: "/admin/banners", label: t("dashboard_nav_banners", "Bannerlər"), icon: "ri-image-line" },
             { href: "/admin/statistics", label: t("dashboard_nav_statistics", "Statistika"), icon: "ri-bar-chart-box-line" },
-            { href: "/admin/page-content", label: "Səhifə Məzmunu", icon: "ri-translate-2" }
+            { href: "/admin/page-content", label: "Səhifə Məzmunu", icon: "ri-translate-2" },
+            { href: "/admin/seo", label: "SEO", icon: "ri-search-eye-line" }
           ];
 
   const sectionMeta =

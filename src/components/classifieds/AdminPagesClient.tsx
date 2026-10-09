@@ -1592,6 +1592,497 @@ export function AdminPageContentPageClient() {
   );
 }
 
+// ─── SEO Management ────────────────────────────────────────────────────────
+
+const SEO_LOCALES = ["az", "ru", "en", "tr"] as const;
+type SeoLocale = (typeof SEO_LOCALES)[number];
+
+const SEO_PAGES_META = [
+  { id: "home",       label: "Ana Səhifə",        path: "/" },
+  { id: "about",      label: "Haqqımızda",         path: "/haqqimizda" },
+  { id: "contact",    label: "Əlaqə",              path: "/elaqe" },
+  { id: "howitworks", label: "Necə işləyir",       path: "/how-it-works" },
+  { id: "login",      label: "Giriş",              path: "/login" },
+  { id: "register",   label: "Qeydiyyat",          path: "/register" },
+  { id: "loads",      label: "Elanlar siyahısı",   path: "/loads" },
+  { id: "privacy",    label: "Məxfilik siyasəti",  path: "/mexfilik-siyaseti" },
+  { id: "terms",      label: "İstifadə şərtləri",  path: "/istifade-sertleri" },
+  { id: "rules",      label: "Qaydalar",           path: "/qaydalar" },
+] as const;
+
+type SeoPageId = (typeof SEO_PAGES_META)[number]["id"];
+type SeoPageFields = { title: string; description: string; keywords: string; og_title: string; og_description: string; og_image: string; robots: string; canonical: string };
+type GlobalSeoFields = { seo_site_name: string; seo_default_title: string; seo_title_template: string; seo_default_description: string; seo_default_keywords: string; seo_site_url: string; seo_og_image: string; seo_og_type: string; seo_twitter_card: string; seo_twitter_site: string; seo_robots_default: string };
+
+const EMPTY_GLOBAL: GlobalSeoFields = {
+  seo_site_name: "",
+  seo_default_title: "",
+  seo_title_template: "",
+  seo_default_description: "",
+  seo_default_keywords: "",
+  seo_site_url: "",
+  seo_og_image: "",
+  seo_og_type: "website",
+  seo_twitter_card: "summary_large_image",
+  seo_twitter_site: "",
+  seo_robots_default: "index, follow",
+};
+
+const EMPTY_PAGE: SeoPageFields = {
+  title: "",
+  description: "",
+  keywords: "",
+  og_title: "",
+  og_description: "",
+  og_image: "",
+  robots: "",
+  canonical: "",
+};
+
+const ROBOTS_OPTIONS = ["index, follow", "noindex, nofollow", "noindex, follow", "index, nofollow"];
+const TWITTER_CARD_OPTIONS = ["summary", "summary_large_image", "app", "player"];
+const OG_TYPE_OPTIONS = ["website", "article", "product"];
+
+function SeoTextInput({ label, value, onChange, placeholder, hint }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; hint?: string }) {
+  return (
+    <label className="form-label">
+      {label}
+      {hint ? <span className="ml-2 text-xs font-normal text-slate-400">{hint}</span> : null}
+      <input className="form-field" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder ?? ""} />
+    </label>
+  );
+}
+
+function SeoTextarea({ label, value, onChange, placeholder, hint }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; hint?: string }) {
+  return (
+    <label className="form-label sm:col-span-2">
+      {label}
+      {hint ? <span className="ml-2 text-xs font-normal text-slate-400">{hint}</span> : null}
+      <textarea className="form-field min-h-[72px]" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder ?? ""} />
+    </label>
+  );
+}
+
+function SeoSelectInput({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
+  return (
+    <label className="form-label">
+      {label}
+      <select className="form-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">— seçilməyib —</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function CharCounter({ value, max }: { value: string; max: number }) {
+  const len = value.length;
+  const color = len > max ? "text-red-500" : len > max * 0.85 ? "text-amber-500" : "text-slate-400";
+  return <span className={`text-xs font-mono ${color}`}>{len}/{max}</span>;
+}
+
+export function AdminSeoPageClient() {
+  const [locale, setLocale] = useState<SeoLocale>("az");
+  const [activePageId, setActivePageId] = useState<SeoPageId | "global">("global");
+  const [global, setGlobal] = useState<GlobalSeoFields>(EMPTY_GLOBAL);
+  const [pages, setPages] = useState<Record<SeoPageId, SeoPageFields>>(
+    Object.fromEntries(SEO_PAGES_META.map((p) => [p.id, { ...EMPTY_PAGE }])) as Record<SeoPageId, SeoPageFields>
+  );
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
+
+  async function fetchData(loc: SeoLocale) {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/seo?locale=${loc}`);
+      const json = await res.json() as { ok: boolean; global: Record<string, string>; pages: Record<string, Record<string, string>> };
+      if (!json.ok) throw new Error();
+      setGlobal({ ...EMPTY_GLOBAL, ...(json.global as Partial<GlobalSeoFields>) });
+      setPages((prev) => {
+        const next = { ...prev };
+        for (const page of SEO_PAGES_META) {
+          next[page.id] = { ...EMPTY_PAGE, ...(json.pages[page.id] ?? {}) } as SeoPageFields;
+        }
+        return next;
+      });
+    } catch {
+      setError("Məlumatlar yüklənmədi");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { void fetchData("az"); }, []);
+
+  function switchLocale(loc: SeoLocale) {
+    if (loc === locale) return;
+    setLocale(loc);
+    void fetchData(loc);
+  }
+
+  function setGlobalField(key: keyof GlobalSeoFields, value: string) {
+    setGlobal((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function setPageField(pageId: SeoPageId, field: keyof SeoPageFields, value: string) {
+    setPages((prev) => ({ ...prev, [pageId]: { ...prev[pageId], [field]: value } }));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setSaved(false);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/seo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale, global, pages }),
+      });
+      const json = await res.json() as { ok: boolean };
+      if (!json.ok) throw new Error();
+      setSaved(true);
+      setTimeout(() => startTransition(() => setSaved(false)), 3000);
+    } catch {
+      setError("Saxlama zamanı xəta baş verdi.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const activePage = activePageId !== "global" ? pages[activePageId as SeoPageId] : null;
+
+  return (
+    <RequireAdmin>
+      <DashboardShell
+        section="admin"
+        title="SEO İdarəetməsi"
+        description="Hər səhifə üçün meta teqlər, Open Graph, Twitter Card və robots qaydalarını dil üzrə idarə edin."
+      >
+        {/* Locale switcher */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <span className="text-sm font-semibold text-slate-500 mr-1">Dil:</span>
+          {SEO_LOCALES.map((loc) => (
+            <button
+              key={loc}
+              type="button"
+              onClick={() => switchLocale(loc)}
+              className={`px-3 py-1.5 rounded-md text-sm font-semibold border transition ${
+                locale === loc
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-slate-600 border-slate-300 hover:border-slate-400"
+              }`}
+            >
+              {loc.toUpperCase()}
+            </button>
+          ))}
+          {loading && <span className="text-xs text-slate-400 ml-2">Yüklənir...</span>}
+        </div>
+
+        {saved && (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 mb-3">
+            SEO məlumatları uğurla saxlandı.
+          </div>
+        )}
+        {error && (
+          <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 mb-3">
+            {error}
+          </div>
+        )}
+
+        <div className="flex gap-5 flex-col lg:flex-row">
+          {/* Left sidebar: page list */}
+          <nav className="lg:w-52 shrink-0">
+            <div className="surface-panel overflow-hidden">
+              <div className="border-b border-slate-200 px-4 py-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Səhifələr</p>
+              </div>
+              <div className="py-1">
+                <button
+                  type="button"
+                  onClick={() => setActivePageId("global")}
+                  className={`w-full text-left px-4 py-2.5 text-sm font-medium transition ${
+                    activePageId === "global"
+                      ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <i className="ri-global-line text-base" />
+                    Ümumi / Default
+                  </span>
+                </button>
+                {SEO_PAGES_META.map((page) => (
+                  <button
+                    key={page.id}
+                    type="button"
+                    onClick={() => setActivePageId(page.id)}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition ${
+                      activePageId === page.id
+                        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600 font-medium"
+                        : "text-slate-600 hover:bg-slate-50 font-normal"
+                    }`}
+                  >
+                    <span className="flex flex-col">
+                      <span>{page.label}</span>
+                      <span className="text-xs text-slate-400 font-mono">{page.path}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </nav>
+
+          {/* Right: form */}
+          <div className="flex-1 min-w-0 space-y-4">
+            {activePageId === "global" ? (
+              <>
+                {/* Site-wide defaults */}
+                <div className="surface-panel p-5">
+                  <h3 className="text-base font-semibold text-navy-900 mb-4 flex items-center gap-2">
+                    <i className="ri-settings-3-line text-slate-500" />
+                    Sayt Tənzimləmələri
+                  </h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <SeoTextInput
+                      label="Sayt adı"
+                      value={global.seo_site_name}
+                      onChange={(v) => setGlobalField("seo_site_name", v)}
+                      placeholder="Tranzit.AZ"
+                    />
+                    <SeoTextInput
+                      label="Sayt URL"
+                      value={global.seo_site_url}
+                      onChange={(v) => setGlobalField("seo_site_url", v)}
+                      placeholder="https://tranzit.az"
+                    />
+                    <div className="sm:col-span-2">
+                      <label className="form-label">
+                        Default başlıq
+                        <span className="ml-2"><CharCounter value={global.seo_default_title} max={60} /></span>
+                        <input
+                          className="form-field"
+                          value={global.seo_default_title}
+                          onChange={(e) => setGlobalField("seo_default_title", e.target.value)}
+                          placeholder="Tranzit.AZ - Yük elanları platforması"
+                        />
+                      </label>
+                    </div>
+                    <SeoTextInput
+                      label="Başlıq şablonu"
+                      value={global.seo_title_template}
+                      onChange={(v) => setGlobalField("seo_title_template", v)}
+                      placeholder="%s | Tranzit.AZ"
+                      hint="%s — səhifə başlığı"
+                    />
+                    <div className="sm:col-span-2">
+                      <label className="form-label">
+                        Default açıqlama (meta description)
+                        <span className="ml-2"><CharCounter value={global.seo_default_description} max={160} /></span>
+                        <textarea
+                          className="form-field min-h-[72px]"
+                          value={global.seo_default_description}
+                          onChange={(e) => setGlobalField("seo_default_description", e.target.value)}
+                          placeholder="Tranzit.AZ yük sahibləri üçün müasir elan platformasıdır..."
+                        />
+                      </label>
+                    </div>
+                    <SeoTextarea
+                      label="Default açar sözlər (keywords)"
+                      value={global.seo_default_keywords}
+                      onChange={(v) => setGlobalField("seo_default_keywords", v)}
+                      placeholder="yük, daşıma, logistika, tranzit"
+                      hint="vergüllə ayrılmış"
+                    />
+                  </div>
+                </div>
+
+                {/* Open Graph defaults */}
+                <div className="surface-panel p-5">
+                  <h3 className="text-base font-semibold text-navy-900 mb-4 flex items-center gap-2">
+                    <i className="ri-share-box-line text-slate-500" />
+                    Open Graph (Sosial şəbəkə paylaşımı)
+                  </h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <SeoTextInput
+                      label="Default OG şəkili (URL)"
+                      value={global.seo_og_image}
+                      onChange={(v) => setGlobalField("seo_og_image", v)}
+                      placeholder="/og-image.jpg"
+                    />
+                    <SeoSelectInput
+                      label="OG növü (og:type)"
+                      value={global.seo_og_type}
+                      onChange={(v) => setGlobalField("seo_og_type", v)}
+                      options={OG_TYPE_OPTIONS}
+                    />
+                  </div>
+                </div>
+
+                {/* Twitter Card defaults */}
+                <div className="surface-panel p-5">
+                  <h3 className="text-base font-semibold text-navy-900 mb-4 flex items-center gap-2">
+                    <i className="ri-twitter-x-line text-slate-500" />
+                    Twitter / X Card
+                  </h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <SeoSelectInput
+                      label="Kart növü"
+                      value={global.seo_twitter_card}
+                      onChange={(v) => setGlobalField("seo_twitter_card", v)}
+                      options={TWITTER_CARD_OPTIONS}
+                    />
+                    <SeoTextInput
+                      label="Twitter saytı (@handle)"
+                      value={global.seo_twitter_site}
+                      onChange={(v) => setGlobalField("seo_twitter_site", v)}
+                      placeholder="@tranzitaz"
+                    />
+                  </div>
+                </div>
+
+                {/* Robots default */}
+                <div className="surface-panel p-5">
+                  <h3 className="text-base font-semibold text-navy-900 mb-4 flex items-center gap-2">
+                    <i className="ri-robot-line text-slate-500" />
+                    Robots / İndeksləmə
+                  </h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <SeoSelectInput
+                      label="Default robots direktivası"
+                      value={global.seo_robots_default}
+                      onChange={(v) => setGlobalField("seo_robots_default", v)}
+                      options={ROBOTS_OPTIONS}
+                    />
+                  </div>
+                  <p className="mt-3 text-xs text-slate-400">
+                    Bu qlobal default dəyərdir. Hər səhifə üçün ayrıca tənzimləmə mövcuddur.
+                  </p>
+                </div>
+              </>
+            ) : activePage ? (
+              <>
+                {/* Page meta */}
+                <div className="surface-panel p-5">
+                  <h3 className="text-base font-semibold text-navy-900 mb-1 flex items-center gap-2">
+                    <i className="ri-file-text-line text-slate-500" />
+                    {SEO_PAGES_META.find((p) => p.id === activePageId)?.label} — Meta teqlər
+                  </h3>
+                  <p className="text-xs text-slate-400 mb-4 font-mono">
+                    {SEO_PAGES_META.find((p) => p.id === activePageId)?.path}
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="sm:col-span-2">
+                      <label className="form-label">
+                        Səhifə başlığı (title)
+                        <span className="ml-2"><CharCounter value={activePage.title} max={60} /></span>
+                        <input
+                          className="form-field"
+                          value={activePage.title}
+                          onChange={(e) => setPageField(activePageId as SeoPageId, "title", e.target.value)}
+                          placeholder="Boş qalsa default başlıq istifadə olunur"
+                        />
+                      </label>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="form-label">
+                        Meta açıqlama (description)
+                        <span className="ml-2"><CharCounter value={activePage.description} max={160} /></span>
+                        <textarea
+                          className="form-field min-h-[72px]"
+                          value={activePage.description}
+                          onChange={(e) => setPageField(activePageId as SeoPageId, "description", e.target.value)}
+                          placeholder="Boş qalsa default açıqlama istifadə olunur"
+                        />
+                      </label>
+                    </div>
+                    <SeoTextarea
+                      label="Açar sözlər (keywords)"
+                      value={activePage.keywords}
+                      onChange={(v) => setPageField(activePageId as SeoPageId, "keywords", v)}
+                      placeholder="yük, daşıma, logistika"
+                      hint="vergüllə ayrılmış"
+                    />
+                    <SeoTextInput
+                      label="Canonical URL"
+                      value={activePage.canonical}
+                      onChange={(v) => setPageField(activePageId as SeoPageId, "canonical", v)}
+                      placeholder="https://tranzit.az/haqqimizda"
+                    />
+                    <SeoSelectInput
+                      label="Robots"
+                      value={activePage.robots}
+                      onChange={(v) => setPageField(activePageId as SeoPageId, "robots", v)}
+                      options={ROBOTS_OPTIONS}
+                    />
+                  </div>
+                </div>
+
+                {/* Open Graph per-page */}
+                <div className="surface-panel p-5">
+                  <h3 className="text-base font-semibold text-navy-900 mb-4 flex items-center gap-2">
+                    <i className="ri-share-box-line text-slate-500" />
+                    Open Graph
+                  </h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="sm:col-span-2">
+                      <label className="form-label">
+                        OG başlıq (og:title)
+                        <span className="ml-2"><CharCounter value={activePage.og_title} max={60} /></span>
+                        <input
+                          className="form-field"
+                          value={activePage.og_title}
+                          onChange={(e) => setPageField(activePageId as SeoPageId, "og_title", e.target.value)}
+                          placeholder="Boş qalsa page title istifadə olunur"
+                        />
+                      </label>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="form-label">
+                        OG açıqlama (og:description)
+                        <span className="ml-2"><CharCounter value={activePage.og_description} max={200} /></span>
+                        <textarea
+                          className="form-field min-h-[72px]"
+                          value={activePage.og_description}
+                          onChange={(e) => setPageField(activePageId as SeoPageId, "og_description", e.target.value)}
+                          placeholder="Boş qalsa meta description istifadə olunur"
+                        />
+                      </label>
+                    </div>
+                    <SeoTextInput
+                      label="OG şəkili (og:image URL)"
+                      value={activePage.og_image}
+                      onChange={(v) => setPageField(activePageId as SeoPageId, "og_image", v)}
+                      placeholder="/images/og-about.jpg"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {/* Save button */}
+            <div className="flex items-center gap-3 pt-1">
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? "Saxlanır..." : "Saxla"}
+              </Button>
+              <span className="text-sm text-slate-400">
+                {activePageId === "global"
+                  ? "Qlobal SEO tənzimləmələri saxlanır"
+                  : `«${SEO_PAGES_META.find((p) => p.id === activePageId)?.label}» səhifəsi — ${locale.toUpperCase()}`}
+              </span>
+            </div>
+          </div>
+        </div>
+      </DashboardShell>
+    </RequireAdmin>
+  );
+}
+
 export function AdminStatisticsPageClient() {
   const { owners, listings, banners } = useClassifieds();
   const publicListings = useMemo(() => getPublicListings(listings), [listings]);

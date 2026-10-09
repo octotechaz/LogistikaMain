@@ -1285,6 +1285,22 @@ export function CatalogPageClient({
             </div>
           </section>
 
+          <div className="mt-8 border-t border-slate-200 pt-5">
+            <h2 className="text-base font-semibold text-navy-900">{t("categories_title", "Kateqoriyalara baxın")}</h2>
+            <div className="-mx-1 mt-3 flex max-w-full gap-2 overflow-x-auto px-1 py-2 pb-1 no-scrollbar sm:mx-0 sm:px-0 sm:gap-3">
+              {homeCategoryViews.map((category) => (
+                <HomeCategoryButton
+                  key={category.id}
+                  label={category.label}
+                  active={homeCategory === category.id}
+                  icon={category.icon}
+                  iconTone={category.iconTone}
+                  onClick={() => setHomeCategory(category.id)}
+                />
+              ))}
+            </div>
+          </div>
+
           <div className="relative z-10 mt-6 min-w-0 overflow-visible rounded-[24px] border border-[var(--planner-outline)] bg-[var(--planner-surface-raised)] p-3 sm:mt-8 sm:p-5">
             <div className="border-b border-[var(--planner-outline)] pb-4">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--planner-primary)]">{t("search_eyebrow", "Axtarış planı")}</p>
@@ -1616,22 +1632,7 @@ export function CatalogPageClient({
             </div>
           ) : null}
 
-          <div className="mt-8 border-t border-slate-200 pt-5">
-            <h2 className="text-base font-semibold text-navy-900">{t("categories_title", "Kateqoriyalara baxın")}</h2>
-            <div className="-mx-1 mt-3 flex max-w-full gap-2 overflow-x-auto px-1 py-2 pb-1 no-scrollbar sm:mx-0 sm:px-0 sm:gap-3">
-              {homeCategoryViews.map((category) => (
-                <HomeCategoryButton
-                  key={category.id}
-                  label={category.label}
-                  active={homeCategory === category.id}
-                  icon={category.icon}
-                  iconTone={category.iconTone}
-                  onClick={() => setHomeCategory(category.id)}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+          </section>
       </PublicPage>
     );
   }
