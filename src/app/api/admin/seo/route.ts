@@ -24,7 +24,7 @@ const SEO_KEYS = [
 ] as const;
 
 // Page-level SEO keys (per locale)
-export const SEO_PAGES = [
+const SEO_PAGES = [
   { id: "home",       label: "Ana Səhifə",        path: "/" },
   { id: "about",      label: "Haqqımızda",         path: "/haqqimizda" },
   { id: "contact",    label: "Əlaqə",              path: "/elaqe" },
