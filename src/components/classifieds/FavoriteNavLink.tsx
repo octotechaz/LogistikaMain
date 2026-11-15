@@ -8,14 +8,45 @@ import { cn } from "@/lib/utils";
 
 export function FavoriteNavLink({
   className,
-  compact = false
+  compact = false,
+  variant = "topbar"
 }: {
   className?: string;
   compact?: boolean;
+  variant?: "default" | "topbar";
 }) {
   const { favoriteCount, mounted } = useFavoriteListings();
   const { t } = useLocale();
   const badgeCount = mounted ? favoriteCount : 0;
+
+  if (variant === "topbar") {
+    return (
+      <FastLink
+        href="/favorites"
+        className={cn(
+          "inline-flex items-center gap-1.5 text-sm font-medium text-slate-700 transition-colors hover:text-neutral-900 focus:outline-none",
+          className
+        )}
+        aria-label={`${t("fav_label", "Seçilmişlər")}${badgeCount > 0 ? `, ${badgeCount}` : ""}`}
+      >
+        <span className="relative inline-flex items-center justify-center">
+          <Heart
+            className={cn(
+              "h-[18px] w-[18px] text-slate-700 transition-colors",
+              badgeCount > 0 ? "fill-red-500 text-red-500" : ""
+            )}
+            strokeWidth={1.75}
+          />
+          {badgeCount > 0 && (
+            <span className="absolute -right-2 -top-1.5 inline-flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white leading-none">
+              {badgeCount > 99 ? "99+" : badgeCount}
+            </span>
+          )}
+        </span>
+        {!compact ? <span className="hidden md:inline">{t("fav_label", "Seçilmişlər")}</span> : null}
+      </FastLink>
+    );
+  }
 
   return (
     <FastLink

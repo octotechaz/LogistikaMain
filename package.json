@@ -25,7 +25,13 @@
     "db:import-legacy-sqlite": "node scripts/legacy-sqlite-import.mjs",
     "hosts:local": "bash scripts/setup-local-hosts.sh",
     "traefik:local": "bash scripts/traefik-local.sh",
-    "traefik:local:down": "docker rm -f tranzit-traefik-local >/dev/null 2>&1 || true"
+    "traefik:local:down": "docker rm -f tranzit-traefik-local >/dev/null 2>&1 || true",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:stop": "pm2 stop ecosystem.config.cjs",
+    "pm2:restart": "pm2 restart ecosystem.config.cjs --update-env",
+    "pm2:status": "pm2 status",
+    "pm2:logs": "pm2 logs",
+    "healthcheck": "node --env-file=.env scripts/container-healthcheck.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.3.0",
@@ -63,6 +69,7 @@
     "react-phone-number-input": "^3.4.17",
     "react-share": "^5.3.0",
     "remixicon": "^4.9.1",
+    "sharp": "^0.35.5",
     "tailwind-merge": "^2.5.4",
     "timepicker-ui-react": "^1.4.0",
     "tsx": "^4.23.5",

@@ -3,10 +3,17 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LockKeyhole, MessageCircleMore } from "lucide-react";
-import { PageSection, PublicPage } from "@/components/classifieds/shared";
-import { PhoneField } from "@/components/PhoneField";
-import { Button, ButtonLink } from "@/components/ui/Button";
+import {
+  Smartphone,
+  Mail,
+  MessageSquare,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  CheckCircle2
+} from "lucide-react";
+import { PublicPage } from "@/components/classifieds/shared";
 import { useLocale } from "@/hooks/useLocale";
 
 type IdentityMode = "phone" | "email";
@@ -15,14 +22,15 @@ type Step = "request" | "reset" | "done";
 export function ForgotPasswordPageClient() {
   const router = useRouter();
   const { t } = useLocale();
+
   const [step, setStep] = useState<Step>("request");
   const [identityMode, setIdentityMode] = useState<IdentityMode>("phone");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState("+994 ");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [maskedPhone, setMaskedPhone] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [identityValue, setIdentityValue] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
@@ -59,19 +67,21 @@ export function ForgotPasswordPageClient() {
       const response = await fetch("/api/auth/forgot-password/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identity }),
+        body: JSON.stringify({ identity })
       });
 
       const result = await response.json().catch(() => null);
       if (!response.ok || !result?.ok) {
-        setError(result?.message ?? t("forgot_error_send", "OTP göndərilmədi. Zəhmət olmasa yenidən cəhd edin."));
+        setError(
+          result?.message ??
+            t("forgot_error_send", "OTP göndərilmədi. Zəhmət olmasa yenidən cəhd edin.")
+        );
         setLoading(false);
         return;
       }
 
       setIdentityValue(identity);
-      setMaskedPhone(result.data?.maskedPhone ?? "");
-      setInfo(result.data?.message ?? t("forgot_btn_send", "WhatsApp OTP göndərildi."));
+      setInfo(result.data?.message ?? "WhatsApp OTP göndərildi.");
       setStep("reset");
     } catch {
       setError(t("forgot_error_send", "OTP göndərilmədi. Zəhmət olmasa yenidən cəhd edin."));
@@ -90,19 +100,22 @@ export function ForgotPasswordPageClient() {
       const response = await fetch("/api/auth/forgot-password/reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identity: identityValue, otp, password, confirmPassword }),
+        body: JSON.stringify({ identity: identityValue, otp, password, confirmPassword })
       });
 
       const result = await response.json().catch(() => null);
       if (!response.ok || !result?.ok) {
-        setError(result?.message ?? t("forgot_error_reset", "Şifrə yenilənmədi. Zəhmət olmasa yenidən cəhd edin."));
+        setError(
+          result?.message ??
+            t("forgot_error_reset", "Şifrə yenilənmədi. Zəhmət olmasa yenidən cəhd edin.")
+        );
         setLoading(false);
         return;
       }
 
       setStep("done");
-      setInfo(result.data?.message ?? t("forgot_success_title", "Şifrəniz yeniləndi."));
-      window.setTimeout(() => { router.push("/login"); }, 1800);
+      const { redirectAfterToast } = await import("@/lib/toast");
+      redirectAfterToast("Şifrəniz uğurla yeniləndi! Girişə yönləndirilir...", "/login", 2000);
     } catch {
       setError(t("forgot_error_reset", "Şifrə yenilənmədi. Zəhmət olmasa yenidən cəhd edin."));
     } finally {
@@ -112,117 +125,228 @@ export function ForgotPasswordPageClient() {
 
   return (
     <PublicPage emphasizeBackground>
-      <section className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <PageSection
-          title={t("forgot_title", "Şifrəni yeniləyin")}
-          description={t("forgot_subtitle", "Hesabınızda qeydiyyatda olan telefon nömrəsinə WhatsApp OTP göndərilir.")}
-        />
+      <section className="mx-auto w-full max-w-[560px] min-w-0 px-4 pt-10 sm:pt-14 pb-20">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-[36px] font-extrabold text-[#1B0A33] tracking-tight">
+            Şifrəni yeniləyin
+          </h1>
+          <p className="mt-2 text-sm sm:text-base text-slate-500 max-w-md mx-auto leading-relaxed">
+            Hesabınızda qeydiyyatda olan telefon nömrəsinə WhatsApp OTP göndərilir.
+          </p>
+        </div>
 
-        <div className="mt-6 surface-panel p-5 sm:p-6">
+        {/* Card */}
+        <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-slate-100 shadow-sm">
           {step === "request" ? (
-            <form className="space-y-4" onSubmit={onSendOtp} aria-busy={loading}>
-              <div>
-                <span className="form-label">{t("login_sidebar_title", "Hesab məlumatı")}</span>
-                <div className="mt-1 grid grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1 text-sm font-medium text-slate-500">
-                  <button disabled={loading} type="button"
-                    onClick={() => { setIdentityMode("phone"); setError(""); }}
-                    className={identityMode === "phone" ? "rounded-md bg-white px-3 py-2 text-navy-900 shadow-sm disabled:opacity-60" : "rounded-md px-3 py-2 disabled:opacity-60"}>
-                    {t("login_method_phone", "Telefon nömrəsi")}
-                  </button>
-                  <button disabled={loading} type="button"
-                    onClick={() => { setIdentityMode("email"); setError(""); }}
-                    className={identityMode === "email" ? "rounded-md bg-white px-3 py-2 text-navy-900 shadow-sm disabled:opacity-60" : "rounded-md px-3 py-2 disabled:opacity-60"}>
-                    {t("login_method_email", "E-poçt")}
-                  </button>
-                </div>
+            <div>
+              {/* Tabs */}
+              <div className="inline-flex p-1 rounded-xl bg-slate-100 gap-1 mb-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIdentityMode("phone");
+                    setError("");
+                  }}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    identityMode === "phone"
+                      ? "bg-[#FEDE47] text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 font-semibold"
+                  }`}
+                >
+                  Telefon nömrəsi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIdentityMode("email");
+                    setError("");
+                  }}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    identityMode === "email"
+                      ? "bg-[#FEDE47] text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 font-semibold"
+                  }`}
+                >
+                  E-poçt
+                </button>
               </div>
 
-              {identityMode === "phone" ? (
-                <PhoneField label={t("forgot_field_phone", "Telefon nömrəsi")} name="phone" value={phone} onChange={setPhone} disabled={loading} defaultCountry="AZ" />
-              ) : (
-                <label className="form-label">
-                  {t("forgot_field_email", "E-poçt")}
-                  <input disabled={loading} name="email" type="email" className="form-field" value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t("forgot_field_email_placeholder", "email@example.com")} required />
-                </label>
-              )}
+              {/* Form */}
+              <form onSubmit={onSendOtp} className="space-y-4">
+                {identityMode === "phone" ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Telefon nömrəsi
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+994 "
+                        className="w-full h-12 px-4 pr-11 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-900 focus:bg-white focus:border-slate-900 focus:outline-none transition-colors"
+                        required
+                        disabled={loading}
+                      />
+                      <Smartphone className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                    <p className="text-xs text-slate-400 mt-2">
+                      Hesabınızda qeydiyyatda olan nömrəyə WhatsApp OTP göndərilir.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      E-poçt ünvanı
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="nümunə@tranzit.az"
+                        className="w-full h-12 px-4 pr-11 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-900 focus:bg-white focus:border-slate-900 focus:outline-none transition-colors"
+                        required
+                        disabled={loading}
+                      />
+                      <Mail className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+                )}
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-                <div className="flex items-start gap-2">
-                  <MessageCircleMore className="mt-0.5 h-4 w-4 shrink-0 text-logistics-orange" />
-                  <p>{t("forgot_subtitle", "OTP admin WhatsApp xəttindən hesabınıza bağlı nömrəyə göndərilir.")}</p>
+                {error ? (
+                  <div className="rounded-xl bg-red-50 border border-red-100 p-3 text-xs font-semibold text-red-600">
+                    {error}
+                  </div>
+                ) : null}
+
+                {/* CTA Button */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 rounded-xl bg-[#FEDE47] hover:bg-yellow-400 text-slate-900 font-bold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm disabled:opacity-60"
+                  >
+                    <MessageSquare className="w-4 h-4 fill-slate-900 text-slate-900" />
+                    <span>{loading ? "Göndərilir..." : "WhatsApp OTP göndər"}</span>
+                  </button>
                 </div>
-              </div>
-
-              {error ? <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p> : null}
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t("forgot_btn_sending", "OTP göndərilir...") : t("forgot_btn_send", "WhatsApp OTP göndər")}
-              </Button>
-            </form>
-          ) : null}
-
-          {step === "reset" ? (
-            <form className="space-y-4" onSubmit={onResetPassword} aria-busy={loading}>
+              </form>
+            </div>
+          ) : step === "reset" ? (
+            <div>
               {info ? (
-                <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                  {info}{maskedPhone ? ` (${maskedPhone})` : ""}
-                </p>
+                <div className="mb-4 rounded-xl bg-emerald-50 border border-emerald-100 p-3 text-xs font-medium text-emerald-800">
+                  {info}
+                </div>
               ) : null}
 
-              <label className="form-label">
-                {t("forgot_otp_label", "OTP kodu")}
-                <input disabled={loading} name="otp" inputMode="numeric" pattern="\d{6}" maxLength={6} className="form-field"
-                  value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder={t("forgot_otp_placeholder", "6 rəqəmli kod")} required />
-              </label>
+              <form onSubmit={onResetPassword} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    WhatsApp OTP Kodu
+                  </label>
+                  <input
+                    type="text"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="6 rəqəmli OTP kodu"
+                    className="w-full h-12 px-4 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-900 focus:bg-white focus:border-slate-900 focus:outline-none transition-colors tracking-widest text-center"
+                    maxLength={6}
+                    required
+                    disabled={loading}
+                  />
+                </div>
 
-              <label className="form-label">
-                {t("forgot_new_password", "Yeni şifrə")}
-                <input disabled={loading} name="password" type="password" className="form-field" value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t("forgot_new_password_placeholder", "Minimum 8 simvol")} minLength={8} required />
-              </label>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Yeni şifrə
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Minimum 8 simvol"
+                      className="w-full h-12 px-4 pr-11 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-900 focus:bg-white focus:border-slate-900 focus:outline-none transition-colors"
+                      required
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
 
-              <label className="form-label">
-                {t("forgot_confirm_password", "Yeni şifrə (təkrar)")}
-                <input disabled={loading} name="confirmPassword" type="password" className="form-field" value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder={t("forgot_confirm_password_placeholder", "Şifrəni təkrar daxil edin")} minLength={8} required />
-              </label>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Şifrə təkrarı
+                  </label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Şifrəni təkrar daxil edin"
+                    className="w-full h-12 px-4 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-900 focus:bg-white focus:border-slate-900 focus:outline-none transition-colors"
+                    required
+                    disabled={loading}
+                  />
+                </div>
 
-              {error ? <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p> : null}
+                {error ? (
+                  <div className="rounded-xl bg-red-50 border border-red-100 p-3 text-xs font-semibold text-red-600">
+                    {error}
+                  </div>
+                ) : null}
 
-              <div className="flex flex-wrap gap-3">
-                <Button type="submit" className="flex-1" disabled={loading}>
-                  <LockKeyhole className="mr-2 h-4 w-4" />
-                  {loading ? t("forgot_btn_resetting", "Yenilənir...") : t("forgot_btn_reset", "Şifrəni yenilə")}
-                </Button>
-                <Button type="button" variant="secondary" disabled={loading}
-                  onClick={() => { setStep("request"); setOtp(""); setPassword(""); setConfirmPassword(""); setError(""); setInfo(""); }}>
-                  {t("forgot_btn_back", "Geri")}
-                </Button>
-              </div>
-            </form>
-          ) : null}
-
-          {step === "done" ? (
-            <div className="space-y-4 text-center">
-              <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm text-emerald-800">
-                {info || t("forgot_success_title", "Şifrəniz yeniləndi.")}
-              </p>
-              <p className="text-sm text-slate-500">{t("forgot_success_redirect", "Giriş səhifəsinə yönləndirilirsiniz...")}</p>
-              <ButtonLink href="/login" className="w-full">{t("forgot_success_login", "İndi daxil ol")}</ButtonLink>
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 rounded-xl bg-[#FEDE47] hover:bg-yellow-400 text-slate-900 font-bold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm disabled:opacity-60"
+                  >
+                    <Lock className="w-4 h-4" />
+                    <span>{loading ? "Yenilənir..." : "Şifrəni yenilə"}</span>
+                  </button>
+                </div>
+              </form>
             </div>
-          ) : null}
+          ) : (
+            <div className="text-center py-6">
+              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+              <h3 className="text-lg font-bold text-slate-900">Şifrəniz yeniləndi!</h3>
+              <p className="text-xs text-slate-500 mt-1 mb-6">
+                Yeni şifrənizlə sistemə daxil ola bilərsiniz.
+              </p>
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl bg-[#FEDE47] hover:bg-yellow-400 text-slate-900 font-bold text-sm transition-colors shadow-sm"
+              >
+                Girişə keç
+              </Link>
+            </div>
+          )}
 
-          <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-slate-200 pt-4 text-sm">
-            <Link href="/login" className="font-semibold text-logistics-orange transition hover:text-orange-600">
-              {t("forgot_back_to_login", "Giriş səhifəsinə qayıt")}
+          {/* Bottom Links */}
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100 text-xs">
+            <Link
+              href="/login"
+              className="flex items-center gap-1 font-semibold text-slate-700 hover:text-slate-900 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Giriş səhifəsinə qayıt
             </Link>
-            <Link href="/auth/register" className="font-semibold text-logistics-orange transition hover:text-orange-600">
-              {t("forgot_create_account", "Yeni hesab yarat")}
+
+            <Link
+              href="/cargo-owner/register"
+              className="font-bold text-slate-900 hover:underline transition-colors"
+            >
+              Yeni hesab yarat
             </Link>
           </div>
         </div>

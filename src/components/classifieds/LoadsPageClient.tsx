@@ -2,6 +2,8 @@
 
 import { CatalogPageClient } from "@/components/classifieds/CatalogPageClient";
 
-export function LoadsPageClient() {
-  return <CatalogPageClient mode="loads" />;
+import type { CargoListing } from "@/types/classifieds";
+
+export function LoadsPageClient({ initialListings = [] }: { initialListings?: CargoListing[] }) {
+  return <CatalogPageClient mode="loads" initialListings={initialListings} />;
 }

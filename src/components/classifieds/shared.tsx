@@ -23,6 +23,7 @@ import {
   Send,
   ShieldCheck,
   Truck,
+  User,
   UserRound,
   Menu,
   X
@@ -56,9 +57,9 @@ const pageTransition: Transition = {
 
 export function AppLogo() {
   return (
-    <Link href="/" className="flex shrink-0 items-center leading-none text-navy-900">
-      <span className="whitespace-nowrap text-[1.15rem] sm:text-xl md:text-2xl font-extrabold tracking-tight">
-        Tranzit.<span className="text-logistics-orange">AZ</span>
+    <Link href="/" className="flex h-9 shrink-0 items-center leading-none text-neutral-900">
+      <span className="whitespace-nowrap text-xl font-extrabold tracking-tight text-neutral-900">
+        Tranzit.AZ
       </span>
     </Link>
   );
@@ -209,8 +210,8 @@ export function PublicNavbar() {
                       className={cn(
                         "flex min-h-12 items-center rounded-[14px] px-4 text-[1.05rem] font-semibold transition-colors",
                         isActive
-                          ? "bg-orange-50 text-logistics-orange"
-                          : "text-slate-600 hover:bg-slate-50 hover:text-navy-900"
+                          ? "bg-[#f3f4f6] text-neutral-900"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-neutral-900"
                       )}
                     >
                       {t(NAV_LABEL_KEYS[item.id] ?? "", item.label)}
@@ -222,8 +223,8 @@ export function PublicNavbar() {
 
                 {user ? (
                   <div className="space-y-1.5">
-                    <div className="flex min-h-12 min-w-0 items-center gap-3 rounded-[14px] bg-slate-50 px-4 text-[1rem] font-semibold text-navy-900">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-logistics-orange/10 text-base font-bold text-logistics-orange">
+                    <div className="flex min-h-12 min-w-0 items-center gap-3 rounded-[14px] bg-slate-50 px-4 text-[1rem] font-semibold text-neutral-900">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-base font-bold text-white">
                         {userInitial}
                       </span>
                       <span className="min-w-0 truncate">{user.email}</span>
@@ -278,143 +279,154 @@ export function PublicNavbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-[60] w-full min-w-0 max-w-full px-0 md:px-4 md:pt-3 lg:px-6">
-        <div className="relative mx-auto w-full min-w-0 max-w-[1780px] border-b border-slate-200 bg-white/96 shadow-[0_8px_24px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-shadow duration-200 md:rounded-[24px] md:border md:border-white/70 md:bg-white/88 md:shadow-[0_14px_34px_rgba(15,23,42,0.07)]">
-          <div className="flex h-16 min-w-0 items-center justify-between gap-2 px-4 md:h-auto md:gap-5 md:px-5 md:py-2 lg:px-7">
+      <header className="sticky top-0 z-[60] w-full border-b border-slate-100 bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex h-[64px] sm:h-[72px] md:h-[76px] w-full max-w-[1280px] items-center justify-between px-3 sm:px-6 md:px-[32px]">
+          <div className="flex h-9 items-center gap-3 sm:gap-6 shrink-0">
             <AppLogo />
 
-            <nav className="hidden items-center gap-1 text-[0.9rem] font-semibold text-navy-900 md:flex xl:gap-1.5 xl:text-[0.98rem]">
-              <LayoutGroup id="public-topbar-tabs">
-                {topbarNavItems.map((item) => {
-                  const isActive = item.id === activeTopbarItemId;
+            <nav className="hidden h-9 items-center gap-5 md:flex">
+              {topbarNavItems.map((item) => {
+                const isActive = item.id === activeTopbarItemId;
 
-                  return (
-                    <Link
-                      key={item.id}
-                      href={item.href}
-                      aria-current={isActive ? "page" : undefined}
-                      onClick={(event) => handleTopbarClick(item.id, item.href, event)}
-                      className={cn(
-                        "relative isolate inline-flex min-h-11 items-center gap-1.5 px-2.5 text-slate-600 transition-colors duration-200 ease-out hover:text-navy-900 xl:px-3.5",
-                        isActive ? "text-navy-900" : ""
-                      )}
-                    >
-                      <span className="relative z-10">{t(NAV_LABEL_KEYS[item.id] ?? "", item.label)}</span>
-                      {isActive ? (
-                        <motion.span
-                          layoutId="topbar-active-underline"
-                          className="absolute inset-x-3 bottom-[7px] h-[2px] rounded-full bg-logistics-orange/90"
-                          transition={topbarTabTransition}
-                        />
-                      ) : null}
-                    </Link>
-                  );
-                })}
-              </LayoutGroup>
-            </nav>
-
-            <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-              <LocaleSwitcher className="shrink-0" />
-              {showFavorites ? <FavoriteNavLink /> : null}
-
-              {user ? (
-                <div className="relative hidden md:inline-block" ref={dropdownRef}>
-                  <button
-                    type="button"
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    aria-label="Profil menyusunu ac"
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={(event) => handleTopbarClick(item.id, item.href, event)}
                     className={cn(
-                      "inline-flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-white text-sm font-bold transition duration-200 hover:-translate-y-px hover:bg-navy-50",
-                      dropdownOpen
-                        ? "border-logistics-orange text-logistics-orange shadow-sm"
-                        : "border-[#d9e4f4] text-navy-900"
+                      "inline-flex h-9 items-center text-sm transition-colors",
+                      isActive
+                        ? "rounded-lg bg-[#f3f4f6] px-3.5 font-semibold text-neutral-900"
+                        : "px-2 font-medium text-slate-600 hover:text-neutral-900"
                     )}
                   >
-                    <span className="flex h-full w-full items-center justify-center bg-logistics-orange/10 text-logistics-orange">
-                      {userInitial}
-                    </span>
-                  </button>
+                    {t(NAV_LABEL_KEYS[item.id] ?? "", item.label)}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
 
-                  <AnimatePresence>
-                    {dropdownOpen ? (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute right-0 top-full z-[70] w-56 pt-2"
-                      >
-                        <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]">
-                          <div className="mb-1 flex items-center gap-3 border-b border-slate-100 px-3 py-3">
-                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-logistics-orange/10 text-lg font-bold text-logistics-orange">
-                              {userInitial}
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-medium text-slate-500">{t("nav_welcome_user", "Xoş gəldiniz")}</p>
-                              <p className="truncate text-sm font-bold text-navy-900">
-                                {user?.name || t("nav_default_user", "İstifadəçi")}
-                              </p>
-                            </div>
-                          </div>
+          <div className="flex h-11 shrink-0 items-center gap-2 sm:gap-3.5 md:gap-5">
+            <LocaleSwitcher variant="minimal" />
 
-                          <Link
-                            href={user.role === "CARRIER" ? "/carrier/cargo-posts" : "/cargo-owner/cargo-posts"}
-                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-logistics-orange"
-                          >
-                            <List className="h-[18px] w-[18px]" />
-                            <span>{user.role === "CARRIER" ? t("nav_active_loads", "Aktiv yüklər") : t("nav_my_listings", "Mənim elanlarım")}</span>
-                          </Link>
+            {showFavorites ? <FavoriteNavLink variant="topbar" /> : null}
 
-                          <div className="my-1 border-t border-slate-100" />
+            {user ? (
+              <Link
+                href={user.role === "CARRIER" ? "/carrier/dashboard" : "/cargo-owner/dashboard"}
+                className="hidden text-sm font-medium text-slate-700 transition-colors hover:text-neutral-900 md:inline-block"
+              >
+                {user.name ? user.name.split(" ")[0] : t("nav_my_listings", "Mənim elanlarım")}
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden text-sm font-medium text-slate-700 transition-colors hover:text-neutral-900 md:inline-block"
+              >
+                {t("nav_login", "Daxil ol")}
+              </Link>
+            )}
 
-                          <button
-                            type="button"
-                            onClick={handleLogout}
-                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
-                          >
-                            <LogOut className="h-[18px] w-[18px]" />
-                            <span>{t("nav_logout", "Çıxış et")}</span>
-                          </button>
+            <button
+              type="button"
+              onClick={goPublish}
+              className="inline-flex h-9 sm:h-10 md:h-11 items-center justify-center gap-1 sm:gap-1.5 rounded-xl bg-[#FEDE47] px-2.5 sm:px-3.5 md:px-4 text-xs sm:text-sm font-bold text-neutral-900 shadow-none transition-all hover:bg-[#fdd835] active:scale-[0.98] shrink-0 whitespace-nowrap"
+            >
+              <span className="text-sm font-extrabold">+</span>
+              <span className="hidden xs:inline sm:inline">{publishLabel}</span>
+              <span className="xs:hidden">Elan</span>
+            </button>
+
+            <div className={cn("relative items-center", user ? "inline-flex" : "hidden sm:inline-flex")} ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (user) {
+                    setDropdownOpen(!dropdownOpen);
+                  } else {
+                    router.push("/login");
+                  }
+                }}
+                aria-label={user ? "Profil menyusunu aç" : "Daxil ol"}
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-neutral-900 text-white shadow-sm transition-colors hover:bg-black focus:outline-none"
+              >
+                {user ? (
+                  <span className="text-xs font-bold text-white">{userInitial}</span>
+                ) : (
+                  <User className="h-4 w-4 text-white" strokeWidth={2} />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {user && dropdownOpen ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full z-[70] w-56 pt-2"
+                  >
+                    <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.12)]">
+                      <div className="mb-1 flex items-center gap-3 border-b border-slate-100 px-3 py-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-lg font-bold text-white">
+                          {userInitial}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-slate-500">{t("nav_welcome_user", "Xoş gəldiniz")}</p>
+                          <p className="truncate text-sm font-bold text-neutral-900">
+                            {user?.name || t("nav_default_user", "İstifadəçi")}
+                          </p>
                         </div>
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <Link
-                  href="/login"
-                  className="hidden h-11 min-h-11 items-center justify-center gap-2 rounded-[14px] border border-[#d9e4f4] bg-white px-[18px] py-2 text-sm font-semibold text-navy-900 transition duration-200 hover:-translate-y-px hover:bg-navy-50 md:inline-flex"
-                >
-                  <UserRound className="h-[18px] w-[18px]" />
-                  {t("nav_login", "Daxil ol")}
-                </Link>
-              )}
+                      </div>
 
-              <button
-                type="button"
-                onClick={goPublish}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] bg-logistics-orange px-0 text-white md:hidden"
-              >
-                <Plus className="h-5 w-5" />
-              </button>
-              <Button
-                onClick={goPublish}
-                className="hidden min-h-11 rounded-[14px] bg-logistics-orange px-5 shadow-sm hover:bg-orange-600 md:inline-flex"
-              >
-                <Plus className="mr-1.5 h-[18px] w-[18px] opacity-90" />
-                {publishLabel}
-              </Button>
+                      <Link
+                        href={user.role === "CARRIER" ? "/carrier/dashboard" : "/cargo-owner/dashboard"}
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-neutral-900"
+                      >
+                        <LayoutDashboard className="h-[18px] w-[18px]" />
+                        <span>Dashboard</span>
+                      </Link>
 
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-expanded={mobileMenuOpen}
-                aria-label={mobileMenuOpen ? "Menyunu bağla" : "Menyunu aç"}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] bg-slate-100 px-0 text-slate-700 transition-colors hover:bg-slate-200 md:hidden"
-              >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </button>
+                      <Link
+                        href={user.role === "CARRIER" ? "/carrier/cargo-posts" : "/cargo-owner/cargo-posts"}
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-neutral-900"
+                      >
+                        <List className="h-[18px] w-[18px]" />
+                        <span>{user.role === "CARRIER" ? t("nav_active_loads", "Aktiv yüklər") : t("nav_my_listings", "Mənim elanlarım")}</span>
+                      </Link>
+
+                      <div className="my-1 border-t border-slate-100" />
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          handleLogout();
+                        }}
+                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                      >
+                        <LogOut className="h-[18px] w-[18px]" />
+                        <span>{t("nav_logout", "Çıxış et")}</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-expanded={mobileMenuOpen}
+              aria-label={mobileMenuOpen ? "Menyunu bağla" : "Menyunu aç"}
+              className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-slate-100 md:hidden shrink-0 cursor-pointer"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
       </header>
@@ -439,112 +451,37 @@ const FOOTER_NAV_LABEL_KEYS: Record<string, string> = {
 };
 
 export function PublicFooter() {
-  const pathname = usePathname();
   const { t } = useLocale();
-  const legalLinks = footerNavItems.filter((item) => ["terms", "privacy", "rules"].includes(item.id));
-  const platformLinks = footerNavItems.filter((item) => !["terms", "privacy", "rules"].includes(item.id));
-  const [fs, setFs] = useState(FOOTER_DEFAULTS);
-
-  useEffect(() => {
-    fetch("/api/public/footer-settings")
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data) setFs({ ...FOOTER_DEFAULTS, ...data }); })
-      .catch(() => {});
-  }, []);
 
   return (
-    <footer className="shrink-0 border-t border-slate-200 bg-white px-3 pb-4 pt-4 sm:px-4 lg:px-6 lg:pb-6">
-      <div className="mx-auto max-w-[1780px] overflow-hidden rounded-[22px] border border-slate-200/80 bg-white text-[0.95rem] text-slate-500 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-        <div className="grid gap-8 px-5 py-6 sm:px-7 lg:grid-cols-[1.3fr,0.75fr,0.75fr,1fr] lg:px-8">
-          <div>
-            <Link href="/" className="flex shrink-0 items-center text-navy-900">
-              <span className="text-2xl font-extrabold leading-none">
-                Tranzit.<span className="text-logistics-orange">AZ</span>
-              </span>
+    <footer className="w-full bg-[#f8f9fa] mt-16">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-[32px] pt-[40px] pb-[40px]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6">
+          <Link href="/" className="text-xl font-extrabold text-neutral-900 tracking-tight">
+            Tranzit.AZ
+          </Link>
+          <nav className="flex flex-wrap items-center gap-6 sm:gap-8 text-sm font-medium text-slate-700">
+            <Link href="/haqqimizda" className="hover:text-neutral-900 transition-colors">
+              {t("nav_about", "Platforma haqqında")}
             </Link>
-            <p className="mt-3 max-w-sm text-sm leading-6 text-slate-500">
-              {t("footer_tagline_static", "Yük sahibləri və daşıyıcılar üçün sadə, şəffaf və birbaşa əlaqə yaradan elan platforması.")}
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">{t("footer_platform", "Platforma")}</h3>
-            <div className="mt-4 grid gap-2.5">
-              {platformLinks.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className={cn("w-fit transition", isActive ? "font-semibold text-logistics-orange" : "hover:text-navy-900")}
-                  >
-                    {t(FOOTER_NAV_LABEL_KEYS[item.id] ?? "", item.label)}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">{t("footer_legal", "Hüquqi")}</h3>
-            <div className="mt-4 grid gap-2.5">
-              {legalLinks.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className={cn("w-fit transition", isActive ? "font-semibold text-logistics-orange" : "hover:text-navy-900")}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-navy-900">{t("footer_support", "Dəstək")}</h3>
-            <a
-              href={`tel:${fs.phone}`}
-              className="mt-4 inline-block font-semibold text-navy-900 transition hover:text-logistics-orange"
-            >
-              {fs.phone}
-            </a>
-            <p className="mt-1 text-sm text-slate-500">{t("footer_work_hours", fs.workHours)}</p>
-            <div className="mt-4 flex items-center gap-2.5">
-              <a
-                href={`https://wa.me/${fs.whatsapp}`}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="WhatsApp"
-                className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-emerald-50 text-emerald-600 transition hover:bg-emerald-100"
-              >
-                <PhoneCall className="h-[18px] w-[18px]" />
-              </a>
-              <a
-                href={`mailto:${fs.email}`}
-                aria-label="E-poçt"
-                className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-sky-50 text-sky-600 transition hover:bg-sky-100"
-              >
-                <MessageCircleMore className="h-[18px] w-[18px]" />
-              </a>
-              <a
-                href={`https://t.me/${fs.telegram}`}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Telegram"
-                className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-blue-50 text-blue-600 transition hover:bg-blue-100"
-              >
-                <Send className="h-[18px] w-[18px]" />
-              </a>
-            </div>
-          </div>
+            <Link href="/elaqe" className="hover:text-neutral-900 transition-colors">
+              {t("nav_contact", "Əlaqə")}
+            </Link>
+            <Link href="/istifade-sertleri" className="hover:text-neutral-900 transition-colors">
+              {t("nav_terms", "İstifadə şərtləri")}
+            </Link>
+            <Link href="/mexfilik-siyaseti" className="hover:text-neutral-900 transition-colors">
+              {t("nav_privacy", "Məxfilik siyasəti")}
+            </Link>
+            <Link href="/qaydalar" className="hover:text-neutral-900 transition-colors">
+              {t("nav_rules", "Qaydalar")}
+            </Link>
+          </nav>
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-slate-200/80 px-5 py-4 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-7 lg:px-8">
-          <p>{t("footer_copyright", fs.copyright)}</p>
-          <p>{t("footer_tagline", fs.tagline)}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 text-xs text-slate-500">
+          <p>© 2024 Bütün hüquqlar qorunur.</p>
+          <p>Onlayn yükdaşıma və logistika ekosistemi</p>
         </div>
       </div>
     </footer>
@@ -559,12 +496,7 @@ export function PublicPage({
   emphasizeBackground?: boolean;
 }) {
   return (
-    <div
-      className={cn(
-        "flex min-h-screen min-w-0 max-w-full flex-col bg-[#f8fafc]",
-        emphasizeBackground && "bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_22%,#f8fafc_100%)]"
-      )}
-    >
+    <div className="flex min-h-screen min-w-0 max-w-full flex-col bg-[#f8f9fa]">
       <PublicNavbar />
       <motion.main
         className="flex min-h-[calc(100vh-260px)] min-w-0 flex-1 flex-col overflow-x-clip pt-4 lg:pt-5"

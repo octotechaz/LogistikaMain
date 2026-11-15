@@ -24,7 +24,7 @@ export function ListingCoverMedia({
     return (
       <img
         src={photo}
-        alt={listing.title}
+        alt=""
         className={imageClassName}
         loading="lazy"
         decoding="async"

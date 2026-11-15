@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { FavoriteToggleButton } from "@/components/classifieds/FavoriteToggleButton";
+import { useFavoriteListings } from "@/hooks/useFavoriteListings";
 import { ListingCoverMedia } from "@/components/classifieds/ListingCoverMedia";
 import { PublicPage } from "@/components/classifieds/shared";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -55,7 +56,7 @@ import { classifiedsCargoTypes, classifiedsCities, classifiedsVehicleTypes } fro
 // Dynamic filter options loaded from API (admin editable), fallback to static defaults
 import { resolveCategoryIcon } from "@/lib/category-icons";
 import { effectiveStatus } from "@/lib/status/classifieds";
-import { listingVisualTone } from "@/lib/listing-visual";
+import { getListingPhotoUrl, listingVisualTone } from "@/lib/listing-visual";
 import { cn } from "@/lib/utils";
 import { fetchJsonWithRetry } from "@/lib/fetch-json";
 import type { CargoListing, ListingFilters, PublicListingCategory } from "@/types/classifieds";
@@ -398,7 +399,8 @@ function CatalogSelectCard({
   onChange,
   options,
   className,
-  placeholder
+  placeholder,
+  variant = "flat"
 }: {
   label: string;
   value: string;
@@ -406,6 +408,7 @@ function CatalogSelectCard({
   options: string[];
   className?: string;
   placeholder?: string;
+  variant?: "flat" | "bordered";
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -438,39 +441,43 @@ function CatalogSelectCard({
     setOpen(false);
   }
 
+  const isBordered = variant === "bordered";
+
   return (
-    <div ref={rootRef} className={cn("relative h-[60px] min-w-0 shrink-0", className)}>
+    <div ref={rootRef} className={cn("relative h-[58px] min-w-0 shrink-0", className)}>
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
         className={cn(
-          "relative flex h-full w-full min-w-0 flex-col items-start justify-start rounded-[13px] border bg-white px-4 pb-[11px] pt-[11px] text-left shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition duration-200 hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)]",
-          open ? "border-slate-400" : "border-slate-200 hover:border-slate-300"
+          "relative flex h-full w-full min-w-0 items-center justify-between rounded-[14px] px-4 py-2 text-left transition",
+          isBordered
+            ? "border border-slate-200 bg-white hover:border-slate-300 focus:border-slate-400"
+            : "border border-transparent bg-[#F8F9FA] hover:bg-[#F2F4F7] focus:border-slate-300",
+          open && (isBordered ? "border-slate-400 ring-2 ring-slate-100" : "bg-[#F1F3F5]")
         )}
         aria-expanded={open}
         aria-haspopup="listbox"
       >
-        <span className="max-w-full pr-9 whitespace-nowrap text-[14px] font-semibold leading-none text-navy-900">
-          {label}
-        </span>
-        <span
-          className={cn(
-            "mt-1 block max-w-full pr-9 text-[13px] font-medium leading-none",
-            value ? "text-slate-700" : "text-slate-400"
-          )}
-        >
-          {selectedLabel}
-        </span>
-        <ChevronDown
-          className={cn(
-            "pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition",
-            open && "rotate-180 text-logistics-orange"
-          )}
-        />
+        <div className="flex flex-col items-start min-w-0 flex-1 pr-2">
+          <span className="max-w-full truncate text-[11px] font-medium leading-tight text-slate-500">
+            {label}
+          </span>
+          <span
+            className={cn(
+              "mt-0.5 block max-w-full truncate text-sm font-semibold leading-tight",
+              value ? "text-neutral-900" : "text-slate-700"
+            )}
+          >
+            {selectedLabel}
+          </span>
+        </div>
+        {isBordered && (
+          <ChevronDown className="h-4 w-4 text-slate-400 shrink-0 transition duration-200" />
+        )}
       </button>
 
       {open ? (
-        <div className="absolute left-0 top-[calc(100%+8px)] z-40 min-w-full max-w-[320px] overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.14)] [width:max-content]">
+        <div className="absolute left-0 top-[calc(100%+6px)] z-50 min-w-full max-h-60 overflow-y-auto rounded-[14px] border border-slate-200 bg-white p-1.5 shadow-xl [width:max-content]">
           <button
             type="button"
             onClick={() => selectOption("")}
@@ -917,6 +924,177 @@ function HomeListingRow({ listing }: { listing: CargoListing }) {
   );
 }
 
+function HomeListingExactRow({ listing }: { listing: CargoListing }) {
+  const quantityLabel = listingQuantity(listing);
+  const { t, locale } = useLocale();
+  const { isFavorite, toggleFavorite } = useFavoriteListings();
+  const favorite = isFavorite(listing.id);
+  const localizedTitle = (locale !== "az" && (listing.translations as Record<string, { title?: string }>)?.[locale]?.title) || listing.title;
+
+  const specs = [
+    `${listing.pickupCity} - ${listing.deliveryCity}`,
+    quantityLabel,
+    formatWeight(listing.weight)
+  ].filter(Boolean).join(" • ");
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-[24px] bg-white p-5 border border-slate-100 shadow-sm transition hover:shadow-md">
+      <Link href={`/loads/${listing.id}`} className="flex flex-col sm:flex-row sm:items-center gap-5 flex-1 min-w-0">
+        <div className="relative h-[100px] w-full sm:w-[160px] shrink-0 overflow-hidden rounded-[16px] bg-slate-100">
+          <ListingCoverMedia
+            listing={listing}
+            imageClassName="h-full w-full object-cover transition duration-300 hover:scale-105"
+            placeholderClassName="h-full w-full"
+            placeholderIconClassName="h-10 w-10 text-slate-300"
+          />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h3 className="truncate text-xl font-bold text-neutral-900">{localizedTitle}</h3>
+          <p className="mt-1 text-sm font-medium text-slate-500 leading-relaxed">{specs}</p>
+          <p className="mt-2 text-xl font-extrabold text-neutral-900">
+            {formatPriceCompact(listing.price)}
+          </p>
+        </div>
+      </Link>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleFavorite(listing.id);
+        }}
+        className="rounded-[14px] bg-[#FEDE47] hover:bg-[#fdd835] px-7 py-3 text-sm font-bold text-neutral-900 transition shrink-0 whitespace-nowrap self-start sm:self-center shadow-none"
+      >
+        {favorite ? t("fav_in_favorites", "Seçilmişlərdə") : t("fav_add", "Seçilmişlərə əlavə et")}
+      </button>
+    </div>
+  );
+}
+
+function FilterPopoverField({
+  placeholder,
+  displayValue,
+  children,
+  isOpen,
+  onToggle,
+  onClose
+}: {
+  placeholder: string;
+  displayValue?: string;
+  children: React.ReactNode;
+  isOpen: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        onClose();
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  return (
+    <div ref={ref} className="relative w-full">
+      <button
+        type="button"
+        onClick={onToggle}
+        className={cn(
+          "h-12 w-full rounded-[14px] border border-slate-200 bg-white px-4 text-left text-sm font-medium transition flex items-center justify-between",
+          displayValue ? "text-neutral-900 border-slate-300" : "text-slate-400 hover:border-slate-300",
+          isOpen && "border-slate-400 ring-2 ring-slate-100"
+        )}
+      >
+        <span className="truncate">{displayValue || placeholder}</span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-[calc(100%+6px)] z-50 w-full min-w-[240px] rounded-[16px] border border-slate-200 bg-white p-3.5 shadow-xl">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AllListingExactRow({ listing }: { listing: CargoListing }) {
+  const quantityLabel = listingQuantity(listing);
+  const { t, locale } = useLocale();
+  const { isFavorite, toggleFavorite } = useFavoriteListings();
+  const favorite = isFavorite(listing.id);
+  const localizedTitle = (locale !== "az" && (listing.translations as Record<string, { title?: string }>)?.[locale]?.title) || listing.title;
+  const photo = getListingPhotoUrl(listing);
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-[24px] bg-white p-6 border border-slate-100 shadow-sm transition hover:shadow-md">
+      <Link href={`/loads/${listing.id}`} className="flex flex-col sm:flex-row sm:items-center gap-6 flex-1 min-w-0">
+        <div className="relative h-[100px] w-[100px] sm:h-[110px] sm:w-[110px] shrink-0 overflow-hidden rounded-[20px] bg-[#FDF0A6] flex items-center justify-center">
+          {photo ? (
+            <img
+              src={photo}
+              alt={listing.title}
+              className="h-full w-full object-cover rounded-[20px]"
+              loading="lazy"
+            />
+          ) : (
+            <span className="text-xl font-extrabold tracking-widest text-neutral-900">YÜK</span>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h3 className="truncate text-2xl font-bold text-neutral-900 leading-snug">{localizedTitle}</h3>
+
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm font-medium text-slate-700">
+            <span>{listing.cargoType || t("cargo_type_general", "Ərzaq")}</span>
+            <span className="text-slate-300">|</span>
+            <span>{listing.pickupCity} - {listing.deliveryCity}</span>
+          </div>
+
+          <div className="mt-1 flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600">
+            {quantityLabel ? <span>{quantityLabel}</span> : null}
+            {listing.volume ? <span>{listing.volume} m3</span> : null}
+            {listing.weight ? <span>{formatWeight(listing.weight)}</span> : null}
+          </div>
+
+          {(listing.length || listing.width || listing.height) ? (
+            <div className="mt-1 text-sm font-medium text-slate-600">
+              Ölçü: {listing.length || 0} × {listing.width || 0} × {listing.height || 0} m
+            </div>
+          ) : null}
+        </div>
+      </Link>
+
+      <div className="flex flex-col sm:items-end justify-center shrink-0">
+        <p className="text-2xl font-black text-neutral-900 tracking-tight">
+          {formatPriceCompact(listing.price)}
+        </p>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleFavorite(listing.id);
+          }}
+          className="mt-3 rounded-[14px] bg-[#FEDE47] hover:bg-[#fdd835] px-6 py-2.5 text-sm font-bold text-neutral-900 transition shrink-0 whitespace-nowrap shadow-none"
+        >
+          {favorite ? t("fav_in_favorites", "Seçilmişlərdə") : t("fav_add", "Seçilmişlərə əlavə et")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function CatalogPageClient({
   mode,
   initialListings = [],
@@ -963,9 +1141,10 @@ export function CatalogPageClient({
   const [showAllHomeListings, setShowAllHomeListings] = useState(() => searchParams.get("view") === "all");
   const [homeView, setHomeView] = useState<"grid" | "list">(() => {
     const layout = searchParams.get("layout");
-    return layout === "list" ? "list" : "grid";
+    return layout === "grid" ? "grid" : "list";
   });
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(() => searchParams.get("advanced") === "1");
+  const [activeSidebarPopover, setActiveSidebarPopover] = useState<string | null>(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
@@ -1223,6 +1402,336 @@ export function CatalogPageClient({
     router.push(buildSearchHref(pathname, next));
   }
 
+  const renderAllListingsSection = (isStandalone = false) => {
+    const isHome = mode === "home" && !isStandalone;
+    const itemsCount = isHome ? homeListings.length : sortedListings.length;
+    const visibleItems = isHome ? homeInfinite.visibleItems : loadsInfinite.visibleItems;
+    const isLoadingMore = isHome ? homeInfinite.isLoadingMore : loadsInfinite.isLoadingMore;
+    const hasMore = isHome ? homeInfinite.hasMore : loadsInfinite.hasMore;
+    const sentinelRef = isHome ? homeInfinite.sentinelRef : loadsInfinite.sentinelRef;
+
+    return (
+      <div id="all-listings-section" className={cn(isStandalone ? "" : "mt-12")}>
+        <div className="mb-6">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1B0A33] tracking-tight">
+            {t("catalog_all_listings", "Bütün elanlar")}
+          </h2>
+          <p className="mt-1 text-sm font-medium text-slate-500">
+            {t("catalog_search_results_view", "Axtarış nəticələrinə baxış")}
+          </p>
+        </div>
+
+        {/* Top Filter Bar */}
+        <div className="rounded-[24px] bg-white p-5 border border-slate-100 shadow-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_minmax(180px,auto)] items-center gap-4">
+            <CatalogSelectCard
+              variant="bordered"
+              label={t("search_cargo_type", "Yük növü")}
+              value={draftFilters.cargoType}
+              onChange={(value) => updateFilter("cargoType", value)}
+              options={dynCargoTypes}
+              className="w-full"
+              placeholder={t("catalog_select_placeholder", "Seçin")}
+            />
+
+            <CatalogSelectCard
+              variant="bordered"
+              label={t("search_delivery_city", "Çatdırılma şəhəri")}
+              value={draftFilters.deliveryCity}
+              onChange={(value) => updateFilter("deliveryCity", value)}
+              options={dynCities}
+              className="w-full"
+              placeholder={t("catalog_select_placeholder", "Seçin")}
+            />
+
+            <CatalogSelectCard
+              variant="bordered"
+              label={t("search_vehicle_type", "Nəqliyyat növü")}
+              value={draftFilters.vehicleType}
+              onChange={(value) => updateFilter("vehicleType", value)}
+              options={dynVehicleTypes}
+              className="w-full"
+              placeholder={t("catalog_select_placeholder", "Seçin")}
+            />
+
+            <button
+              type="button"
+              onClick={() => submitFilters()}
+              disabled={isSearching}
+              className="h-[58px] px-12 rounded-[14px] bg-[#FEDE47] hover:bg-[#fdd835] text-neutral-900 font-bold text-base transition flex items-center justify-center whitespace-nowrap shadow-none disabled:opacity-50"
+            >
+              {isSearching ? <LoaderCircle className="h-4.5 w-4.5 animate-spin" /> : null}
+              {isSearching ? t("search_btn_loading", "Axtarılır...") : t("search_btn", "Axtar")}
+            </button>
+          </div>
+        </div>
+
+        {/* Two Column Grid */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 sm:gap-8 items-start">
+          {/* Left Sidebar */}
+          <div className="rounded-[24px] bg-white p-6 border border-slate-100 shadow-sm space-y-3.5">
+            <h3 className="text-xl font-bold text-neutral-900 mb-5">
+              {t("search_advanced_btn", "Ətraflı filter")}
+            </h3>
+
+            {/* 1. Min qiymət */}
+            <input
+              type="number"
+              placeholder="Min qiymət (AZN)"
+              value={draftFilters.minPrice}
+              onChange={(e) => updateFilter("minPrice", e.target.value)}
+              className="h-12 w-full rounded-[14px] border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-slate-400 transition"
+            />
+
+            {/* 2. Max qiymət */}
+            <input
+              type="number"
+              placeholder="Max qiymət (AZN)"
+              value={draftFilters.maxPrice}
+              onChange={(e) => updateFilter("maxPrice", e.target.value)}
+              className="h-12 w-full rounded-[14px] border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-slate-400 transition"
+            />
+
+            {/* 3. Min çəki / Max çəki */}
+            <FilterPopoverField
+              placeholder="Min çəki / Max çəki"
+              displayValue={
+                draftFilters.minWeight || draftFilters.maxWeight
+                  ? `${draftFilters.minWeight || "0"} - ${draftFilters.maxWeight || "∞"} kq`
+                  : undefined
+              }
+              isOpen={activeSidebarPopover === "weight"}
+              onToggle={() => setActiveSidebarPopover(activeSidebarPopover === "weight" ? null : "weight")}
+              onClose={() => setActiveSidebarPopover(null)}
+            >
+              <div className="space-y-2.5">
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-500">Min çəki (kq)</label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={draftFilters.minWeight}
+                    onChange={(e) => updateFilter("minWeight", e.target.value)}
+                    className="mt-1 h-9 w-full rounded-[10px] border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-500">Max çəki (kq)</label>
+                  <input
+                    type="number"
+                    placeholder="10000"
+                    value={draftFilters.maxWeight}
+                    onChange={(e) => updateFilter("maxWeight", e.target.value)}
+                    className="mt-1 h-9 w-full rounded-[10px] border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+              </div>
+            </FilterPopoverField>
+
+            {/* 4. Tarixdən / Tarixədək */}
+            <FilterPopoverField
+              placeholder="Tarixdən / Tarixədək"
+              displayValue={
+                draftFilters.dateFrom || draftFilters.dateTo
+                  ? `${draftFilters.dateFrom || "..."} - ${draftFilters.dateTo || "..."}`
+                  : undefined
+              }
+              isOpen={activeSidebarPopover === "date"}
+              onToggle={() => setActiveSidebarPopover(activeSidebarPopover === "date" ? null : "date")}
+              onClose={() => setActiveSidebarPopover(null)}
+            >
+              <div className="space-y-2.5">
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-500">Tarixdən</label>
+                  <input
+                    type="date"
+                    value={draftFilters.dateFrom}
+                    onChange={(e) => updateFilter("dateFrom", e.target.value)}
+                    className="mt-1 h-9 w-full rounded-[10px] border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-500">Tarixədək</label>
+                  <input
+                    type="date"
+                    value={draftFilters.dateTo}
+                    onChange={(e) => updateFilter("dateTo", e.target.value)}
+                    className="mt-1 h-9 w-full rounded-[10px] border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+              </div>
+            </FilterPopoverField>
+
+            {/* 5. Min həcm / Max həcm */}
+            <FilterPopoverField
+              placeholder="Min həcm / Max həcm"
+              displayValue={
+                draftFilters.minVolume || draftFilters.maxVolume
+                  ? `${draftFilters.minVolume || "0"} - ${draftFilters.maxVolume || "∞"} m³`
+                  : undefined
+              }
+              isOpen={activeSidebarPopover === "volume"}
+              onToggle={() => setActiveSidebarPopover(activeSidebarPopover === "volume" ? null : "volume")}
+              onClose={() => setActiveSidebarPopover(null)}
+            >
+              <div className="space-y-2.5">
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-500">Min həcm (m³)</label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={draftFilters.minVolume}
+                    onChange={(e) => updateFilter("minVolume", e.target.value)}
+                    className="mt-1 h-9 w-full rounded-[10px] border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-500">Max həcm (m³)</label>
+                  <input
+                    type="number"
+                    placeholder="100"
+                    value={draftFilters.maxVolume}
+                    onChange={(e) => updateFilter("maxVolume", e.target.value)}
+                    className="mt-1 h-9 w-full rounded-[10px] border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+              </div>
+            </FilterPopoverField>
+
+            {/* 6. Uzunluq / En / Hündürlük */}
+            <FilterPopoverField
+              placeholder="Uzunluq / En / Hündürlük"
+              displayValue={
+                draftFilters.length || draftFilters.width || draftFilters.height
+                  ? `${draftFilters.length || "-"} × ${draftFilters.width || "-"} × ${draftFilters.height || "-"} m`
+                  : undefined
+              }
+              isOpen={activeSidebarPopover === "dimensions"}
+              onToggle={() => setActiveSidebarPopover(activeSidebarPopover === "dimensions" ? null : "dimensions")}
+              onClose={() => setActiveSidebarPopover(null)}
+            >
+              <div className="space-y-2.5">
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-500">Uzunluq (m)</label>
+                  <input
+                    type="number"
+                    placeholder="məs: 13.6"
+                    value={draftFilters.length}
+                    onChange={(e) => updateFilter("length", e.target.value)}
+                    className="mt-1 h-9 w-full rounded-[10px] border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-500">En (m)</label>
+                  <input
+                    type="number"
+                    placeholder="məs: 2.45"
+                    value={draftFilters.width}
+                    onChange={(e) => updateFilter("width", e.target.value)}
+                    className="mt-1 h-9 w-full rounded-[10px] border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-500">Hündürlük (m)</label>
+                  <input
+                    type="number"
+                    placeholder="məs: 2.7"
+                    value={draftFilters.height}
+                    onChange={(e) => updateFilter("height", e.target.value)}
+                    className="mt-1 h-9 w-full rounded-[10px] border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+              </div>
+            </FilterPopoverField>
+
+            {/* 7. Elan dili */}
+            <div className="relative">
+              <select
+                value={draftFilters.listingLocale}
+                onChange={(e) => updateFilter("listingLocale", e.target.value)}
+                className={cn(
+                  "h-12 w-full rounded-[14px] border border-slate-200 bg-white px-4 text-sm font-medium outline-none focus:border-slate-400 transition cursor-pointer appearance-none",
+                  draftFilters.listingLocale ? "text-neutral-900" : "text-slate-400"
+                )}
+              >
+                <option value="">Elan dili</option>
+                <option value="az">Azərbaycan</option>
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+                <option value="tr">Türkçe</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Right Listings Area */}
+          <div className="min-w-0">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm font-semibold text-slate-800">
+                {itemsCount} {t("catalog_listings_shown", "elan göstərilir")}
+              </p>
+
+              {/* View Toggle */}
+              <div className="inline-flex items-center rounded-full bg-[#F3F4F6] p-1">
+                <button
+                  type="button"
+                  onClick={() => setHomeView("grid")}
+                  className={cn(
+                    "rounded-full px-5 py-1.5 text-xs font-bold transition",
+                    homeView === "grid"
+                      ? "bg-[#FEDE47] text-neutral-900 shadow-none"
+                      : "text-slate-600 hover:text-slate-900"
+                  )}
+                >
+                  {t("catalog_grid", "Kvadratlar")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHomeView("list")}
+                  className={cn(
+                    "rounded-full px-5 py-1.5 text-xs font-bold transition",
+                    homeView === "list"
+                      ? "bg-[#FEDE47] text-neutral-900 shadow-none"
+                      : "text-slate-600 hover:text-slate-900"
+                  )}
+                >
+                  {t("catalog_list", "Siyahı")}
+                </button>
+              </div>
+            </div>
+
+            {homeView === "list" ? (
+              <div className="space-y-4">
+                {visibleItems.map((listing) => (
+                  <AllListingExactRow key={`all-list-${listing.id}`} listing={listing} />
+                ))}
+                {isLoadingMore ? (
+                  <div className="flex h-12 w-full items-center justify-center">
+                    <LoaderCircle className="h-6 w-6 animate-spin text-logistics-orange" />
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+                {visibleItems.map((listing) => (
+                  <HomeListingCard key={`all-grid-${listing.id}`} listing={listing} />
+                ))}
+                {isLoadingMore ? (
+                  <div className="flex h-12 w-full items-center justify-center">
+                    <LoaderCircle className="h-6 w-6 animate-spin text-logistics-orange" />
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            {hasMore && (
+              <div ref={sentinelRef} className="h-8 w-full" aria-hidden="true" />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (mode === "home") {
     if (!isDataLoaded) {
       return (
@@ -1237,11 +1746,11 @@ export function CatalogPageClient({
 
     return (
       <PublicPage emphasizeBackground>
-        <section className="mx-auto w-full min-w-0 max-w-[1240px] overflow-hidden px-3 pb-5 pt-3 sm:px-6 lg:px-8">
+        <section className="mx-auto w-full max-w-[1280px] min-w-0 px-4 sm:px-[32px] pt-[16px] pb-[16px] flex flex-col gap-6">
           {loadError ? (
             <div
               role="alert"
-              className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700"
             >
               <span>{loadError}</span>
               <button
@@ -1257,61 +1766,67 @@ export function CatalogPageClient({
             </div>
           ) : null}
 
-          <section className="relative isolate w-full overflow-hidden rounded-[24px] bg-navy-900 px-5 pb-8 pt-8 text-white sm:px-10 sm:pb-14 sm:pt-12 lg:px-12">
-            <svg
-              className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-white/15"
-              viewBox="0 0 1240 520"
-              preserveAspectRatio="xMidYMid slice"
-              aria-hidden="true"
-            >
-              <path
-                d="M-40 362C178 188 284 482 510 312S812 76 1040 212s248 18 330-132"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <circle cx="510" cy="312" r="8" fill="#f97316" />
-              <circle cx="1040" cy="212" r="6" fill="#f97316" />
-            </svg>
-            <div className="mx-auto max-w-[1240px]">
-              <div className="max-w-2xl">
-                <h1 className="max-w-xl text-4xl font-bold leading-[1.08] tracking-[-0.035em] sm:text-5xl lg:text-[3.65rem]">
+          <section className="relative isolate w-full h-[324px] overflow-hidden rounded-[28px] bg-[#2a0e44] px-6 sm:px-[56px] pt-8 sm:pt-[56px] pb-6 text-white shadow-lg shadow-purple-950/20">
+            <img
+              src="/images/tranzit-hero-banner.jpg"
+              alt="Tranzit Banner"
+              className="pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover object-[center_12%] select-none"
+            />
+            <div className="w-full">
+              <div className="flex flex-col items-start gap-4">
+                <h1 className="w-full max-w-[371px] sm:w-[371px] text-[32px] sm:text-[36px] font-extrabold leading-[44px] sm:leading-[48px] tracking-[-0.02em] text-white">
                   {t("home_hero_title", "Daşımalarınızı bizimlə asanlaşdırın")}
                 </h1>
-                <p className="mt-5 max-w-lg text-base leading-7 text-slate-200 sm:text-lg">
+                <p className="max-w-[371px] text-sm sm:text-base leading-5 sm:leading-6 text-white/80">
                   {t("home_hero_subtitle", "Yükünüz üçün doğru marşrutu, nəqliyyatı və daşıyıcını bir yerdə tapın.")}
                 </p>
               </div>
             </div>
           </section>
 
-          <div className="mt-8 border-t border-slate-200 pt-5">
-            <h2 className="text-base font-semibold text-navy-900">{t("categories_title", "Kateqoriyalara baxın")}</h2>
-            <div className="-mx-1 mt-3 flex max-w-full gap-2 overflow-x-auto px-1 py-2 pb-1 no-scrollbar sm:mx-0 sm:px-0 sm:gap-3">
-              {homeCategoryViews.map((category) => (
-                <HomeCategoryButton
-                  key={category.id}
-                  label={category.label}
-                  active={homeCategory === category.id}
-                  icon={category.icon}
-                  iconTone={category.iconTone}
-                  onClick={() => setHomeCategory(category.id)}
-                />
-              ))}
+          {/* Categories Pill Bar */}
+          <div className="rounded-[24px] bg-white px-5 sm:px-6 py-4 border border-slate-100 shadow-sm flex items-center gap-3 overflow-x-auto no-scrollbar">
+            <h2 className="text-base font-bold text-neutral-900 shrink-0 mr-2">
+              {t("categories_title", "Kateqoriyalara baxın")}
+            </h2>
+            <div className="flex items-center gap-2.5 shrink-0">
+              {homeCategoryViews.map((category) => {
+                const active = homeCategory === category.id;
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => setHomeCategory(category.id)}
+                    className={cn(
+                      "rounded-full px-5 py-2 text-sm font-semibold transition-colors duration-200 shrink-0 whitespace-nowrap",
+                      active
+                        ? "bg-[#FEDE47] text-neutral-900 font-bold shadow-none"
+                        : "bg-[#F3F4F6] text-neutral-800 hover:bg-slate-200"
+                    )}
+                  >
+                    {category.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="relative z-10 mt-6 min-w-0 overflow-visible rounded-[24px] border border-[var(--planner-outline)] bg-[var(--planner-surface-raised)] p-3 sm:mt-8 sm:p-5">
-            <div className="border-b border-[var(--planner-outline)] pb-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--planner-primary)]">{t("search_eyebrow", "Axtarış planı")}</p>
-              <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-[var(--planner-text)]">{t("search_title", "Marşrutunuzu planlayın")}</h2>
+          {/* Search Planner Card */}
+          <div className="rounded-[24px] bg-white p-6 sm:p-8 border border-slate-100 shadow-sm">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#8F6B00]">
+                {t("search_eyebrow", "AXTARIŞ PLANI")}
+              </p>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-neutral-900">
+                {t("search_title", "Marşrutunuzu planlayın")}
+              </h2>
             </div>
 
-            <div className="mt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.1em] text-[var(--planner-text-muted)]">
-                {t("search_route_label", "Yükləmə və çatdırılma nöqtələri")}
+            <div className="mt-6">
+              <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                {t("search_route_label", "YÜKLƏMƏ VƏ ÇATDIRILMA NÖQTƏLƏRİ")}
               </p>
-              <div className="grid min-w-0 gap-3 overflow-visible lg:grid-cols-[minmax(0,1fr)_48px_minmax(0,1fr)]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_auto_1fr_1fr_1fr] items-center gap-3">
                 <CatalogSelectCard
                   label={t("search_pickup_city", "Yükləmə şəhəri")}
                   value={draftFilters.pickupCity}
@@ -1320,7 +1835,8 @@ export function CatalogPageClient({
                   className="w-full"
                   placeholder={t("catalog_select_placeholder", "Seçin")}
                 />
-                <div className="hidden lg:flex lg:items-start">
+
+                <div className="hidden lg:flex items-center justify-center">
                   <button
                     type="button"
                     onClick={() =>
@@ -1330,12 +1846,13 @@ export function CatalogPageClient({
                         deliveryCity: current.pickupCity
                       }))
                     }
-                    className="flex h-[60px] w-12 items-center justify-center rounded-[13px] border border-[var(--planner-outline)] bg-[var(--planner-surface)] text-[var(--planner-text-muted)] transition-colors duration-200 hover:border-[var(--planner-primary)] hover:text-[var(--planner-primary)]"
+                    className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[#F3F4F6] text-slate-600 transition hover:bg-slate-200 shrink-0"
                     aria-label="Marşrutu dəyiş"
                   >
-                    <ArrowLeftRight className="h-5 w-5" />
+                    <ArrowLeftRight className="h-4 w-4" />
                   </button>
                 </div>
+
                 <CatalogSelectCard
                   label={t("search_delivery_city", "Çatdırılma şəhəri")}
                   value={draftFilters.deliveryCity}
@@ -1344,292 +1861,200 @@ export function CatalogPageClient({
                   className="w-full"
                   placeholder={t("catalog_select_placeholder", "Seçin")}
                 />
+
+                <CatalogSelectCard
+                  label={t("search_cargo_type", "Yük növü")}
+                  value={draftFilters.cargoType}
+                  onChange={(value) => updateFilter("cargoType", value)}
+                  options={dynCargoTypes}
+                  className="w-full"
+                  placeholder={t("catalog_select_placeholder", "Seçin")}
+                />
+
+                <CatalogSelectCard
+                  label={t("search_vehicle_type", "Nəqliyyat növü")}
+                  value={draftFilters.vehicleType}
+                  onChange={(value) => updateFilter("vehicleType", value)}
+                  options={dynVehicleTypes}
+                  className="w-full"
+                  placeholder={t("catalog_select_placeholder", "Seçin")}
+                />
               </div>
             </div>
 
-            <div className="mt-3 grid min-w-0 gap-3 overflow-visible sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.25fr)_148px]">
-              <CatalogSelectCard
-                label={t("search_cargo_type", "Yük növü")}
-                value={draftFilters.cargoType}
-                onChange={(value) => updateFilter("cargoType", value)}
-                options={dynCargoTypes}
-                className="w-full"
-                placeholder={t("catalog_select_placeholder", "Seçin")}
-              />
-              <CatalogSelectCard
-                label={t("search_vehicle_type", "Nəqliyyat növü")}
-                value={draftFilters.vehicleType}
-                onChange={(value) => updateFilter("vehicleType", value)}
-                options={dynVehicleTypes}
-                className="w-full"
-                placeholder={t("catalog_select_placeholder", "Seçin")}
-              />
-              <CatalogInputCard
-                label={t("search_keyword", "Açar söz")}
-                placeholder={t("search_keyword_placeholder", "məs: mebel, taxta, taxıl")}
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] items-center gap-3">
+              <input
+                type="text"
+                placeholder={t("search_keyword", "Açar söz")}
                 value={draftFilters.keyword}
-                onChange={(value) => updateFilter("keyword", value)}
-                className="w-full"
+                onChange={(e) => updateFilter("keyword", e.target.value)}
+                className="h-[52px] w-full rounded-[14px] bg-[#F8F9FA] px-4 text-sm text-neutral-900 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
               />
-              <div className="flex w-full min-w-0 items-start sm:col-span-2 lg:col-span-1">
-                <Button
-                  className="h-[60px] w-full rounded-xl bg-[var(--planner-primary-action)] text-[var(--planner-text)] shadow-none transition-colors duration-200 hover:bg-[var(--planner-primary)] hover:text-white"
-                  onClick={() => submitFilters()}
-                  disabled={isSearching}
+
+              <button
+                type="button"
+                onClick={() => setShowAdvancedFilters((current) => !current)}
+                className={cn(
+                  "inline-flex h-[52px] items-center justify-center gap-2 rounded-[14px] px-6 text-sm font-bold transition whitespace-nowrap",
+                  showAdvancedFilters
+                    ? "bg-slate-200 text-neutral-900"
+                    : "bg-[#F3F4F6] text-neutral-800 hover:bg-slate-200"
+                )}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                {t("search_advanced_btn", "Ətraflı filter")}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => submitFilters()}
+                disabled={isSearching}
+                className="inline-flex h-[52px] items-center justify-center gap-2 rounded-[14px] bg-[#FEDE47] px-12 text-base font-bold text-neutral-900 transition hover:bg-[#fdd835] shadow-none disabled:opacity-50 whitespace-nowrap"
+              >
+                {isSearching ? <LoaderCircle className="h-4.5 w-4.5 animate-spin" /> : null}
+                {isSearching ? t("search_btn_loading", "Axtarılır...") : t("search_btn", "Axtar")}
+              </button>
+            </div>
+
+            {showAdvancedFilters && (
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <input
+                  type="number"
+                  placeholder="Min qiymət (AZN)"
+                  value={draftFilters.minPrice}
+                  onChange={(e) => updateFilter("minPrice", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3.5 text-xs font-medium text-neutral-800 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
+                />
+                <input
+                  type="number"
+                  placeholder="Max qiymət (AZN)"
+                  value={draftFilters.maxPrice}
+                  onChange={(e) => updateFilter("maxPrice", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3.5 text-xs font-medium text-neutral-800 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
+                />
+                <input
+                  type="number"
+                  placeholder="Min çəki (kq)"
+                  value={draftFilters.minWeight}
+                  onChange={(e) => updateFilter("minWeight", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3.5 text-xs font-medium text-neutral-800 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
+                />
+                <input
+                  type="number"
+                  placeholder="Max çəki (kq)"
+                  value={draftFilters.maxWeight}
+                  onChange={(e) => updateFilter("maxWeight", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3.5 text-xs font-medium text-neutral-800 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
+                />
+                <input
+                  type="text"
+                  onFocus={(e) => (e.target.type = "date")}
+                  onBlur={(e) => { if (!e.target.value) e.target.type = "text"; }}
+                  placeholder="Tarixdən"
+                  value={draftFilters.dateFrom}
+                  onChange={(e) => updateFilter("dateFrom", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3.5 text-xs font-medium text-neutral-800 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
+                />
+                <input
+                  type="text"
+                  onFocus={(e) => (e.target.type = "date")}
+                  onBlur={(e) => { if (!e.target.value) e.target.type = "text"; }}
+                  placeholder="Tarixədək"
+                  value={draftFilters.dateTo}
+                  onChange={(e) => updateFilter("dateTo", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3.5 text-xs font-medium text-neutral-800 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
+                />
+                <input
+                  type="number"
+                  placeholder="Min həcm (m³)"
+                  value={draftFilters.minVolume}
+                  onChange={(e) => updateFilter("minVolume", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3.5 text-xs font-medium text-neutral-800 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
+                />
+                <input
+                  type="number"
+                  placeholder="Max həcm (m³)"
+                  value={draftFilters.maxVolume}
+                  onChange={(e) => updateFilter("maxVolume", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3.5 text-xs font-medium text-neutral-800 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
+                />
+                <input
+                  type="number"
+                  placeholder="Uzunluq (m)"
+                  value={draftFilters.length}
+                  onChange={(e) => updateFilter("length", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3.5 text-xs font-medium text-neutral-800 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
+                />
+                <input
+                  type="number"
+                  placeholder="En (m)"
+                  value={draftFilters.width}
+                  onChange={(e) => updateFilter("width", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3.5 text-xs font-medium text-neutral-800 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
+                />
+                <input
+                  type="number"
+                  placeholder="Hündürlük (m)"
+                  value={draftFilters.height}
+                  onChange={(e) => updateFilter("height", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3.5 text-xs font-medium text-neutral-800 placeholder:text-slate-400 outline-none border border-transparent focus:border-slate-300 transition"
+                />
+                <select
+                  value={draftFilters.listingLocale}
+                  onChange={(e) => updateFilter("listingLocale", e.target.value)}
+                  className="h-[46px] w-full rounded-[14px] bg-[#F8F9FA] px-3 text-xs font-medium text-slate-500 outline-none border border-transparent focus:border-slate-300 transition"
                 >
-                  {isSearching ? <LoaderCircle className="h-4.5 w-4.5 animate-spin" /> : <Search className="h-4.5 w-4.5" />}
-                  {isSearching ? t("search_btn_loading", "Axtarılır...") : t("search_btn", "Axtar")}
-                </Button>
-              </div>
-            </div>
-
-            <div className="mt-4 flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-[var(--planner-outline)] pt-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAdvancedFilters((current) => !current)}
-                  className={cn(
-                    "inline-flex min-h-11 items-center gap-2 rounded-[13px] border px-4 text-sm font-semibold transition-colors duration-200",
-                    showAdvancedFilters
-                      ? "border-[var(--planner-primary)] bg-[var(--planner-primary-tint)] text-[var(--planner-primary)]"
-                      : "border-[var(--planner-outline)] bg-white text-[var(--planner-text-muted)] hover:border-[var(--planner-primary)] hover:text-[var(--planner-primary)]"
-                  )}
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  {t("search_advanced_btn", "Ətraflı filter")}
-                  <ChevronDown className={cn("h-4 w-4 transition-transform", showAdvancedFilters && "rotate-180")} />
-                </button>
-
-                {hasActiveFilters ? (
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-[13px] border border-[var(--planner-outline)] bg-white px-4 text-sm font-semibold text-[var(--planner-text-muted)] transition-colors duration-200 hover:border-[var(--planner-primary)] hover:text-[var(--planner-primary)]"
-                  >
-                    <ArrowLeftRight className="h-4 w-4" />
-                    {t("catalog_reset", "Sıfırla")}
-                  </button>
-                ) : null}
-              </div>
-
-              <p className="min-w-0 max-w-full text-sm leading-5 text-[var(--planner-text-muted)]">
-                {t("search_advanced_hint", "Ətraflı filtrdən istifadə edərək uyğun nəticələri daha tez tapa bilərsiniz.")}
-              </p>
-            </div>
-
-            <div
-              className={cn(
-                "grid overflow-hidden transition-all duration-300 ease-out",
-                showAdvancedFilters ? "mt-4 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-              )}
-            >
-              <div className="overflow-hidden">
-                <div className="grid gap-4 rounded-[18px] border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-2 xl:grid-cols-4">
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_min_price", "Min qiymət (AZN)")}
-                    value={draftFilters.minPrice}
-                    placeholder="100"
-                    type="number"
-                    inputMode="numeric"
-                    onChange={(value) => updateFilter("minPrice", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_max_price", "Max qiymət (AZN)")}
-                    value={draftFilters.maxPrice}
-                    placeholder="5000"
-                    type="number"
-                    inputMode="numeric"
-                    onChange={(value) => updateFilter("maxPrice", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_min_weight", "Min çəki (kg)")}
-                    value={draftFilters.minWeight}
-                    placeholder="1000"
-                    type="number"
-                    inputMode="numeric"
-                    onChange={(value) => updateFilter("minWeight", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_max_weight", "Max çəki (kg)")}
-                    value={draftFilters.maxWeight}
-                    placeholder="25000"
-                    type="number"
-                    inputMode="numeric"
-                    onChange={(value) => updateFilter("maxWeight", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_date_from", "Tarixdən")}
-                    value={draftFilters.dateFrom}
-                    placeholder=""
-                    type="date"
-                    onChange={(value) => updateFilter("dateFrom", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_date_to", "Tarixədək")}
-                    value={draftFilters.dateTo}
-                    placeholder=""
-                    type="date"
-                    onChange={(value) => updateFilter("dateTo", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_min_volume", "Min həcm (m3)")}
-                    value={draftFilters.minVolume}
-                    placeholder="12"
-                    type="number"
-                    inputMode="decimal"
-                    onChange={(value) => updateFilter("minVolume", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_max_volume", "Max həcm (m3)")}
-                    value={draftFilters.maxVolume}
-                    placeholder="120"
-                    type="number"
-                    inputMode="decimal"
-                    onChange={(value) => updateFilter("maxVolume", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_length", "Uzunluq (m)")}
-                    value={draftFilters.length}
-                    placeholder="12"
-                    type="number"
-                    inputMode="decimal"
-                    onChange={(value) => updateFilter("length", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_width", "En (m)")}
-                    value={draftFilters.width}
-                    placeholder="12"
-                    type="number"
-                    inputMode="decimal"
-                    onChange={(value) => updateFilter("width", value)}
-                  />
-                  <AdvancedFilterCell
-                    label={t("catalog_filter_height", "Hündürlük (m)")}
-                    value={draftFilters.height}
-                    placeholder="50"
-                    type="number"
-                    inputMode="decimal"
-                    onChange={(value) => updateFilter("height", value)}
-                  />
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[13px] font-semibold text-slate-500">{t("catalog_filter_locale", "Elan dili")}</span>
-                    <select
-                      value={draftFilters.listingLocale}
-                      onChange={(e) => updateFilter("listingLocale", e.target.value)}
-                      className="h-11 rounded-[12px] border border-slate-200 bg-white px-3 text-[0.95rem] text-slate-700 outline-none transition duration-200 hover:border-slate-300 focus:border-slate-400"
-                    >
-                      <option value="">{t("catalog_filter_locale_all", "Hamısı")}</option>
-                      <option value="az">AZ</option>
-                      <option value="ru">RU</option>
-                      <option value="en">EN</option>
-                      <option value="tr">TR</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 flex items-center justify-between gap-4">
-            <h2 className="text-[1.9rem] font-bold text-[#171717]">{t("listings_title", "Son elanlar")}</h2>
-            <button
-              type="button"
-              onClick={() => setShowAllHomeListings((current) => !current)}
-              className="inline-flex items-center gap-1.5 text-[0.98rem] font-semibold text-logistics-orange transition hover:opacity-80"
-            >
-              {showAllHomeListings ? t("catalog_close", "Bağla") : t("catalog_view_all", "Hamısına bax")}
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div className="mt-4 min-h-[560px] sm:min-h-[520px] xl:min-h-[500px]">
-            {categoryLoading ? (
-              <div className="grid gap-5 grid-cols-2 xl:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <HomeListingCardSkeleton key={index} index={index} />
-                ))}
-              </div>
-            ) : hasHomeListings ? (
-              <div className="grid gap-5 grid-cols-2 xl:grid-cols-4">
-                {latestHomeListings.map((listing) => (
-                  <HomeListingCard key={listing.id} listing={listing} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex min-h-[420px] items-center justify-center rounded-[22px] border border-slate-200 bg-white px-5 py-8 text-center">
-                <div>
-                  <h3 className="text-lg font-semibold text-navy-900">{t("catalog_no_category", "Bu kateqoriyada elan yoxdur")}</h3>
-                  <p className="mt-2 text-sm text-slate-500">
-                    {selectedHomeCategory?.label} {t("catalog_no_category_hint", "üçün uyğun elan tapılmadı.")}
-                  </p>
-                </div>
+                  <option value="">Elan dili</option>
+                  <option value="az">AZ</option>
+                  <option value="ru">RU</option>
+                  <option value="en">EN</option>
+                  <option value="tr">TR</option>
+                </select>
               </div>
             )}
           </div>
 
-          {showAllHomeListings && !categoryLoading ? (
-            <div className="mt-7 rounded-[24px] border border-slate-200/90 bg-white p-4 shadow-sm sm:p-5">
-              <div className="flex flex-col gap-4 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h3 className="text-[1.25rem] font-bold text-navy-900">{t("catalog_all_listings", "Bütün elanlar")}</h3>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {new Intl.NumberFormat("az-AZ").format(homeInfinite.loadedCount)} /{" "}
-                    {new Intl.NumberFormat("az-AZ").format(homeListings.length)} {t("catalog_listings_shown", "elan göstərilir")}
-                  </p>
-                </div>
+          {/* Section 3: Son elanlar */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-neutral-900">{t("listings_title", "Son elanlar")}</h2>
+              <button
+                type="button"
+                onClick={() => setShowAllHomeListings((current) => !current)}
+                className="text-sm font-bold text-neutral-900 transition hover:text-slate-600"
+              >
+                {showAllHomeListings ? t("catalog_close", "Bağla") : t("catalog_view_all", "Hamısına bax")}
+              </button>
+            </div>
 
-                <div className="inline-flex w-fit items-center rounded-[14px] border border-slate-200 bg-slate-50 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setHomeView("grid")}
-                    className={cn(
-                      "inline-flex min-h-10 items-center gap-2 rounded-[10px] px-3 text-sm font-semibold transition",
-                      homeView === "grid" ? "bg-white text-navy-900 shadow-sm" : "text-slate-500"
-                    )}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                    {t("catalog_grid", "Kvadratlar")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setHomeView("list")}
-                    className={cn(
-                      "inline-flex min-h-10 items-center gap-2 rounded-[10px] px-3 text-sm font-semibold transition",
-                      homeView === "list" ? "bg-white text-navy-900 shadow-sm" : "text-slate-500"
-                    )}
-                  >
-                    <List className="h-4 w-4" />
-                    {t("catalog_list", "Siyahı")}
-                  </button>
-                </div>
-              </div>
-
-              {homeView === "grid" ? (
-                <div className="mt-5 grid gap-5 grid-cols-2 xl:grid-cols-4">
-                  {homeInfinite.visibleItems.map((listing) => (
-                    <HomeListingCard key={`all-grid-${listing.id}`} listing={listing} />
+            <div className="space-y-4">
+              {categoryLoading ? (
+                <div className="space-y-4">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="h-[120px] rounded-[22px] bg-slate-100 animate-pulse" />
                   ))}
-                  {homeInfinite.isLoadingMore ? (
-                    <div className="flex h-12 w-full items-center justify-center">
-                      <LoaderCircle className="h-6 w-6 animate-spin text-logistics-orange" />
-                    </div>
-                  ) : null}
+                </div>
+              ) : hasHomeListings ? (
+                <div className="space-y-4">
+                  {latestHomeListings.map((listing) => (
+                    <HomeListingExactRow key={listing.id} listing={listing} />
+                  ))}
                 </div>
               ) : (
-                <div className="mt-5 space-y-3">
-                  {homeInfinite.visibleItems.map((listing) => (
-                    <HomeListingRow key={`all-list-${listing.id}`} listing={listing} />
-                  ))}
-                  {homeInfinite.isLoadingMore ? (
-                    <div className="flex h-12 w-full items-center justify-center">
-                      <LoaderCircle className="h-6 w-6 animate-spin text-logistics-orange" />
-                    </div>
-                  ) : null}
+                <div className="flex min-h-[300px] items-center justify-center rounded-[22px] border border-slate-100 bg-white px-5 py-8 text-center shadow-sm">
+                  <div>
+                    <h3 className="text-lg font-semibold text-navy-900">{t("catalog_no_category", "Bu kateqoriyada elan yoxdur")}</h3>
+                    <p className="mt-2 text-sm text-slate-500">
+                      {selectedHomeCategory?.label} {t("catalog_no_category_hint", "üçün uyğun elan tapılmadı.")}
+                    </p>
+                  </div>
                 </div>
               )}
-
-              {homeInfinite.hasMore ? <div ref={homeInfinite.sentinelRef} className="h-6 w-full" aria-hidden="true" /> : null}
             </div>
+          </div>
+
+          {showAllHomeListings && !categoryLoading ? (
+            renderAllListingsSection(false)
           ) : null}
 
           </section>
@@ -1650,267 +2075,8 @@ export function CatalogPageClient({
 
   return (
     <PublicPage emphasizeBackground>
-      <section className="mx-auto max-w-[1780px] px-4 py-5 sm:px-6 lg:px-8">
-        <div className="overflow-visible rounded-[18px] border border-slate-200/90 bg-[linear-gradient(180deg,#ffffff_0%,#fbfcfe_100%)] shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
-          <div className="grid w-full gap-3 p-4 sm:grid-cols-2 min-[1180px]:grid-cols-[180px_48px_190px_160px_190px_minmax(220px,1fr)_150px] lg:p-[18px]">
-            <CatalogFilterField label={t("search_pickup_city", "Yükləmə şəhəri")}>
-              <CatalogSelectCard
-                label={t("search_pickup_city", "Yükləmə şəhəri")}
-                value={draftFilters.pickupCity}
-                onChange={(value) => updateFilter("pickupCity", value)}
-                options={dynCities}
-                className="w-full"
-                placeholder={t("catalog_select_placeholder", "Seçin")}
-              />
-            </CatalogFilterField>
-
-            <div className="hidden min-[1180px]:flex min-[1180px]:items-start">
-              <button
-                type="button"
-                onClick={() => {
-                  const next = {
-                    ...draftFilters,
-                    pickupCity: draftFilters.deliveryCity,
-                    deliveryCity: draftFilters.pickupCity
-                  };
-                  setDraftFilters(next);
-                }}
-                className="flex h-[60px] w-12 items-center justify-center rounded-[13px] border border-slate-200 bg-white text-slate-500 transition duration-200 hover:-translate-y-px hover:border-slate-300 hover:text-navy-900 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)]"
-                aria-label="Marşrutu dəyiş"
-              >
-                <ArrowLeftRight className="h-5 w-5" />
-              </button>
-            </div>
-
-            <CatalogFilterField label={t("search_delivery_city", "Çatdırılma şəhəri")}>
-              <CatalogSelectCard
-                label={t("search_delivery_city", "Çatdırılma şəhəri")}
-                value={draftFilters.deliveryCity}
-                onChange={(value) => updateFilter("deliveryCity", value)}
-                options={dynCities}
-                className="w-full"
-                placeholder={t("catalog_select_placeholder", "Seçin")}
-              />
-            </CatalogFilterField>
-
-            <CatalogFilterField label={t("search_cargo_type", "Yük növü")}>
-              <CatalogSelectCard
-                label={t("search_cargo_type", "Yük növü")}
-                value={draftFilters.cargoType}
-                onChange={(value) => updateFilter("cargoType", value)}
-                options={dynCargoTypes}
-                className="w-full"
-                placeholder={t("catalog_select_placeholder", "Seçin")}
-              />
-            </CatalogFilterField>
-
-            <CatalogFilterField label={t("search_vehicle_type", "Nəqliyyat növü")}>
-              <CatalogSelectCard
-                label={t("search_vehicle_type", "Nəqliyyat növü")}
-                value={draftFilters.vehicleType}
-                onChange={(value) => updateFilter("vehicleType", value)}
-                options={dynVehicleTypes}
-                className="w-full"
-                placeholder={t("catalog_select_placeholder", "Seçin")}
-              />
-            </CatalogFilterField>
-
-            <CatalogFilterField label={t("search_keyword", "Açar söz")}>
-              <CatalogInputCard
-                label={t("search_keyword", "Açar söz")}
-                placeholder={t("search_keyword_placeholder", "məs: mebel, taxta, taxıl")}
-                value={draftFilters.keyword}
-                onChange={(value) => updateFilter("keyword", value)}
-                className="w-full"
-              />
-            </CatalogFilterField>
-
-            <div className="flex w-full items-start gap-3 sm:col-span-2 min-[1180px]:col-span-1">
-              <Button
-                className="h-[60px] w-full rounded-[13px] text-[0.98rem] transition duration-200 hover:-translate-y-px hover:shadow-[0_14px_28px_rgba(249,115,22,0.24)]"
-                onClick={() => submitFilters()}
-                disabled={isSearching}
-              >
-                {isSearching ? <LoaderCircle className="h-4.5 w-4.5 animate-spin" /> : <Search className="h-4.5 w-4.5" />}
-                {isSearching ? t("search_btn_loading", "Axtarılır...") : t("search_btn", "Axtar")}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="-mx-4 mt-4 flex gap-3 overflow-x-auto px-4 pb-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:px-0">
-          {chipConfigs.map((chip) => (
-            <CatalogChip
-              key={chip.key}
-              active={activeChip === chip.key}
-              icon={chip.icon}
-              label={chip.label}
-              onClick={() => applyChip(chip)}
-            />
-          ))}
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-navy-900"
-          >
-            <ArrowLeftRight className="h-4 w-4" />
-            {t("catalog_reset", "Sıfırla")}
-          </button>
-        </div>
-
-        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr),428px]">
-          <div className="overflow-hidden rounded-[18px] border border-slate-200/90 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-            <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-[1.1rem] font-semibold text-navy-900">
-                {t("catalog_found", "Tapıldı")}: {resultsHeadline} {t("catalog_listings_unit", "elan")}
-              </p>
-
-              <div className="flex items-center gap-3">
-                <select
-                  value={sortBy}
-                  onChange={(event) => setSortBy(event.target.value as SortMode)}
-                  className="form-field h-11 min-w-0 w-full rounded-[14px] px-4 py-0 text-[0.96rem] sm:min-w-[174px] sm:w-auto"
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {sortedListings.length ? (
-              <div className="grid gap-5 grid-cols-1 xl:grid-cols-2">
-                {loadsInfinite.visibleItems.map((listing) => (
-                  <div key={listing.id} className="xl:col-span-1">
-                    <CatalogListingRow listing={listing} />
-                  </div>
-                ))}
-                {loadsInfinite.isLoadingMore
-                  ? Array.from({ length: 3 }).map((_, index) => (
-                      <CatalogListingRowSkeleton key={`loads-skeleton-${index}`} />
-                    ))
-                  : null}
-                {loadsInfinite.hasMore ? (
-                  <div ref={loadsInfinite.sentinelRef} className="xl:col-span-2 h-6 w-full" aria-hidden="true" />
-                ) : null}
-              </div>
-            ) : (
-              <div className="px-6 py-14 text-center">
-                <h2 className="text-2xl font-bold text-navy-900">{t("catalog_no_results", "Uyğun elan tapılmadı")}</h2>
-                <p className="mt-3 text-sm leading-6 text-slate-500">
-                  {t("catalog_no_results_hint", "Filtrləri yumşaldın və ya yeni elanlar üçün bir az sonra yenidən baxın.")}
-                </p>
-              </div>
-            )}
-          </div>
-
-          <aside className="space-y-4">
-            <div className="rounded-[18px] border border-slate-200/90 bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-              <h2 className="text-[1.52rem] font-bold leading-tight text-navy-900">{t("catalog_cta_title", "Yükünüzü tez çatdırın")}</h2>
-              <p className="mt-3 text-[0.98rem] leading-8 text-slate-600">
-                {t("catalog_cta_desc", "Elan yerləşdirin, minlərlə daşıyıcı sizin yükünüzü görsün.")}
-              </p>
-
-              <div className="mt-5 space-y-3 text-[0.98rem] text-slate-600">
-                <p className="flex items-center gap-3">
-                  <ShieldCheck className="h-5 w-5 text-logistics-orange" />
-                  {t("catalog_cta_free", "Pulsuz elan yerləşdirmə")}
-                </p>
-                <p className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-logistics-orange" />
-                  {t("catalog_cta_carriers", "Minlərlə aktiv daşıyıcı")}
-                </p>
-                <p className="flex items-center gap-3">
-                  <MessageCircleMore className="h-5 w-5 text-logistics-orange" />
-                  {t("catalog_cta_fast", "Tez və etibarlı həll")}
-                </p>
-              </div>
-
-              <ButtonLink
-                href="/cargo-owner/cargo-posts/new"
-                className="mt-6 flex w-full justify-center rounded-[14px] py-3 text-[1.08rem]"
-              >
-                {t("catalog_cta_btn", "Yük yerləşdir")}
-              </ButtonLink>
-            </div>
-
-            <div className="rounded-[18px] border border-slate-200/90 bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-              <h2 className="text-[1.34rem] font-bold text-navy-900">{t("catalog_stats_title", "Tranzit.AZ rəqəmlərlə")}</h2>
-              <div className="mt-5 space-y-4 text-[1rem] text-slate-600">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-[1.12rem] font-bold text-navy-900">12 450+</span>
-                  <span>{t("catalog_stats_listings", "Aktiv elan")}</span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-[1.12rem] font-bold text-navy-900">8 230+</span>
-                  <span>{t("catalog_stats_carriers", "Qeydiyyatdan keçmiş daşıyıcı")}</span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-[1.12rem] font-bold text-navy-900">34 600+</span>
-                  <span>{t("catalog_stats_deliveries", "Uğurlu daşınma")}</span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-[1.12rem] font-bold text-navy-900">98%</span>
-                  <span>{t("catalog_stats_satisfaction", "Müştəri məmnuniyyəti")}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-[18px] border border-slate-200/90 bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-              <h2 className="text-[1.34rem] font-bold text-navy-900">{t("catalog_trust_title", "Etibarlı platforma")}</h2>
-              <div className="mt-5 grid gap-4 text-sm leading-6 text-slate-600 sm:grid-cols-3 xl:grid-cols-1">
-                <div className="flex items-start gap-3">
-                  <ShieldCheck className="mt-0.5 h-5 w-5 text-navy-900" />
-                  <span>{t("catalog_trust_safe", "Təhlükəsiz əlaqə")}</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Building2 className="mt-0.5 h-5 w-5 text-navy-900" />
-                  <span>{t("catalog_trust_data", "Məlumatlarınız qorunur")}</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Users className="mt-0.5 h-5 w-5 text-navy-900" />
-                  <span>{t("catalog_trust_support", "Dəstək xidməti 24/7")}</span>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </div>
-
-        <div className="mt-5 overflow-hidden rounded-[18px] border border-slate-200/90 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-          <div className="grid gap-0 lg:grid-cols-[240px,1fr]">
-            <div className="border-b border-slate-200 px-6 py-7 lg:border-b-0 lg:border-r">
-              <h2 className="text-[1.7rem] font-bold leading-tight text-navy-900">{t("catalog_hiw_title", "Necə işləyir?")}</h2>
-            </div>
-            <div className="grid gap-0 md:grid-cols-3">
-              {howItWorksSteps.map((step, index) => {
-                const Icon = step.icon;
-
-                return (
-                  <div
-                    key={step.number}
-                    className={cn(
-                      "flex gap-4 px-6 py-6",
-                      index < howItWorksSteps.length - 1 && "border-b border-slate-200 md:border-b-0 md:border-r"
-                    )}
-                  >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-logistics-orange text-sm font-bold text-white">
-                      {step.number}
-                    </div>
-                    <div className="flex min-w-0 gap-4">
-                      <Icon className="mt-1 h-9 w-9 shrink-0 text-slate-400" />
-                      <div>
-                        <h3 className="text-[1.1rem] font-bold text-navy-900">{step.title}</h3>
-                        <p className="mt-2 text-[0.96rem] leading-6 text-slate-600">{step.text}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+      <section className="mx-auto w-full max-w-[1280px] min-w-0 px-4 sm:px-[32px] pt-[16px] pb-[16px]">
+        {renderAllListingsSection(true)}
       </section>
     </PublicPage>
   );

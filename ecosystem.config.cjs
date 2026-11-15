@@ -1,0 +1,67 @@
+require('dotenv').config();
+const path = require('path');
+
+module.exports = {
+  apps: [
+    {
+      name: 'tranzit-next',
+      script: './node_modules/next/dist/bin/next',
+      args: 'start -p 3001 -H 0.0.0.0',
+      cwd: __dirname,
+      autorestart: true,
+      max_restarts: 10,
+      restart_delay: 2000,
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3001,
+        INTERNAL_ADMIN_URL: process.env.INTERNAL_ADMIN_URL || 'http://127.0.0.1:3005',
+        INTERNAL_BACKEND_URL: process.env.INTERNAL_BACKEND_URL || 'http://127.0.0.1:4001',
+        DATABASE_URL: process.env.DATABASE_URL,
+        PUBLIC_SITE_HOST: process.env.PUBLIC_SITE_HOST || 'lvh.me:3001',
+        PORTAL_HOST: process.env.PORTAL_HOST || 'portal.lvh.me:3001',
+        ADMIN_HOST: process.env.ADMIN_HOST || 'admin.lvh.me:3005',
+        NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://lvh.me:3001',
+        NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://lvh.me:3001',
+        CORS_ORIGIN: process.env.CORS_ORIGIN,
+      },
+    },
+    {
+      name: 'tranzit-admin',
+      script: 'octo-admin/index.js',
+      cwd: __dirname,
+      autorestart: true,
+      max_restarts: 10,
+      restart_delay: 2000,
+      env: {
+        NODE_ENV: 'production',
+        OCTO_ADMIN_HOST: process.env.OCTO_ADMIN_HOST || '127.0.0.1',
+        OCTO_ADMIN_PORT: process.env.OCTO_ADMIN_PORT || '3005',
+        DATABASE_URL: process.env.DATABASE_URL,
+        JWT_SECRET: process.env.JWT_SECRET,
+        SESSION_SECRET: process.env.SESSION_SECRET,
+        PUBLIC_SITE_HOST: process.env.PUBLIC_SITE_HOST || 'lvh.me:3001',
+        PORTAL_HOST: process.env.PORTAL_HOST || 'portal.lvh.me:3001',
+        ADMIN_HOST: process.env.ADMIN_HOST || 'admin.lvh.me:3005',
+        INTERNAL_BACKEND_URL: process.env.INTERNAL_BACKEND_URL || 'http://127.0.0.1:4001',
+      },
+    },
+    {
+      name: 'tranzit-backend',
+      script: 'node_modules/tsx/dist/cli.mjs',
+      args: 'backend/src/server.ts',
+      cwd: __dirname,
+      autorestart: true,
+      max_restarts: 10,
+      restart_delay: 2000,
+      env: {
+        NODE_ENV: 'production',
+        BACKEND_HOST: process.env.BACKEND_HOST || '127.0.0.1',
+        BACKEND_PORT: process.env.BACKEND_PORT || '4001',
+        DATABASE_URL: process.env.DATABASE_URL,
+        JWT_SECRET: process.env.JWT_SECRET,
+        UPLOAD_DIR: process.env.UPLOAD_DIR || 'public/uploads',
+        CORS_ORIGIN: process.env.CORS_ORIGIN,
+      },
+    },
+  ],
+};

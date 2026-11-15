@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Globe, Check } from "lucide-react";
 import { LOCALE_LABELS, SUPPORTED_LOCALES, useLocale, type Locale } from "@/components/providers/LocaleProvider";
 import { cn } from "@/lib/utils";
 import AZ from "country-flag-icons/react/1x1/AZ";
@@ -31,7 +32,15 @@ function Flag({ locale, className }: { locale: Locale; className?: string }) {
   );
 }
 
-export function LocaleSwitcher({ className, floating = false }: { className?: string; floating?: boolean }) {
+export function LocaleSwitcher({
+  className,
+  floating = false,
+  variant = "default"
+}: {
+  className?: string;
+  floating?: boolean;
+  variant?: "default" | "minimal" | "floating";
+}) {
   const { locale, setLocale } = useLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -47,6 +56,53 @@ export function LocaleSwitcher({ className, floating = false }: { className?: st
       document.removeEventListener("touchstart", handle);
     };
   }, []);
+
+  if (variant === "minimal") {
+    return (
+      <div ref={ref} className={cn("relative inline-flex items-center", className)}>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium text-slate-700 transition-colors hover:text-neutral-900 focus:outline-none"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-label="Dil seçin"
+        >
+          <Globe className="h-[18px] w-[18px] text-slate-700" strokeWidth={1.75} />
+          <span>{LOCALE_LABELS[locale] || locale.toUpperCase()}</span>
+        </button>
+
+        {open && (
+          <div className="absolute right-0 top-full z-[200] mt-2.5 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.12)] py-1">
+            {SUPPORTED_LOCALES.map((l) => (
+              <button
+                key={l}
+                type="button"
+                role="option"
+                aria-selected={locale === l}
+                onClick={() => {
+                  setLocale(l as Locale);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors",
+                  locale === l
+                    ? "bg-slate-100 font-semibold text-neutral-900"
+                    : "text-slate-700 hover:bg-slate-50 hover:text-neutral-900"
+                )}
+              >
+                <Flag locale={l as Locale} className="h-4 w-4 shrink-0" />
+                <span className="flex-1">{LOCALE_NAMES[l as Locale]}</span>
+                {locale === l && (
+                  <Check className="h-4 w-4 text-neutral-900" strokeWidth={2.5} />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (floating) {
     return (

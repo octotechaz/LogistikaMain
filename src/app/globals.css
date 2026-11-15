@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -27,10 +28,11 @@ html {
 
 body {
   margin: 0;
-  background: var(--planner-surface);
-  color: var(--planner-text);
+  background: #f8f9fa;
+  color: #191c1d;
   overflow-x: clip;
   font-family:
+    "Inter",
     "SF Pro Display",
     "SF Pro Text",
     -apple-system,
@@ -39,9 +41,6 @@ body {
     "Segoe UI",
     system-ui,
     ui-sans-serif,
-    "Inter",
-    "Aptos",
-    Arial,
     sans-serif;
   font-size: 15px;
   font-feature-settings:
