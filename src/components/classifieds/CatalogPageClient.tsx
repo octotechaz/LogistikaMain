@@ -1766,18 +1766,19 @@ export function CatalogPageClient({
             </div>
           ) : null}
 
-          <section className="relative isolate w-full h-[324px] overflow-hidden rounded-[28px] bg-[#2a0e44] px-6 sm:px-[56px] pt-8 sm:pt-[56px] pb-6 text-white shadow-lg shadow-purple-950/20">
+          <section className="relative isolate w-full aspect-[2000/750] min-h-[135px] sm:aspect-auto sm:h-[324px] overflow-hidden rounded-[20px] sm:rounded-[28px] bg-[#2a0e44] px-4 py-3 xs:px-5 xs:py-4 sm:px-[56px] sm:pt-[56px] sm:pb-6 text-white shadow-lg shadow-purple-950/20 flex flex-col justify-center sm:justify-start">
             <img
               src="/images/tranzit-hero-banner.jpg"
               alt="Tranzit Banner"
-              className="pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover object-[center_12%] select-none"
+              className="pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover object-[right_center] sm:object-[center_12%] select-none"
             />
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-3/5 bg-gradient-to-r from-[#210936]/80 via-[#210936]/40 to-transparent -z-10 sm:hidden" />
             <div className="w-full">
-              <div className="flex flex-col items-start gap-4">
-                <h1 className="w-full max-w-[371px] sm:w-[371px] text-[32px] sm:text-[36px] font-extrabold leading-[44px] sm:leading-[48px] tracking-[-0.02em] text-white">
+              <div className="flex flex-col items-start gap-1 sm:gap-4 max-w-[50%] xs:max-w-[52%] sm:max-w-[371px]">
+                <h1 className="w-full text-[14px] xs:text-[17px] sm:text-[32px] md:text-[36px] font-extrabold leading-[18px] xs:leading-[22px] sm:leading-[40px] md:leading-[48px] tracking-[-0.02em] text-white drop-shadow-sm">
                   {t("home_hero_title", "Daşımalarınızı bizimlə asanlaşdırın")}
                 </h1>
-                <p className="max-w-[371px] text-sm sm:text-base leading-5 sm:leading-6 text-white/80">
+                <p className="hidden sm:block max-w-[371px] text-sm sm:text-base leading-5 sm:leading-6 text-white/80">
                   {t("home_hero_subtitle", "Yükünüz üçün doğru marşrutu, nəqliyyatı və daşıyıcını bir yerdə tapın.")}
                 </p>
               </div>
