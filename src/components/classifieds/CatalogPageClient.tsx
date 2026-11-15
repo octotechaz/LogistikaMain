@@ -477,7 +477,7 @@ function CatalogSelectCard({
       </button>
 
       {open ? (
-        <div className="absolute left-0 top-[calc(100%+6px)] z-50 min-w-full max-h-60 overflow-y-auto rounded-[14px] border border-slate-200 bg-white p-1.5 shadow-xl [width:max-content]">
+        <div className="absolute left-0 top-[calc(100%+6px)] z-50 min-w-full max-w-[calc(100vw-2rem)] sm:max-w-[320px] max-h-60 overflow-y-auto rounded-[14px] border border-slate-200 bg-white p-1.5 shadow-xl [width:max-content]">
           <button
             type="button"
             onClick={() => selectOption("")}
@@ -938,9 +938,9 @@ function HomeListingExactRow({ listing }: { listing: CargoListing }) {
   ].filter(Boolean).join(" • ");
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-[24px] bg-white p-5 border border-slate-100 shadow-sm transition hover:shadow-md">
-      <Link href={`/loads/${listing.id}`} className="flex flex-col sm:flex-row sm:items-center gap-5 flex-1 min-w-0">
-        <div className="relative h-[100px] w-full sm:w-[160px] shrink-0 overflow-hidden rounded-[16px] bg-slate-100">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 rounded-[20px] sm:rounded-[24px] bg-white p-4 sm:p-5 border border-slate-100 shadow-sm transition hover:shadow-md">
+      <Link href={`/loads/${listing.id}`} className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 flex-1 min-w-0">
+        <div className="relative h-[120px] sm:h-[100px] w-full sm:w-[160px] shrink-0 overflow-hidden rounded-[16px] bg-slate-100">
           <ListingCoverMedia
             listing={listing}
             imageClassName="h-full w-full object-cover transition duration-300 hover:scale-105"
@@ -950,9 +950,9 @@ function HomeListingExactRow({ listing }: { listing: CargoListing }) {
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="truncate text-xl font-bold text-neutral-900">{localizedTitle}</h3>
-          <p className="mt-1 text-sm font-medium text-slate-500 leading-relaxed">{specs}</p>
-          <p className="mt-2 text-xl font-extrabold text-neutral-900">
+          <h3 className="truncate text-lg sm:text-xl font-bold text-neutral-900">{localizedTitle}</h3>
+          <p className="mt-1 text-xs sm:text-sm font-medium text-slate-500 leading-relaxed">{specs}</p>
+          <p className="mt-2 text-lg sm:text-xl font-extrabold text-neutral-900">
             {formatPriceCompact(listing.price)}
           </p>
         </div>
@@ -965,7 +965,7 @@ function HomeListingExactRow({ listing }: { listing: CargoListing }) {
           e.stopPropagation();
           toggleFavorite(listing.id);
         }}
-        className="rounded-[14px] bg-[#FEDE47] hover:bg-[#fdd835] px-7 py-3 text-sm font-bold text-neutral-900 transition shrink-0 whitespace-nowrap self-start sm:self-center shadow-none"
+        className="w-full sm:w-auto rounded-[14px] bg-[#FEDE47] hover:bg-[#fdd835] px-6 sm:px-7 py-2.5 sm:py-3 text-sm font-bold text-neutral-900 transition shrink-0 whitespace-nowrap text-center shadow-none"
       >
         {favorite ? t("fav_in_favorites", "Seçilmişlərdə") : t("fav_add", "Seçilmişlərə əlavə et")}
       </button>
@@ -1036,14 +1036,14 @@ function AllListingExactRow({ listing }: { listing: CargoListing }) {
   const photo = getListingPhotoUrl(listing);
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-[24px] bg-white p-6 border border-slate-100 shadow-sm transition hover:shadow-md">
-      <Link href={`/loads/${listing.id}`} className="flex flex-col sm:flex-row sm:items-center gap-6 flex-1 min-w-0">
-        <div className="relative h-[100px] w-[100px] sm:h-[110px] sm:w-[110px] shrink-0 overflow-hidden rounded-[20px] bg-[#FDF0A6] flex items-center justify-center">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 rounded-[20px] sm:rounded-[24px] bg-white p-4 sm:p-6 border border-slate-100 shadow-sm transition hover:shadow-md">
+      <Link href={`/loads/${listing.id}`} className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 flex-1 min-w-0">
+        <div className="relative h-[120px] sm:h-[110px] w-full sm:w-[110px] shrink-0 overflow-hidden rounded-[16px] sm:rounded-[20px] bg-[#FDF0A6] flex items-center justify-center">
           {photo ? (
             <img
               src={photo}
               alt={listing.title}
-              className="h-full w-full object-cover rounded-[20px]"
+              className="h-full w-full object-cover rounded-[16px] sm:rounded-[20px]"
               loading="lazy"
             />
           ) : (
@@ -1052,7 +1052,7 @@ function AllListingExactRow({ listing }: { listing: CargoListing }) {
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="truncate text-2xl font-bold text-neutral-900 leading-snug">{localizedTitle}</h3>
+          <h3 className="truncate text-xl sm:text-2xl font-bold text-neutral-900 leading-snug">{localizedTitle}</h3>
 
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm font-medium text-slate-700">
             <span>{listing.cargoType || t("cargo_type_general", "Ərzaq")}</span>
@@ -1060,22 +1060,22 @@ function AllListingExactRow({ listing }: { listing: CargoListing }) {
             <span>{listing.pickupCity} - {listing.deliveryCity}</span>
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600">
+          <div className="mt-1 flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm font-medium text-slate-600">
             {quantityLabel ? <span>{quantityLabel}</span> : null}
             {listing.volume ? <span>{listing.volume} m3</span> : null}
             {listing.weight ? <span>{formatWeight(listing.weight)}</span> : null}
           </div>
 
           {(listing.length || listing.width || listing.height) ? (
-            <div className="mt-1 text-sm font-medium text-slate-600">
+            <div className="mt-1 text-xs sm:text-sm font-medium text-slate-600">
               Ölçü: {listing.length || 0} × {listing.width || 0} × {listing.height || 0} m
             </div>
           ) : null}
         </div>
       </Link>
 
-      <div className="flex flex-col sm:items-end justify-center shrink-0">
-        <p className="text-2xl font-black text-neutral-900 tracking-tight">
+      <div className="flex flex-col sm:items-end justify-center shrink-0 pt-3 sm:pt-0 border-t border-slate-100 sm:border-t-0">
+        <p className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">
           {formatPriceCompact(listing.price)}
         </p>
 
@@ -1086,7 +1086,7 @@ function AllListingExactRow({ listing }: { listing: CargoListing }) {
             e.stopPropagation();
             toggleFavorite(listing.id);
           }}
-          className="mt-3 rounded-[14px] bg-[#FEDE47] hover:bg-[#fdd835] px-6 py-2.5 text-sm font-bold text-neutral-900 transition shrink-0 whitespace-nowrap shadow-none"
+          className="mt-2.5 sm:mt-3 w-full sm:w-auto rounded-[14px] bg-[#FEDE47] hover:bg-[#fdd835] px-6 py-2.5 text-sm font-bold text-neutral-900 transition shrink-0 whitespace-nowrap shadow-none text-center"
         >
           {favorite ? t("fav_in_favorites", "Seçilmişlərdə") : t("fav_add", "Seçilmişlərə əlavə et")}
         </button>
