@@ -55,8 +55,15 @@ const pageTransition: Transition = {
   ease: [0.22, 1, 0.36, 1]
 };
 
-export function AppLogo({ className, variant = "yellow" }: { className?: string; variant?: "dark" | "light" | "yellow" } = {}) {
-  const src = variant === "light" ? "/images/logo-white.png" : variant === "dark" ? "/images/logo.png" : "/images/logo-yellow.png";
+export function AppLogo({ className, variant = "topbar" }: { className?: string; variant?: "dark" | "light" | "yellow" | "topbar" } = {}) {
+  const src =
+    variant === "light"
+      ? "/images/logo-white.png"
+      : variant === "dark"
+      ? "/images/logo.png"
+      : variant === "yellow"
+      ? "/images/logo-yellow.png"
+      : "/images/logo-topbar.png";
   return (
     <Link href="/" className={cn("inline-flex h-9 shrink-0 items-center leading-none", className)}>
       <Image

@@ -65,7 +65,7 @@ export function Navbar({
       <div className="relative mx-auto flex min-h-16 w-full max-w-[1280px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center">
           <Image
-            src="/images/logo-yellow.png"
+            src="/images/logo-topbar.png"
             alt="Tranzit.AZ"
             width={146}
             height={42}
