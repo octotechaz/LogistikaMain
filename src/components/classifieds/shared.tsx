@@ -55,7 +55,15 @@ const pageTransition: Transition = {
   ease: [0.22, 1, 0.36, 1]
 };
 
-export function AppLogo({ className, variant = "topbar" }: { className?: string; variant?: "dark" | "light" | "yellow" | "topbar" } = {}) {
+export function AppLogo({
+  className,
+  variant = "topbar",
+  imgClassName
+}: {
+  className?: string;
+  variant?: "dark" | "light" | "yellow" | "topbar";
+  imgClassName?: string;
+} = {}) {
   const src =
     variant === "light"
       ? "/images/logo-white.png"
@@ -65,14 +73,14 @@ export function AppLogo({ className, variant = "topbar" }: { className?: string;
       ? "/images/logo-yellow.png"
       : "/images/logo-topbar.png";
   return (
-    <Link href="/" className={cn("inline-flex h-9 shrink-0 items-center leading-none", className)}>
+    <Link href="/" className={cn("inline-flex shrink-0 items-center leading-none", className)}>
       <Image
         src={src}
         alt="Tranzit.AZ"
         width={146}
         height={42}
         priority
-        className="h-8 sm:h-9 w-auto object-contain"
+        className={cn("h-[34px] sm:h-10 md:h-[42px] w-auto object-contain", imgClassName)}
       />
     </Link>
   );
@@ -294,7 +302,7 @@ export function PublicNavbar() {
     <>
       <header className="sticky top-0 z-[60] w-full border-b border-slate-100 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-[64px] sm:h-[72px] md:h-[76px] w-full max-w-[1280px] items-center justify-between px-3 sm:px-6 md:px-[32px]">
-          <div className="flex h-9 items-center gap-3 sm:gap-6 shrink-0">
+          <div className="flex items-center gap-3 sm:gap-6 shrink-0">
             <AppLogo />
 
             <nav className="hidden h-9 items-center gap-5 md:flex">

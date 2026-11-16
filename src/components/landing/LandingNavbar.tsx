@@ -51,7 +51,7 @@ export function LandingNavbar({ onPrimaryAction }: LandingNavbarProps) {
             width={146}
             height={42}
             priority
-            className="h-8 w-auto object-contain sm:h-9"
+            className="h-[34px] w-auto object-contain sm:h-10 md:h-[42px]"
           />
         </a>
 
