@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { LogOut, Truck, UserRound } from "lucide-react";
 import { useApiAuthUser } from "@/hooks/useApiAuthUser";
@@ -62,13 +63,15 @@ export function Navbar({
   return (
     <header className="sticky top-0 z-[60] w-full bg-logistics-orange shadow-sm">
       <div className="relative mx-auto flex min-h-16 w-full max-w-[1280px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/20">
-            <Truck className="h-5 w-5 text-white" aria-hidden />
-          </span>
-          <span className="text-xl font-extrabold tracking-tight text-white">
-            Tranzit.AZ
-          </span>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/images/logo-white.png"
+            alt="Tranzit.AZ"
+            width={146}
+            height={42}
+            priority
+            className="h-8 w-auto object-contain sm:h-9"
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 sm:flex">

@@ -55,12 +55,17 @@ const pageTransition: Transition = {
   ease: [0.22, 1, 0.36, 1]
 };
 
-export function AppLogo() {
+export function AppLogo({ className, variant = "dark" }: { className?: string; variant?: "dark" | "light" } = {}) {
   return (
-    <Link href="/" className="flex h-9 shrink-0 items-center leading-none text-neutral-900">
-      <span className="whitespace-nowrap text-xl font-extrabold tracking-tight text-neutral-900">
-        Tranzit.AZ
-      </span>
+    <Link href="/" className={cn("inline-flex h-9 shrink-0 items-center leading-none", className)}>
+      <Image
+        src={variant === "light" ? "/images/logo-white.png" : "/images/logo.png"}
+        alt="Tranzit.AZ"
+        width={146}
+        height={42}
+        priority
+        className="h-8 sm:h-9 w-auto object-contain"
+      />
     </Link>
   );
 }
@@ -457,9 +462,7 @@ export function PublicFooter() {
     <footer className="w-full bg-[#f8f9fa] mt-16">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-[32px] pt-[40px] pb-[40px]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6">
-          <Link href="/" className="text-xl font-extrabold text-neutral-900 tracking-tight">
-            Tranzit.AZ
-          </Link>
+          <AppLogo />
           <nav className="flex flex-wrap items-center gap-6 sm:gap-8 text-sm font-medium text-slate-700">
             <Link href="/haqqimizda" className="hover:text-neutral-900 transition-colors">
               {t("nav_about", "Platforma haqqında")}

@@ -41,6 +41,11 @@ export function HeroSection({
             Təklif, marşrut və çatdırılma eyni axında
           </div>
           <div className="space-y-6">
+            <img
+              src="/images/logo-yellow.png"
+              alt="Tranzit.AZ"
+              className="h-9 sm:h-11 w-auto object-contain select-none drop-shadow-md"
+            />
             <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-6xl lg:text-[4.6rem] lg:leading-[1.02]">
               Yüklərinizi daha ağıllı, daha sürətli və daha şəffaf daşıyın
             </h1>

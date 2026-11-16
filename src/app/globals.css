@@ -1,10 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   color-scheme: light;
+  --font-plus-jakarta-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-montserrat: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --market-navy: #102033;
   --market-orange: #f97316;
   --market-surface: #ffffff;
@@ -32,7 +34,8 @@ body {
   color: #191c1d;
   overflow-x: clip;
   font-family:
-    "Inter",
+    var(--font-plus-jakarta-sans),
+    "Plus Jakarta Sans",
     "SF Pro Display",
     "SF Pro Text",
     -apple-system,
@@ -48,6 +51,31 @@ body {
     "liga" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography tokens: Headline & Body -> Plus Jakarta Sans, Label -> Montserrat */
+h1, h2, h3, h4, h5, h6,
+.font-headline,
+.font-heading {
+  font-family:
+    var(--font-plus-jakarta-sans),
+    "Plus Jakarta Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+label,
+.font-label,
+.badge,
+.tag,
+.label-text {
+  font-family:
+    var(--font-montserrat),
+    "Montserrat",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 }
 
 body::selection {
@@ -101,7 +129,7 @@ textarea {
   }
 
   .form-label {
-    @apply block space-y-1.5 text-sm font-semibold text-navy-900;
+    @apply block space-y-1.5 text-sm font-semibold text-navy-900 font-label;
   }
 
   .form-field {

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans, Montserrat } from "next/font/google";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "remixicon/fonts/remixicon.css";
 import "@/app/globals.css";
@@ -6,6 +7,20 @@ import { ClassifiedsProvider } from "@/components/providers/ClassifiedsProvider"
 import { LocaleProvider } from "@/components/providers/LocaleProvider";
 import { GlobalLoader } from "@/components/GlobalLoader";
 import { appName } from "@/lib/constants";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-plus-jakarta-sans",
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-montserrat",
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -33,8 +48,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="az">
-      <body className="min-h-screen">
+    <html lang="az" className={`${plusJakartaSans.variable} ${montserrat.variable}`}>
+      <body className={`${plusJakartaSans.className} min-h-screen`}>
         <LocaleProvider><ClassifiedsProvider>{children}</ClassifiedsProvider></LocaleProvider>
         <GlobalLoader />
       </body>

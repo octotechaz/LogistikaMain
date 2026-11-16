@@ -8,6 +8,44 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          "var(--font-plus-jakarta-sans)",
+          "Plus Jakarta Sans",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "sans-serif"
+        ],
+        headline: [
+          "var(--font-plus-jakarta-sans)",
+          "Plus Jakarta Sans",
+          "sans-serif"
+        ],
+        body: [
+          "var(--font-plus-jakarta-sans)",
+          "Plus Jakarta Sans",
+          "sans-serif"
+        ],
+        label: [
+          "var(--font-montserrat)",
+          "Montserrat",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "sans-serif"
+        ],
+        montserrat: [
+          "var(--font-montserrat)",
+          "Montserrat",
+          "sans-serif"
+        ],
+        jakarta: [
+          "var(--font-plus-jakarta-sans)",
+          "Plus Jakarta Sans",
+          "sans-serif"
+        ]
+      },
       colors: {
         navy: {
           50: "#eef4ff",

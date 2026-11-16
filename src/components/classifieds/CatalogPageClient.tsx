@@ -1774,7 +1774,12 @@ export function CatalogPageClient({
             />
             <div className="pointer-events-none absolute inset-y-0 left-0 w-3/5 bg-gradient-to-r from-[#210936]/80 via-[#210936]/40 to-transparent -z-10 sm:hidden" />
             <div className="w-full">
-              <div className="flex flex-col items-start gap-1 sm:gap-4 max-w-[50%] xs:max-w-[52%] sm:max-w-[371px]">
+              <div className="flex flex-col items-start gap-1.5 sm:gap-4 max-w-[50%] xs:max-w-[52%] sm:max-w-[371px]">
+                <img
+                  src="/images/logo-yellow.png"
+                  alt="Tranzit.AZ"
+                  className="h-4 xs:h-5 sm:h-7 md:h-8 w-auto object-contain select-none drop-shadow-sm"
+                />
                 <h1 className="w-full text-[14px] xs:text-[17px] sm:text-[32px] md:text-[36px] font-extrabold leading-[18px] xs:leading-[22px] sm:leading-[40px] md:leading-[48px] tracking-[-0.02em] text-white drop-shadow-sm">
                   {t("home_hero_title", "Daşımalarınızı bizimlə asanlaşdırın")}
                 </h1>

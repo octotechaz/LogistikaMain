@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu, Sparkles, X, UserRound } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { navItems } from "@/components/landing/mock-data";
 import { useApiAuthUser } from "@/hooks/useApiAuthUser";
@@ -43,16 +44,15 @@ export function LandingNavbar({ onPrimaryAction }: LandingNavbarProps) {
             : "border-white/8 bg-slate-950/40 backdrop-blur-xl"
         }`}
       >
-        <a href="#ana-sehife" className="flex items-center gap-3 text-white">
-          <div className="rounded-xl border border-cyan-400/25 bg-cyan-400/10 p-2 text-cyan-100">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div>
-            <p className="text-[1.1rem] font-bold text-slate-200">
-              Tranzit.<span className="text-[#f97316]">AZ</span>
-            </p>
-            <p className="text-xs text-slate-500">Freight Marketplace</p>
-          </div>
+        <a href="#ana-sehife" className="flex items-center">
+          <Image
+            src="/images/logo-white.png"
+            alt="Tranzit.AZ"
+            width={146}
+            height={42}
+            priority
+            className="h-8 w-auto object-contain sm:h-9"
+          />
         </a>
 
         <nav className="hidden items-center gap-2 lg:flex">
