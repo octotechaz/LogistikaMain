@@ -348,8 +348,7 @@ export function PublicNavbar() {
               className="inline-flex h-9 sm:h-10 md:h-11 items-center justify-center gap-1 sm:gap-1.5 rounded-xl bg-[#FEDE47] px-2.5 sm:px-3.5 md:px-4 text-xs sm:text-sm font-bold text-neutral-900 shadow-none transition-all hover:bg-[#fdd835] active:scale-[0.98] shrink-0 whitespace-nowrap"
             >
               <span className="text-sm font-extrabold">+</span>
-              <span className="hidden xs:inline sm:inline">{publishLabel}</span>
-              <span className="xs:hidden">Elan</span>
+              <span>{publishLabel}</span>
             </button>
 
             <div className={cn("relative items-center", user ? "inline-flex" : "hidden sm:inline-flex")} ref={dropdownRef}>
