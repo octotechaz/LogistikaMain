@@ -46,7 +46,7 @@ export function LandingNavbar({ onPrimaryAction }: LandingNavbarProps) {
       >
         <a href="#ana-sehife" className="flex items-center">
           <Image
-            src="/images/logo-white.png"
+            src="/images/logo-yellow.png"
             alt="Tranzit.AZ"
             width={146}
             height={42}
