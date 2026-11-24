@@ -160,6 +160,8 @@
   "carrier_max_weight_placeholder": "Например, 18",
   "carrier_cargo_types_title": "Какие грузы может перевозить",
   "carrier_map_title": "Местоположение на карте",
+  "carrier_auto_location": "Определить местоположение",
+  "carrier_locating": "Определение местоположения...",
   "nav_home": "Главная",
   "nav_active_loads": "Активные грузы",
   "nav_new_listing": "Новое объявление",

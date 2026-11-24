@@ -158,6 +158,8 @@
   "carrier_max_weight_placeholder": "Örn. 18",
   "carrier_cargo_types_title": "Hangi yükler taşınabilir",
   "carrier_map_title": "Haritada konum",
+  "carrier_auto_location": "Konumu otomatik al",
+  "carrier_locating": "Konum alınıyor...",
   "nav_home": "Ana sayfa",
   "nav_active_loads": "Aktif yükler",
   "nav_new_listing": "Yeni ilan",

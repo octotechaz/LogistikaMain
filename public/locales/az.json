@@ -160,6 +160,8 @@
   "carrier_max_weight_placeholder": "Məsələn, 18",
   "carrier_cargo_types_title": "Hansı yükləri daşıya bilər",
   "carrier_map_title": "Xəritədə yerləşmə",
+  "carrier_auto_location": "Konumu avtomatik al",
+  "carrier_locating": "Mövqe alınır...",
   "nav_home": "Ana səhifə",
   "nav_active_loads": "Aktiv yüklər",
   "nav_new_listing": "Yeni elan",

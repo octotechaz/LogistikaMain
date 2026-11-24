@@ -39,14 +39,37 @@ function UnitField({ label, name, unit, placeholder, type = "text", step, min, r
   );
 }
 
-function TextField({ label, name, placeholder, type = "text", required = false, error }: {
-  label: string; name: string; placeholder?: string; type?: string; required?: boolean; error?: string;
+function TextField({
+  label,
+  name,
+  placeholder,
+  type = "text",
+  required = false,
+  error,
+  value,
+  onChange,
+}: {
+  label: string;
+  name: string;
+  placeholder?: string;
+  type?: string;
+  required?: boolean;
+  error?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <label className="form-label">
       {label}
-      <input name={name} type={type} required={required} placeholder={placeholder}
-        className={cn("form-field", error && "border-red-300 focus:border-red-500 focus:ring-red-100")} />
+      <input
+        name={name}
+        type={type}
+        required={required}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className={cn("form-field", error && "border-red-300 focus:border-red-500 focus:ring-red-100")}
+      />
       {error ? <span className="text-xs font-medium text-red-600">{error}</span> : null}
     </label>
   );
@@ -62,6 +85,7 @@ export function RegisterForm({ role }: { role: PublicRegisterRole }) {
   const [phone, setPhone] = useState("");
   const [whatsappPhone, setWhatsappPhone] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<{ label: string; latitude: number; longitude: number; } | null>(null);
+  const [locationAddress, setLocationAddress] = useState("");
 
   const carrierHighlights = useMemo(() => [
     t("carrier_highlight_1", "Elan verə bilməz, amma aktiv yükləri izləyib uyğun elanları seçilmişlərə əlavə edə bilər."),
@@ -215,14 +239,6 @@ export function RegisterForm({ role }: { role: PublicRegisterRole }) {
             />
           </div>
 
-          <TextField
-            label={t("carrier_location_address", "Yerləşmə ünvanı")}
-            name="locationAddress"
-            placeholder={t("carrier_location_placeholder", "Məsələn, Bakı, Babək prospekti 24")}
-            required
-            error={fieldErrors.locationAddress}
-          />
-
           <div className="grid gap-4 md:grid-cols-2">
             <UnitField label={t("carrier_cargo_volume", "Yük yeri həcmi")} name="cargoSpaceVolumeM3" unit="m³"
               type="number" min="0.1" step="0.1" placeholder={t("carrier_cargo_volume_placeholder", "Məsələn, 32")} required error={fieldErrors.cargoSpaceVolumeM3} />
@@ -263,10 +279,23 @@ export function RegisterForm({ role }: { role: PublicRegisterRole }) {
               selectedLabel={selectedLocation?.label ?? ""}
               selectedLatitude={selectedLocation?.latitude}
               selectedLongitude={selectedLocation?.longitude}
-              onSelect={setSelectedLocation}
+              onSelect={(loc) => {
+                setSelectedLocation(loc);
+                setLocationAddress((prev) => (prev ? prev : loc.label));
+              }}
               error={fieldErrors.locationLabel || fieldErrors.locationLat || fieldErrors.locationLng}
             />
           </div>
+
+          <TextField
+            label={t("carrier_location_address", "Yerləşmə ünvanı")}
+            name="locationAddress"
+            placeholder={t("carrier_location_placeholder", "Məsələn, Bakı, Babək prospekti 24")}
+            required
+            value={locationAddress}
+            onChange={(e) => setLocationAddress(e.target.value)}
+            error={fieldErrors.locationAddress}
+          />
         </>
       ) : null}
 

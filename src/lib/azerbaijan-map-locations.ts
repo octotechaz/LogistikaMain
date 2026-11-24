@@ -106,3 +106,32 @@ export const azerbaijanMapLocations = [
 export const carrierLocationOptions = azerbaijanMapLocations;
 
 export const azerbaijanLocations = azerbaijanMapLocations.map((location) => location.label);
+
+export async function resolveLocationLabel(latitude: number, longitude: number): Promise<string> {
+  try {
+    const response = await fetch(
+      `/api/geocode/reverse?lat=${encodeURIComponent(String(latitude))}&lon=${encodeURIComponent(String(longitude))}`
+    );
+    const result = await response.json().catch(() => null);
+    if (response.ok && result?.ok && typeof result.data?.label === "string" && result.data.label) {
+      return result.data.label;
+    }
+  } catch {
+    // Fall back to nearest preset city below.
+  }
+
+  let bestLabel: string = carrierLocationOptions[0].label;
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  for (const city of carrierLocationOptions) {
+    const dLat = city.latitude - latitude;
+    const dLng = city.longitude - longitude;
+    const distance = dLat * dLat + dLng * dLng;
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestLabel = city.label;
+    }
+  }
+
+  return bestLabel;
+}

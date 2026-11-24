@@ -160,6 +160,8 @@
   "carrier_max_weight_placeholder": "e.g. 18",
   "carrier_cargo_types_title": "What cargo can be transported",
   "carrier_map_title": "Location on map",
+  "carrier_auto_location": "Auto-detect location",
+  "carrier_locating": "Locating...",
   "nav_home": "Home",
   "nav_active_loads": "Active loads",
   "nav_new_listing": "New listing",
