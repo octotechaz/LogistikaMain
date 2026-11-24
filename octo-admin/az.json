@@ -150,6 +150,8 @@
   "carrier_field_whatsapp": "Aktiv WhatsApp nömrəsi",
   "carrier_company_placeholder": "Məsələn, Araz Logistics",
   "carrier_vehicle_type": "Avtomobil növü",
+  "carrier_plate_number": "Avtomobil qeydiyyat nişanı",
+  "carrier_plate_number_placeholder": "Məsələn, 10-AB-123",
   "carrier_location_address": "Yerləşmə ünvanı",
   "carrier_location_placeholder": "Məsələn, Bakı, Babək prospekti 24",
   "carrier_cargo_volume": "Yük yeri həcmi",

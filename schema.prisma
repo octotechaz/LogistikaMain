@@ -162,6 +162,7 @@ model CarrierProfile {
   rating              Float    @default(0)
   whatsappPhone       String?
   vehicleType         String?
+  plateNumber         String?
   supportedCargoTypes String[] @default([])
   cargoSpaceVolumeM3  Float?
   maxWeightTons       Float?

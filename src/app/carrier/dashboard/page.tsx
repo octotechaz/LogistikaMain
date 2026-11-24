@@ -209,8 +209,11 @@ export default async function CarrierDashboardPage() {
             <div className="flex items-start gap-3 rounded-lg bg-slate-50 px-4 py-3">
               <Truck className="mt-0.5 h-4 w-4 text-logistics-orange" />
               <div>
-                <p className="font-semibold text-navy-900">{profile?.vehicleType || "Nəqliyyat növü qeyd edilməyib"}</p>
-                <p className="mt-1">Əsas avtomobil növü</p>
+                <p className="font-semibold text-navy-900">
+                  {profile?.vehicleType || "Nəqliyyat növü qeyd edilməyib"}
+                  {profile?.plateNumber ? ` · ${profile.plateNumber}` : ""}
+                </p>
+                <p className="mt-1">Əsas avtomobil növü {profile?.plateNumber ? "və dövlət qeydiyyat nişanı" : ""}</p>
               </div>
             </div>
 

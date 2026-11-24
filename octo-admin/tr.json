@@ -150,6 +150,8 @@
   "carrier_field_whatsapp": "Aktif WhatsApp numarası",
   "carrier_company_placeholder": "Örn. Araz Logistics",
   "carrier_vehicle_type": "Araç türü",
+  "carrier_plate_number": "Araç plaka numarası",
+  "carrier_plate_number_placeholder": "Örn. 10-AB-123",
   "carrier_location_address": "Konum adresi",
   "carrier_location_placeholder": "Örn. Bakü, Babek Bulvarı 24",
   "carrier_cargo_volume": "Kargo alanı hacmi",

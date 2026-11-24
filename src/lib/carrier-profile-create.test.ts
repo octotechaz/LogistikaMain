@@ -14,6 +14,7 @@ const baseInput: CarrierRegisterInput = {
   companyName: "Murad Logistics",
   role: "CARRIER",
   vehicleType: "TIR",
+  plateNumber: "10-AB-123",
   supportedCargoTypes: ["Mebel", "Paletli yük"],
   cargoSpaceVolumeM3: 42.5,
   maxWeightTons: 18,
@@ -28,6 +29,7 @@ test("buildCarrierProfileCreateData maps every validated carrier field", () => {
 
   assert.equal(data.whatsappPhone, "+994551234567");
   assert.equal(data.vehicleType, "TIR");
+  assert.equal(data.plateNumber, "10-AB-123");
   assert.deepEqual(data.supportedCargoTypes, ["Mebel", "Paletli yük"]);
   assert.equal(data.cargoSpaceVolumeM3, 42.5);
   assert.equal(data.maxWeightTons, 18);

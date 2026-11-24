@@ -104,6 +104,7 @@ export function RegisterForm({ role }: { role: PublicRegisterRole }) {
       const canonicalWhatsapp = canonicalizeLoginPhone(whatsappPhone) || canonicalPhone;
       payload.whatsappPhone = canonicalWhatsapp;
       payload.vehicleType = String(formData.get("vehicleType") ?? "");
+      payload.plateNumber = String(formData.get("plateNumber") ?? "").trim();
       payload.supportedCargoTypes = selectedCargoTypes;
       payload.cargoSpaceVolumeM3 = String(formData.get("cargoSpaceVolumeM3") ?? "");
       payload.maxWeightTons = String(formData.get("maxWeightTons") ?? "");
@@ -205,9 +206,22 @@ export function RegisterForm({ role }: { role: PublicRegisterRole }) {
               </div>
               {fieldErrors.vehicleType ? <span className="text-xs font-medium text-red-600">{fieldErrors.vehicleType}</span> : null}
             </label>
-            <TextField label={t("carrier_location_address", "Yerləşmə ünvanı")} name="locationAddress"
-              placeholder={t("carrier_location_placeholder", "Məsələn, Bakı, Babək prospekti 24")} required error={fieldErrors.locationAddress} />
+            <TextField
+              label={t("carrier_plate_number", "Avtomobil qeydiyyat nişanı")}
+              name="plateNumber"
+              placeholder={t("carrier_plate_number_placeholder", "Məsələn, 10-AB-123")}
+              required
+              error={fieldErrors.plateNumber}
+            />
           </div>
+
+          <TextField
+            label={t("carrier_location_address", "Yerləşmə ünvanı")}
+            name="locationAddress"
+            placeholder={t("carrier_location_placeholder", "Məsələn, Bakı, Babək prospekti 24")}
+            required
+            error={fieldErrors.locationAddress}
+          />
 
           <div className="grid gap-4 md:grid-cols-2">
             <UnitField label={t("carrier_cargo_volume", "Yük yeri həcmi")} name="cargoSpaceVolumeM3" unit="m³"

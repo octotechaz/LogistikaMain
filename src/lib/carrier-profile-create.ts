@@ -7,6 +7,7 @@ export function buildCarrierProfileCreateData(
   return {
     whatsappPhone: input.whatsappPhone,
     vehicleType: input.vehicleType,
+    plateNumber: input.plateNumber,
     supportedCargoTypes: input.supportedCargoTypes,
     cargoSpaceVolumeM3: input.cargoSpaceVolumeM3,
     maxWeightTons: input.maxWeightTons,

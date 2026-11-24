@@ -43,6 +43,7 @@ export const carrierRegisterSchema = registerSchema.extend({
   role: z.literal("CARRIER"),
   whatsappPhone: phoneSchema,
   vehicleType: requiredText("Avtomobil növünü seçin."),
+  plateNumber: requiredText("Avtomobil qeydiyyat nişanını daxil edin."),
   supportedCargoTypes: stringListSchema.refine(
     (value) => value.length > 0,
     "Daşıya bildiyiniz yük növlərindən ən azı birini seçin."

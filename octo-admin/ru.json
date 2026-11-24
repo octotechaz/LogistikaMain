@@ -150,6 +150,8 @@
   "carrier_field_whatsapp": "Активный номер WhatsApp",
   "carrier_company_placeholder": "Например, Araz Logistics",
   "carrier_vehicle_type": "Тип автомобиля",
+  "carrier_plate_number": "Регистрационный номер автомобиля",
+  "carrier_plate_number_placeholder": "Например, 10-AB-123",
   "carrier_location_address": "Адрес местонахождения",
   "carrier_location_placeholder": "Например, Баку, проспект Бабек 24",
   "carrier_cargo_volume": "Объём грузового места",

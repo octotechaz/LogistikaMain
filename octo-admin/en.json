@@ -150,6 +150,8 @@
   "carrier_field_whatsapp": "Active WhatsApp number",
   "carrier_company_placeholder": "e.g. Araz Logistics",
   "carrier_vehicle_type": "Vehicle type",
+  "carrier_plate_number": "Vehicle registration plate",
+  "carrier_plate_number_placeholder": "e.g. 10-AB-123",
   "carrier_location_address": "Location address",
   "carrier_location_placeholder": "e.g. Baku, Babak Avenue 24",
   "carrier_cargo_volume": "Cargo space volume",
